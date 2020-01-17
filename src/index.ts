@@ -44,6 +44,10 @@ export type ParseFunc<TResult> = (
 
 export class Parser<TResult> {
     private readonly __parseFunc: ParseFunc<TResult>;
+    private readonly __memoMap: Map<
+        string,
+        Map<number, { result: ReturnType<ParseFunc<TResult>> }>
+    > = new Map();
 
     constructor(parseFunc: ParseFunc<TResult>) {
         this.__parseFunc = parseFunc;
@@ -125,7 +129,18 @@ export class Parser<TResult> {
         input: string,
         offsetStart: number,
     ): { offsetEnd: number; data: TResult } | undefined {
+        let memoStore = this.__memoMap.get(input);
+        if (memoStore) {
+            const memoData = memoStore.get(offsetStart);
+            if (memoData) return memoData.result;
+        } else {
+            memoStore = new Map();
+            this.__memoMap.set(input, memoStore);
+        }
+
         const result = this.__parseFunc(input, offsetStart);
+        memoStore.set(offsetStart, { result });
+
         return result;
     }
 }
