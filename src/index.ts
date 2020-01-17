@@ -6,7 +6,7 @@
  */
 type isReadonlyOrWritableArray = (
     value: unknown,
-) => value is ReadonlyArray<unknown>;
+) => value is readonly unknown[];
 
 export class PredicateExecutionEnvironment {
     readonly input: string;
@@ -136,7 +136,7 @@ export type ParserResult<T extends Parser<unknown>> = T extends Parser<infer U>
 export type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
     ? ParserResult<T>
     : T;
-export type ParserTuple2ResultTuple<T extends ReadonlyArray<ParserLike>> = {
+export type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
     -readonly [P in keyof T]: T[P] extends ParserLike
         ? ParserLike2Result<T[P]>
         : T[P];
@@ -192,25 +192,25 @@ export class ParserGenerator {
         });
     }
 
-    zeroOrMore<T extends ReadonlyArray<ParserLike>>(
+    zeroOrMore<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<[] | ParserTuple2ResultTuple<T>[]> {
         return this.seq(...args).zeroOrMore;
     }
 
-    oneOrMore<T extends ReadonlyArray<ParserLike>>(
+    oneOrMore<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<ParserTuple2ResultTuple<T>[]> {
         return this.seq(...args).oneOrMore;
     }
 
-    optional<T extends ReadonlyArray<ParserLike>>(
+    optional<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<ParserTuple2ResultTuple<T> | undefined> {
         return this.seq(...args).optional;
     }
 
-    followedBy<T extends ReadonlyArray<ParserLike>>(
+    followedBy<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
@@ -221,7 +221,7 @@ export class ParserGenerator {
         );
     }
 
-    notFollowedBy<T extends ReadonlyArray<ParserLike>>(
+    notFollowedBy<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
@@ -232,7 +232,7 @@ export class ParserGenerator {
         );
     }
 
-    seq<T extends ReadonlyArray<ParserLike>>(
+    seq<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<ParserTuple2ResultTuple<T>> {
         return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
@@ -240,7 +240,7 @@ export class ParserGenerator {
             // @ts-ignore - Type 'never[]' is not assignable to type 'ParserTuple2ResultTuple<T>'.
             const data: ParserTuple2ResultTuple<T> = [];
             let offset = offsetStart;
-            for (const exp of exps as ReadonlyArray<T[number]>) {
+            for (const exp of exps as readonly T[number][]) {
                 const expParser: Parser<ParserLike2Result<
                     T[number]
                 >> = this.__toParser(exp);
@@ -254,11 +254,11 @@ export class ParserGenerator {
         });
     }
 
-    or<T extends ReadonlyArray<ParserLike>>(
+    or<T extends readonly ParserLike[]>(
         ...args: T | [() => T]
     ): Parser<ParserLike2Result<T[number]>> {
         return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
-            for (const exp of exps as ReadonlyArray<T[number]>) {
+            for (const exp of exps as readonly T[number][]) {
                 const expParser: Parser<ParserLike2Result<
                     T[number]
                 >> = this.__toParser(exp);
@@ -292,14 +292,14 @@ export class ParserGenerator {
     ): asserts value is ParserLike[];
 
     private __assertIsExpsArray(
-        value: ReadonlyArray<unknown>,
+        value: readonly unknown[],
         errorMessage: string,
-    ): asserts value is ReadonlyArray<ParserLike>;
+    ): asserts value is readonly ParserLike[];
 
     private __assertIsExpsArray(
-        value: ReadonlyArray<unknown>,
+        value: readonly unknown[],
         errorMessage: string,
-    ): asserts value is ReadonlyArray<ParserLike> {
+    ): asserts value is readonly ParserLike[] {
         if (
             !value.every(
                 item => typeof item === 'string' || item instanceof Parser,
@@ -310,7 +310,7 @@ export class ParserGenerator {
     }
 
     private __validateSequenceArgs<
-        TExps extends ReadonlyArray<ParserLike>,
+        TExps extends readonly ParserLike[],
         TResult
     >(
         args: TExps | [() => TExps],
