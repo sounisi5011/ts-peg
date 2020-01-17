@@ -11,8 +11,8 @@ export const Expression = p
     .seq(() => [
         Term,
         p
-            .zeroOrMore(ws, p.or('+', '-'), ws, Term)
-            .action(([, operator, , factor]) => [operator, factor]),
+            .seq(ws, p.or('+', '-'), ws, Term)
+            .action(([, operator, , factor]) => [operator, factor]).zeroOrMore,
     ])
     .action(([head, tail]) =>
         tail.reduce((result, [operator, factor]) => {
@@ -25,8 +25,8 @@ export const Term = p
     .seq(() => [
         Factor,
         p
-            .zeroOrMore(ws, p.or('*', '/'), ws, Factor)
-            .action(([, operator, , factor]) => [operator, factor]),
+            .seq(ws, p.or('*', '/'), ws, Factor)
+            .action(([, operator, , factor]) => [operator, factor]).zeroOrMore,
     ])
     .action(([head, tail]) =>
         tail.reduce((result, [operator, factor]) => {
