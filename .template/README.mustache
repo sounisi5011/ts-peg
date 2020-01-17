@@ -1,0 +1,58 @@
+# {{{pkg.name}}}
+
+{{^pkg.private}}
+[![Go to the latest release page on npm](https://img.shields.io/npm/v/{{{pkg.name}}}.svg)](https://www.npmjs.com/package/{{{pkg.name}}})
+{{/pkg.private}}
+[![License: {{{pkg.license}}}](https://img.shields.io/static/v1?label=license&message={{#encURL}} {{{pkg.license}}} {{/encURL}}&color=green)]({{{githubFileRoot}}}/LICENSE)
+![Supported Node.js version: {{{pkg.engines.node}}}](https://img.shields.io/static/v1?label=node&message={{#encURL}} {{{pkg.engines.node}}} {{/encURL}}&color=brightgreen)
+![Type Definitions: TypeScript](https://img.shields.io/static/v1?label=types&message=TypeScript&color=blue)
+{{^pkg.private}}
+[![Minified Bundle Size Details](https://img.shields.io/bundlephobia/min/{{{pkg.name}}}/{{{pkg.version}}})](https://bundlephobia.com/result?p={{{pkg.name}}}@{{{pkg.version}}})
+[![Install Size Details](https://packagephobia.now.sh/badge?p={{{pkg.name}}}@{{{pkg.version}}})](https://packagephobia.now.sh/result?p={{{pkg.name}}}@{{{pkg.version}}})
+{{/pkg.private}}
+[![Dependencies Status](https://david-dm.org/{{{repo.owner}}}/{{{repo.name}}}/status.svg)](https://david-dm.org/{{{repo.owner}}}/{{{repo.name}}})
+{{#azurePipelines}}
+[![Build Status]({{{azurePipelines.badgeURL}}})]({{{azurePipelines.pageURL}}})
+{{/azurePipelines}}
+{{#codeClimate}}
+  {{#codeClimate.maintainabilityBadgeURL}}
+[![Maintainability Status]({{{codeClimate.maintainabilityBadgeURL}}})](https://codeclimate.com/github/{{{repo.owner}}}/{{{repo.name}}}/maintainability)
+  {{/codeClimate.maintainabilityBadgeURL}}
+  {{#codeClimate.testCoverageBadgeURL}}
+[![Test Coverage Status]({{{codeClimate.testCoverageBadgeURL}}})](https://codeclimate.com/github/{{{repo.owner}}}/{{{repo.name}}}/test_coverage)
+  {{/codeClimate.testCoverageBadgeURL}}
+{{/codeClimate}}
+
+Type-safe Parsing Expression Grammar (PEG) parser generator for [TypeScript].
+
+[TypeScript]: https://www.typescriptlang.org/
+
+## Install
+
+WIP
+
+## Usage
+
+TODO
+
+## Grammar Syntax and Semantics
+
+TODO
+
+## Tests
+
+To run the test suite, first install the dependencies, then run `npm test`:
+
+```sh
+npm install
+npm test
+```
+
+## Contributing
+
+see [CONTRIBUTING.md]({{{repo.rootURL}}}/blob/master/CONTRIBUTING.md)
+
+## Related
+
+* [pegjs](https://www.npmjs.com/package/pegjs)
+* [rena2](https://www.npmjs.com/package/rena2)

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    // Node 10.0+ supports almost all the features of ES2018.
+    // Reference: https://node.green/#ES2018
+    "target": "ES2018",
+    "types": [],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "useDefineForClassFields": true,
+    "newLine": "LF",
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist"
+  },
+  "include": ["./src/**/*"]
+}
