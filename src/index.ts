@@ -49,8 +49,8 @@ export class Parser<TResult> {
         this.__parseFunc = parseFunc;
     }
 
-    readonly zeroOrMore: Parser<[] | TResult[]> = new Parser(
-        (input, offsetStart) => {
+    get zeroOrMore(): Parser<[] | TResult[]> {
+        return new Parser((input, offsetStart) => {
             const data: TResult[] = [];
 
             let result;
@@ -61,31 +61,33 @@ export class Parser<TResult> {
             }
 
             return { offsetEnd: offset, data };
-        },
-    );
+        });
+    }
 
-    readonly oneOrMore: Parser<TResult[]> = new Parser((input, offsetStart) => {
-        const data: TResult[] = [];
+    get oneOrMore(): Parser<TResult[]> {
+        return new Parser((input, offsetStart) => {
+            const data: TResult[] = [];
 
-        let result;
-        let offset = offsetStart;
-        while ((result = this.tryParse(input, offset))) {
-            data.push(result.data);
-            offset = result.offsetEnd;
-        }
+            let result;
+            let offset = offsetStart;
+            while ((result = this.tryParse(input, offset))) {
+                data.push(result.data);
+                offset = result.offsetEnd;
+            }
 
-        return data.length >= 1 ? { offsetEnd: offset, data } : undefined;
-    });
+            return data.length >= 1 ? { offsetEnd: offset, data } : undefined;
+        });
+    }
 
-    readonly optional: Parser<TResult | undefined> = new Parser(
-        (input, offsetStart) => {
+    get optional(): Parser<TResult | undefined> {
+        return new Parser((input, offsetStart) => {
             const result = this.tryParse(input, offsetStart);
             return {
                 offsetEnd: result ? result.offsetEnd : offsetStart,
                 data: result ? result.data : undefined,
             };
-        },
-    );
+        });
+    }
 
     action<TActionRes>(
         actionFn: (
@@ -143,13 +145,15 @@ export type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
 };
 
 export class ParserGenerator {
-    readonly any: Parser<string> = new Parser((input, offsetStart) => {
-        // Note: Use a string iterator to retrieve Unicode surrogate pair one character (eg, emoji, old kanji, etc.).
-        for (const char of input.substring(offsetStart, offsetStart + 2)) {
-            return { offsetEnd: offsetStart + char.length, data: char };
-        }
-        return undefined;
-    });
+    get any(): Parser<string> {
+        return new Parser((input, offsetStart) => {
+            // Note: Use a string iterator to retrieve Unicode surrogate pair one character (eg, emoji, old kanji, etc.).
+            for (const char of input.substring(offsetStart, offsetStart + 2)) {
+                return { offsetEnd: offsetStart + char.length, data: char };
+            }
+            return undefined;
+        });
+    }
 
     str<T extends string>(str: T): Parser<T> {
         return new Parser((input, offsetStart) =>
