@@ -97,7 +97,8 @@
       "ts"
     ],
     "files": [
-      "./test/**/*.ts"
+      "./test/**/*.ts",
+      "!./test/type-spec"
     ],
     "helpers": [
       "**/{fixtures,helpers}/**/*"
