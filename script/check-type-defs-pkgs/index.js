@@ -89,7 +89,7 @@ async function main(distDir, buildTask) {
   );
 
   const typePkgNames = {
-    deps: Object.keys(PKG.dependencies)
+    deps: Object.keys(PKG.dependencies || {})
       .filter(pkgName => /^@types\//.test(pkgName))
       .filter(
         typePkgName => !importSet.has(typePkgName.replace(/^@types\//, '')),
@@ -98,7 +98,7 @@ async function main(distDir, buildTask) {
   };
   importSet.forEach(name => {
     const typePkgName = `@types/${name}`;
-    if (typePkgName in PKG.devDependencies) {
+    if (typePkgName in (PKG.devDependencies || {})) {
       typePkgNames.devDeps.push(typePkgName);
     }
   });
