@@ -2,13 +2,13 @@ parameters:
   nodeVersion: 12.x
 
 steps:
-  - bash: |
-      echo '##vso[task.setvariable variable=npm_config_cache]$(Pipeline.Workspace)/.npm'
-    displayName: "Set variables: $npm_config_cache"
+  # - bash: |
+  #     echo '##vso[task.setvariable variable=npm_config_cache]$(Pipeline.Workspace)/.npm'
+  #   displayName: "Set variables: $npm_config_cache"
 
-  - bash: |
-      node -p 'Object.entries(process.env).filter(([p]) => /^npm_config_cache$/i.test(p)).reduce((o, [p, v]) => ({...o, [p]:v}), {})'
-    displayName: "Show variables: $npm_config_cache"
+  # - bash: |
+  #     node -p 'Object.entries(process.env).filter(([p]) => /^npm_config_cache$/i.test(p)).reduce((o, [p, v]) => ({...o, [p]:v}), {})'
+  #   displayName: "Show variables: $npm_config_cache"
 
   - task: NodeTool@0
     inputs:
@@ -20,14 +20,14 @@ steps:
       echo npm $(npm --version)
     displayName: Show node and npm version
 
-  - task: Cache@2
-    inputs:
-      key: 'npm | "$(Agent.OS)" | package-lock.json'
-      restoreKeys: |
-        npm | "$(Agent.OS)"
-        npm
-      path: $(npm_config_cache)
-    displayName: Cache npm
+  # - task: Cache@2
+  #   inputs:
+  #     key: 'npm | "$(Agent.OS)" | package-lock.json'
+  #     restoreKeys: |
+  #       npm | "$(Agent.OS)"
+  #       npm
+  #     path: $(npm_config_cache)
+  #   displayName: Cache npm
 
   - script: npm ci || npm install
     displayName: Install dependencies
