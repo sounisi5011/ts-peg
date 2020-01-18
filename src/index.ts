@@ -182,6 +182,8 @@ export class Parser<TResult> {
         input: string,
         offsetStart: number,
     ): { offsetEnd: number; data: TResult } | undefined {
+        if (input.length < offsetStart) return undefined;
+
         let memoStore = this.__memoMap.get(input);
         if (memoStore) {
             const memoData = memoStore.get(offsetStart);
