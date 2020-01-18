@@ -2,6 +2,8 @@
 
 /**
  * @see https://github.com/sounisi5011/metalsmith-html-validator/blob/v1.1.1/script/check-type-defs-pkgs.js
+ *
+ * Updated by b7c9bfb88ac66daca0d1092ecc2f7fc28f3bc1f3 - Fixed a crash problem when there is no "dependencies" field or "devDependencies" field in package.json file.
  */
 
 const fs = require('fs');
