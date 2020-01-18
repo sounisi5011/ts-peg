@@ -55,6 +55,13 @@ export type ParseFunc<TResult> = (
     offsetStart: number,
 ) => { offsetEnd: number; data: TResult } | undefined;
 
+interface ActionParserCacheMap extends WeakMap<Function, Parser<unknown>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    get<T>(key: (...args: any) => T): Parser<T> | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    set<T>(key: (...args: any) => T, value: Parser<T>): this;
+}
+
 export class Parser<TResult> {
     private readonly __parseFunc: ParseFunc<TResult>;
     private readonly __memoMap: Map<
@@ -66,8 +73,10 @@ export class Parser<TResult> {
         this.__parseFunc = parseFunc;
     }
 
+    private __zeroOrMoreCache?: Parser<TResult[]>;
     get zeroOrMore(): Parser<TResult[]> {
-        return new Parser((input, offsetStart) => {
+        if (this.__zeroOrMoreCache) return this.__zeroOrMoreCache;
+        return (this.__zeroOrMoreCache = new Parser((input, offsetStart) => {
             const data: TResult[] = [];
 
             let result;
@@ -78,11 +87,13 @@ export class Parser<TResult> {
             }
 
             return { offsetEnd: offset, data };
-        });
+        }));
     }
 
+    private __oneOrMoreCache?: Parser<OneOrMoreTuple<TResult>>;
     get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
-        return new Parser((input, offsetStart) => {
+        if (this.__oneOrMoreCache) return this.__oneOrMoreCache;
+        return (this.__oneOrMoreCache = new Parser((input, offsetStart) => {
             const data: TResult[] = [];
 
             let result;
@@ -95,18 +106,25 @@ export class Parser<TResult> {
             return isOneOrMoreTuple(data)
                 ? { offsetEnd: offset, data }
                 : undefined;
-        });
+        }));
     }
 
+    private __optionalCache?: Parser<TResult | undefined>;
     get optional(): Parser<TResult | undefined> {
-        return new Parser((input, offsetStart) => {
+        if (this.__optionalCache) return this.__optionalCache;
+        return (this.__optionalCache = new Parser((input, offsetStart) => {
             const result = this.tryParse(input, offsetStart);
             return {
                 offsetEnd: result ? result.offsetEnd : offsetStart,
                 data: result ? result.data : undefined,
             };
-        });
+        }));
     }
+
+    private readonly __actionParserCacheMap: ActionParserCacheMap = new WeakMap<
+        Function,
+        Parser<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+    >();
 
     action<TActionRes extends OneOrMoreReadonlyTuple<unknown>>(
         actionFn: (
@@ -128,7 +146,10 @@ export class Parser<TResult> {
             envs: ActionExecutionEnvironment,
         ) => TActionRes,
     ): Parser<TActionRes> {
-        return new Parser((input, offsetStart) => {
+        let cachedParser = this.__actionParserCacheMap.get(actionFn);
+        if (cachedParser) return cachedParser;
+
+        cachedParser = new Parser((input, offsetStart) => {
             const result = this.tryParse(input, offsetStart);
             return result
                 ? {
@@ -143,6 +164,9 @@ export class Parser<TResult> {
                   }
                 : undefined;
         });
+        this.__actionParserCacheMap.set(actionFn, cachedParser);
+
+        return cachedParser;
     }
 
     parse(input: string, offsetStart: number = 0): TResult {
@@ -188,23 +212,36 @@ export type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
+interface StringParserCacheMap extends Map<string, Parser<string>> {
+    get<T>(key: T): Parser<T> | undefined;
+    set<T>(key: T, value: Parser<T>): this;
+}
+
 export class ParserGenerator {
+    private __anyCache?: Parser<string>;
     get any(): Parser<string> {
-        return new Parser((input, offsetStart) => {
+        if (this.__anyCache) return this.__anyCache;
+        return (this.__anyCache = new Parser((input, offsetStart) => {
             // Note: Use a string iterator to retrieve Unicode surrogate pair one character (eg, emoji, old kanji, etc.).
             for (const char of input.substring(offsetStart, offsetStart + 2)) {
                 return { offsetEnd: offsetStart + char.length, data: char };
             }
             return undefined;
-        });
+        }));
     }
 
+    private readonly __strParserCacheMap: StringParserCacheMap = new Map();
     str<T extends string>(str: T): Parser<T> {
-        return new Parser((input, offsetStart) =>
+        let cachedParser = this.__strParserCacheMap.get(str);
+        if (cachedParser) return cachedParser;
+
+        cachedParser = new Parser((input, offsetStart) =>
             input.startsWith(str, offsetStart)
                 ? { offsetEnd: offsetStart + str.length, data: str }
                 : undefined,
         );
+        this.__strParserCacheMap.set(str, cachedParser);
+        return cachedParser;
     }
 
     range(str1: string, str2: string): Parser<string> {
