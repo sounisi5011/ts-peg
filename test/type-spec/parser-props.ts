@@ -4,28 +4,33 @@ import p, { Parser } from '../../src';
 
 {
     const parser = p.str('1').zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[] | '1'[]>>>();
+    assertType<TypeEq<typeof parser, Parser<'1'[]>>>();
 }
 {
     const parser = p.seq('x', 'y', p.any).zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[] | ['x', 'y', string][]>>>();
+    assertType<TypeEq<typeof parser, Parser<['x', 'y', string][]>>>();
 }
 {
     const parser = p.range('0', '9').zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[] | string[]>>>();
+    assertType<TypeEq<typeof parser, Parser<string[]>>>();
 }
 
 {
     const parser = p.str('1').oneOrMore;
-    assertType<TypeEq<typeof parser, Parser<'1'[]>>>();
+    assertType<TypeEq<typeof parser, Parser<['1', ...'1'[]]>>>();
 }
 {
     const parser = p.seq('x', 'y', p.any).oneOrMore;
-    assertType<TypeEq<typeof parser, Parser<['x', 'y', string][]>>>();
+    assertType<
+        TypeEq<
+            typeof parser,
+            Parser<[['x', 'y', string], ...['x', 'y', string][]]>
+        >
+    >();
 }
 {
     const parser = p.range('0', '9').oneOrMore;
-    assertType<TypeEq<typeof parser, Parser<string[]>>>();
+    assertType<TypeEq<typeof parser, Parser<[string, ...string[]]>>>();
 }
 
 {

@@ -2,7 +2,7 @@ import test from 'ava';
 import { performance, PerformanceEntry, PerformanceObserver } from 'perf_hooks';
 import * as sta from 'simple-statistics';
 
-import p from '../src';
+import p, { Parser } from '../src';
 
 function isLinearity(
     data: number[],
@@ -18,8 +18,10 @@ function isLinearity(
 
 test('should use Packrat Parsing', t => {
     /** @see https://engineering.linecorp.com/ja/blog/peg-parser-generator-packrat-parser/ */
+    type A = [P, '+', A] | [P, '-', A] | P;
+    type P = ['(', A, ')'] | '1';
     const S = p.seq(() => [A]); // eslint-disable-line @typescript-eslint/no-use-before-define
-    const A = p.or(() => [p.seq(P, '+', A), p.seq(P, '-', A), P]); // eslint-disable-line @typescript-eslint/no-use-before-define
+    const A: Parser<A> = p.or(() => [p.seq(P, '+', A), p.seq(P, '-', A), P]); // eslint-disable-line @typescript-eslint/no-use-before-define
     const P = p.or(p.seq('(', A, ')'), '1');
 
     const parse = performance.timerify(S.parse.bind(S));

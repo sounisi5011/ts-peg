@@ -3,11 +3,11 @@
 //
 // Accepts expressions like "2 * (3 + 4)" and computes their value.
 
-import p from '../src';
+import p, { Parser } from '../src';
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-export const Expression = p
+export const Expression: Parser<number> = p
     .seq(() => [
         Term,
         p
@@ -15,10 +15,11 @@ export const Expression = p
             .action(([, operator, , factor]) => [operator, factor]).zeroOrMore,
     ])
     .action(([head, tail]) =>
-        tail.reduce((result, [operator, factor]) => {
-            if (operator === '+') return result + factor;
-            if (operator === '-') return result - factor;
-        }, head),
+        tail.reduce(
+            (result, [operator, factor]) =>
+                operator === '+' ? result + factor : result - factor,
+            head,
+        ),
     );
 
 export const Term = p
@@ -29,10 +30,11 @@ export const Term = p
             .action(([, operator, , factor]) => [operator, factor]).zeroOrMore,
     ])
     .action(([head, tail]) =>
-        tail.reduce((result, [operator, factor]) => {
-            if (operator === '*') return result * factor;
-            if (operator === '/') return result / factor;
-        }, head),
+        tail.reduce(
+            (result, [operator, factor]) =>
+                operator === '*' ? result * factor : result / factor,
+            head,
+        ),
     );
 
 export const Factor = p.or(() => [
@@ -45,6 +47,6 @@ export const Integer = p
     .seq(() => [ws, p.range('0', '9').oneOrMore])
     .action((_, { text }) => parseInt(text, 10));
 
-export const ws = p.label('whitespace').or(...' \t\n\r').zeroOrMore;
+export const ws = p.label('whitespace').or(' ', '\t', '\n', '\r').zeroOrMore;
 
 export default Expression;

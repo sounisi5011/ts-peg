@@ -8,6 +8,19 @@ type isReadonlyOrWritableArray = (
     value: unknown,
 ) => value is readonly unknown[];
 
+type OneOrMoreTuple<T> = [T, ...T[]];
+type OneOrMoreReadonlyTuple<T> = readonly [T, ...T[]];
+
+function isOneOrMoreTuple<T>(value: T[]): value is OneOrMoreTuple<T>;
+function isOneOrMoreTuple<T>(
+    value: readonly T[],
+): value is OneOrMoreReadonlyTuple<T>;
+function isOneOrMoreTuple<T>(
+    value: readonly T[],
+): value is OneOrMoreReadonlyTuple<T> {
+    return value.length >= 1;
+}
+
 export class PredicateExecutionEnvironment {
     readonly input: string;
     readonly offset: number;
@@ -53,7 +66,7 @@ export class Parser<TResult> {
         this.__parseFunc = parseFunc;
     }
 
-    get zeroOrMore(): Parser<[] | TResult[]> {
+    get zeroOrMore(): Parser<TResult[]> {
         return new Parser((input, offsetStart) => {
             const data: TResult[] = [];
 
@@ -68,7 +81,7 @@ export class Parser<TResult> {
         });
     }
 
-    get oneOrMore(): Parser<TResult[]> {
+    get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
         return new Parser((input, offsetStart) => {
             const data: TResult[] = [];
 
@@ -79,7 +92,9 @@ export class Parser<TResult> {
                 offset = result.offsetEnd;
             }
 
-            return data.length >= 1 ? { offsetEnd: offset, data } : undefined;
+            return isOneOrMoreTuple(data)
+                ? { offsetEnd: offset, data }
+                : undefined;
         });
     }
 
@@ -92,6 +107,20 @@ export class Parser<TResult> {
             };
         });
     }
+
+    action<TActionRes extends OneOrMoreReadonlyTuple<unknown>>(
+        actionFn: (
+            exp: TResult,
+            envs: ActionExecutionEnvironment,
+        ) => TActionRes,
+    ): Parser<TActionRes>;
+
+    action<TActionRes extends unknown>(
+        actionFn: (
+            exp: TResult,
+            envs: ActionExecutionEnvironment,
+        ) => TActionRes,
+    ): Parser<TActionRes>;
 
     action<TActionRes>(
         actionFn: (
@@ -211,25 +240,25 @@ export class ParserGenerator {
         });
     }
 
-    zeroOrMore<T extends readonly ParserLike[]>(
+    zeroOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<[] | ParserTuple2ResultTuple<T>[]> {
+    ): Parser<ParserTuple2ResultTuple<T>[]> {
         return this.seq(...args).zeroOrMore;
     }
 
-    oneOrMore<T extends readonly ParserLike[]>(
+    oneOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<ParserTuple2ResultTuple<T>[]> {
+    ): Parser<OneOrMoreTuple<ParserTuple2ResultTuple<T>>> {
         return this.seq(...args).oneOrMore;
     }
 
-    optional<T extends readonly ParserLike[]>(
+    optional<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<ParserTuple2ResultTuple<T> | undefined> {
         return this.seq(...args).optional;
     }
 
-    followedBy<T extends readonly ParserLike[]>(
+    followedBy<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
@@ -240,7 +269,7 @@ export class ParserGenerator {
         );
     }
 
-    notFollowedBy<T extends readonly ParserLike[]>(
+    notFollowedBy<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
@@ -251,7 +280,7 @@ export class ParserGenerator {
         );
     }
 
-    seq<T extends readonly ParserLike[]>(
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<ParserTuple2ResultTuple<T>> {
         return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
@@ -273,7 +302,7 @@ export class ParserGenerator {
         });
     }
 
-    or<T extends readonly ParserLike[]>(
+    or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<ParserLike2Result<T[number]>> {
         return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
