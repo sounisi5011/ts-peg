@@ -1,11 +1,20 @@
 import test from 'ava';
+import * as iterTools from 'iter-tools';
 import { assertType, TypeEq } from 'typepark';
+import util from 'util';
 
-import p, { Parser, ParserGenerator } from '../../src';
+import p, {
+    CharacterClassParser,
+    ParserGenerator,
+    ParserResult,
+} from '../../src';
+import { OneOrMoreArray } from '../helpers/type';
+
+assertType<TypeEq<ParserResult<CharacterClassParser>, string>>();
 
 test('should match characters: "abc123"', t => {
     const parser = p.chars('abc123');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('a', 0), {
         offsetEnd: 1,
@@ -30,7 +39,7 @@ test('should match characters: "abc123"', t => {
 
 test('should match inverted characters: "^abc123"', t => {
     const parser = p.chars('^abc123');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('h', 0), {
         offsetEnd: 1,
@@ -59,7 +68,7 @@ test('should match inverted characters: "^abc123"', t => {
 
 test('should match character range: "a-f"', t => {
     const parser = p.chars('a-f');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('a', 0), {
         offsetEnd: 1,
@@ -81,7 +90,7 @@ test('should match character range: "a-f"', t => {
 
 test('should match character range: "f-a"', t => {
     const parser = p.chars('f-a');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('f', 0), {
         offsetEnd: 1,
@@ -103,7 +112,7 @@ test('should match character range: "f-a"', t => {
 
 test('should match characters and character range: "0-9abc"', t => {
     const parser = p.chars('0-9abc');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('0', 0), {
         offsetEnd: 1,
@@ -137,7 +146,7 @@ test('should match characters and character range: "0-9abc"', t => {
 
 test('should match inverted character range: "^a-f"', t => {
     const parser = p.chars('^a-f');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('2', 0), {
         offsetEnd: 1,
@@ -162,7 +171,7 @@ test('should match inverted character range: "^a-f"', t => {
 
 test('should match characters and "-": "abc-"', t => {
     const parser = p.chars('abc-');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('a', 0), {
         offsetEnd: 1,
@@ -188,7 +197,7 @@ test('should match characters and "-": "abc-"', t => {
 
 test('should match character range and "-": "-0-9"', t => {
     const parser = p.chars('-0-9');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('0', 0), {
         offsetEnd: 1,
@@ -218,18 +227,18 @@ test('should match character range and "-": "-0-9"', t => {
 
 test('should match emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('\uD83C\uDF47-\uD83C\uDF53'); // U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('\u{1F347}', 0), {
         offsetEnd: 2,
         data: '🍇',
     });
-    t.deepEqual(parser.tryParse('\u{1F348}', 0), {
+    t.deepEqual(parser.tryParse('\u{1F348}\u{1F34C}', 0), {
         offsetEnd: 2,
         data: '🍈',
     });
-    t.deepEqual(parser.tryParse('\u{1F34C}', 0), {
-        offsetEnd: 2,
+    t.deepEqual(parser.tryParse('\u{1F348}\u{1F34C}', 2), {
+        offsetEnd: 4,
         data: '🍌',
     });
     t.deepEqual(parser.tryParse('\u{1F353}', 0), {
@@ -254,11 +263,21 @@ test('should match emoji (Unicode surrogate pair char) range', t => {
         undefined,
         'should not match surrogate char',
     );
+    t.is(
+        parser.tryParse('\u{1F348}\u{1F34C}', 1),
+        undefined,
+        'should not match surrogate char',
+    );
+    t.is(
+        parser.tryParse('\u{1F348}\u{1F34C}', 3),
+        undefined,
+        'should not match surrogate char',
+    );
 });
 
 test('should match inverted emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('^\uD83C\uDF47-\uD83C\uDF53'); // ! U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('x', 0), {
         offsetEnd: 1,
@@ -292,6 +311,22 @@ test('should match inverted emoji (Unicode surrogate pair char) range', t => {
         },
         'should match surrogate char',
     );
+    t.deepEqual(
+        parser.tryParse('\u{1F348}\u{1F34C}', 1),
+        {
+            offsetEnd: 2,
+            data: '\uDF48',
+        },
+        'should match surrogate char',
+    );
+    t.deepEqual(
+        parser.tryParse('\u{1F348}\u{1F34C}', 3),
+        {
+            offsetEnd: 4,
+            data: '\uDF4C',
+        },
+        'should match surrogate char',
+    );
 
     t.is(
         parser.tryParse('\u{1F347}', 0),
@@ -317,7 +352,7 @@ test('should match inverted emoji (Unicode surrogate pair char) range', t => {
 
 test('should match Unicode surrogate char range', t => {
     const parser = p.chars('\uDC00-\uDFFF\uD800-\uDBFF');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('\uD800', 0), {
         offsetEnd: 1,
@@ -347,13 +382,21 @@ test('should match Unicode surrogate char range', t => {
         },
         `should match emoji's high surrogate char`,
     );
+    t.deepEqual(
+        parser.tryParse('\uD83C\uDF47', 1),
+        {
+            offsetEnd: 2,
+            data: '\uDF47',
+        },
+        `should match emoji's low surrogate char`,
+    );
 
     t.is(parser.tryParse('x', 0), undefined);
 });
 
 test('should match inverted Unicode surrogate char range', t => {
     const parser = p.chars('^\uD800-\uDFFF');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('x', 0), {
         offsetEnd: 1,
@@ -378,7 +421,7 @@ test('should match inverted Unicode surrogate char range', t => {
 
 test('should match emoji and Unicode surrogate char range', t => {
     const parser = p.chars('\uD800-\uDFFF\uD83C\uDF47-\uD83C\uDF53'); // U+D800 - U+DFFF and U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('\uD800', 0), {
         offsetEnd: 1,
@@ -430,7 +473,7 @@ test('should not match empty string', t => {
 
 test('should not match "^"', t => {
     const parser = p.chars('^^');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.is(parser.tryParse('^', 0), undefined);
     t.deepEqual(parser.tryParse('abc', 0), {
@@ -441,7 +484,7 @@ test('should not match "^"', t => {
 
 test('should not match "-"', t => {
     const parser = p.chars('^-a');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.is(parser.tryParse('-', 0), undefined);
     t.is(parser.tryParse('a', 0), undefined);
@@ -451,9 +494,49 @@ test('should not match "-"', t => {
     });
 });
 
+test('should always match', t => {
+    const parser = p.chars('^');
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+
+    t.deepEqual(parser.tryParse('a', 0), {
+        offsetEnd: 1,
+        data: 'a',
+    });
+    t.deepEqual(parser.tryParse('123', 0), {
+        offsetEnd: 1,
+        data: '1',
+    });
+    t.deepEqual(parser.tryParse('^', 0), {
+        offsetEnd: 1,
+        data: '^',
+    });
+    t.deepEqual(parser.tryParse('-', 0), {
+        offsetEnd: 1,
+        data: '-',
+    });
+    t.deepEqual(parser.tryParse('\0', 0), {
+        offsetEnd: 1,
+        data: '\0',
+    });
+
+    t.is(parser.tryParse('', 0), undefined);
+});
+
+test('should not always match', t => {
+    const parser = p.chars('');
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+
+    t.is(parser.tryParse('', 0), undefined);
+    t.is(parser.tryParse('a', 0), undefined);
+    t.is(parser.tryParse('123', 0), undefined);
+    t.is(parser.tryParse('^', 0), undefined);
+    t.is(parser.tryParse('-', 0), undefined);
+    t.is(parser.tryParse('\0', 0), undefined);
+});
+
 test(String.raw`"\" is not an escape character`, t => {
     const parser = p.chars(String.raw`\-a`);
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 
     t.deepEqual(parser.tryParse('\\', 0), {
         offsetEnd: 1,
@@ -471,41 +554,252 @@ test(String.raw`"\" is not an escape character`, t => {
     );
 });
 
+function patternCombinations(...patterns: OneOrMoreArray<string>): string[] {
+    return [
+        ...new Set(
+            iterTools.flatMap(
+                patternList =>
+                    iterTools.map(
+                        p => p.join(''),
+                        iterTools.product(
+                            ...patternList.map(pattern => [
+                                pattern,
+                                [...pattern].reverse().join(''),
+                            ]),
+                        ),
+                    ),
+                iterTools.permutations(patterns),
+            ),
+        ),
+    ];
+}
+
+function patternTest(
+    patternsDef: Record<
+        string,
+        string | OneOrMoreArray<string | OneOrMoreArray<string>>
+    >,
+    implementation: (arg: {
+        pattern: string;
+        expectedPattern: string;
+        message: string;
+    }) => void,
+    patternsListConverter: (patternsList: string[]) => string[] = list => list,
+): void {
+    for (const [expectedPattern, patternsList] of Object.entries(patternsDef)) {
+        for (const patterns of typeof patternsList === 'string'
+            ? [patternsList]
+            : patternsList) {
+            for (const pattern of patternsListConverter(
+                typeof patterns === 'string'
+                    ? patternCombinations(patterns)
+                    : patternCombinations(...patterns),
+            )) {
+                implementation({
+                    pattern,
+                    expectedPattern,
+                    message: util.inspect(
+                        { pattern, expectedPattern },
+                        { breakLength: Infinity },
+                    ),
+                });
+            }
+        }
+    }
+}
+
+test('validate "pattern" property value', t => {
+    const p2 = new ParserGenerator();
+
+    patternTest(
+        {
+            a: 'a',
+            '-': '-',
+            'a-z': 'a-z',
+            '0-9a-f': [['0-9', 'a-f']],
+            'a-k': [['a-g', 'c-i', 'e-k']],
+            '0-9A-Z_a-z-': [['0-9', 'a-z', 'A-Z', '_', '-']],
+            '--9': '--9',
+            '*-9': ['*-9', ['-', '*-9']],
+            '!-*0-9-': [['!-*', '0-9', '-']],
+            '12': [['1', '2'], '1-2'],
+            '1-3': [['1', '2', '3'], ['12', '23'], '1-3'],
+            '1-3a-d': [
+                ['abcd', '123'],
+                ['ab', 'cd', '123'],
+                ['a-d', '123'],
+                ['abcd', '1-3'],
+                ['a-d', '1-3'],
+            ],
+        },
+        ({ pattern, expectedPattern, message }) => {
+            const parser = p.chars(pattern);
+            t.is(parser.pattern, expectedPattern, message);
+            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
+        },
+    );
+
+    patternTest(
+        {
+            '^a': 'a',
+            '^-': '-',
+            '^a-z': 'a-z',
+            '^0-9a-f': [['0-9', 'a-f']],
+            '^a-k': [['a-g', 'c-i', 'e-k']],
+            '^0-9A-Z_a-z-': [['0-9', 'a-z', 'A-Z', '_', '-']],
+            '^--9': '--9',
+            '^*-9': ['*-9', ['-', '*-9']],
+            '^!-*0-9-': [['!-*', '0-9', '-']],
+            '^12': [['1', '2'], '1-2'],
+            '^1-3': [['1', '2', '3'], ['12', '23'], '1-3'],
+            '^1-3a-d': [
+                ['abcd', '123'],
+                ['ab', 'cd', '123'],
+                ['a-d', '123'],
+                ['abcd', '1-3'],
+                ['a-d', '1-3'],
+            ],
+        },
+        ({ pattern, expectedPattern, message }) => {
+            const parser = p.chars(pattern);
+            t.is(parser.pattern, expectedPattern, message);
+            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
+        },
+        patternsList => patternsList.map(pattern => `^${pattern}`),
+    );
+});
+
+test('validate "pattern" property value: "^" should not be a pattern prefix', t => {
+    const p2 = new ParserGenerator();
+
+    patternTest(
+        {
+            ']^': [[']', '^'], [']-^']],
+            ']-_': [[']', '^', '_'], [']-_']],
+            '_^': [['^', '_'], ['^-_']],
+            '_^`': [['^', '_', '`'], ['^-`']],
+            '_-a^': [['^', '_', '`', 'a'], ['^-a']],
+            '_-f^': [['^-a', 'a-f'], ['^-f']],
+            'a-f^': [['^', 'a-f']],
+            'a-f^o-v': [['^', 'a-f', 'o-v']],
+            '0^': [['0', '^']],
+            '0^_': [
+                ['0', '^', '_'],
+                ['0', '^-_'],
+            ],
+            '0^-`': [
+                ['0', '^', '_', '`'],
+                ['0', '^-`'],
+            ],
+            '0^-a': [
+                ['0', '^', '_', '`', 'a'],
+                ['0', '^-a'],
+            ],
+            '0^-f': [
+                ['0', '^-a', 'a-f'],
+                ['0', '^-f'],
+            ],
+            '0^a-f': [['0', '^', 'a-f']],
+            '0^a-fo-v': [['0', '^', 'a-f', 'o-v']],
+            '0-9^-f': [['0-9', '^-f']],
+            '0-9A-Z^': [['0-9', 'A-Z', '^']],
+            '0-9A-Z^-z': [['0-9', 'A-Z', '^-f']],
+        },
+        ({ pattern, expectedPattern, message }) => {
+            const parser = p.chars(pattern);
+            t.is(parser.pattern, expectedPattern, message);
+            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
+        },
+        patternsList => patternsList.filter(pattern => !/^\^/.test(pattern)),
+    );
+
+    patternTest(
+        {
+            '^]^': [[']', '^'], [']-^']],
+            '^]-_': [[']', '^', '_'], [']-_']],
+            '^^_': [['^', '_'], ['^-_']],
+            '^^-`': [['^', '_', '`'], ['^-`']],
+            '^^-a': [['^', '_', '`', 'a'], ['^-a']],
+            '^^-f': [['^-a', 'a-f'], ['^-f']],
+            '^^a-f': [['^', 'a-f']],
+            '^^a-fo-v': [['^', 'a-f', 'o-v']],
+            '^0^': [['0', '^']],
+            '^0^_': [
+                ['0', '^', '_'],
+                ['0', '^-_'],
+            ],
+            '^0^-`': [
+                ['0', '^', '_', '`'],
+                ['0', '^-`'],
+            ],
+            '^0^-a': [
+                ['0', '^', '_', '`', 'a'],
+                ['0', '^-a'],
+            ],
+            '^0^-f': [
+                ['0', '^-a', 'a-f'],
+                ['0', '^-f'],
+            ],
+            '^0^a-f': [['0', '^', 'a-f']],
+            '^0^a-fo-v': [['0', '^', 'a-f', 'o-v']],
+            '^0-9^-f': [['0-9', '^-f']],
+            '^0-9A-Z^': [['0-9', 'A-Z', '^']],
+            '^0-9A-Z^-f': [['0-9', 'A-Z', '^-f']],
+        },
+        ({ pattern, expectedPattern, message }) => {
+            const parser = p.chars(pattern);
+            t.is(parser.pattern, expectedPattern, message);
+            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
+        },
+        patternsList => patternsList.map(pattern => `^${pattern}`),
+    );
+});
+
 test('if the arguments have the same value, they should return the same Parser object', t => {
     const p2 = new ParserGenerator();
-    const chars11 = p.chars('abcd123');
-    const chars12 = p.chars('abcd123');
-    const chars13 = p.chars('123a-d');
-    const chars1i1 = p.chars('^abcd123');
-    const chars1i2 = p.chars('^abcd123');
-    const chars1i3 = p.chars('^a-d1-3');
-    const chars21 = p2.chars('abcd123');
 
-    t.is(chars11, chars12);
-    t.is(chars1i1, chars1i2);
+    t.is(p.chars('abcd123'), p.chars('abcd123'));
+    t.is(p.chars('^abcd123'), p.chars('^abcd123'));
     t.is(
-        chars11,
-        chars13,
+        p.chars('abcdef'),
+        p.chars('a-f'),
         'If the set of characters is the same, the Parser object is also the same',
     );
     t.is(
-        chars1i1,
-        chars1i3,
+        p.chars('0-90-9'),
+        p.chars('0-9'),
+        'If the set of characters is the same, the Parser object is also the same',
+    );
+    t.is(
+        p.chars('0-93-7'),
+        p.chars('0-9'),
+        'If the set of characters is the same, the Parser object is also the same',
+    );
+    t.is(
+        p.chars('3-70-9'),
+        p.chars('0-9'),
+        'If the set of characters is the same, the Parser object is also the same',
+    );
+    t.is(
+        p.chars('0-45-9'),
+        p.chars('0-9'),
+        'If the set of characters is the same, the Parser object is also the same',
+    );
+    t.is(
+        p.chars('a-gc-ie-k'),
+        p.chars('a-k'),
+        'If the set of characters is the same, the Parser object is also the same',
+    );
+    t.is(
+        p.chars('^abcd123'),
+        p.chars('^a-d1-3'),
         'If the set of characters is the same, the Parser object is also the same',
     );
 
-    t.not(chars11, chars1i1);
+    t.not(p.chars('abcd123'), p.chars('^abcd123'));
     t.not(
-        chars11,
-        chars21,
+        p.chars('abcd123'),
+        p2.chars('abcd123'),
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
-
-    assertType<TypeEq<typeof chars11, Parser<string>>>();
-    assertType<TypeEq<typeof chars12, Parser<string>>>();
-    assertType<TypeEq<typeof chars13, Parser<string>>>();
-    assertType<TypeEq<typeof chars1i1, Parser<string>>>();
-    assertType<TypeEq<typeof chars1i2, Parser<string>>>();
-    assertType<TypeEq<typeof chars1i3, Parser<string>>>();
-    assertType<TypeEq<typeof chars21, Parser<string>>>();
 });
