@@ -219,12 +219,14 @@ const characterClassParserCacheMap = new WeakMap<
     Map<string, CharacterClassParser>
 >();
 
+interface CodePointRange {
+    minCodePoint: number;
+    maxCodePoint: number;
+}
+
 export class CharacterClassParser extends Parser<string> {
     readonly isInverse: boolean;
-    private readonly __codePointRanges: {
-        minCodePoint: number;
-        maxCodePoint: number;
-    }[];
+    private readonly __codePointRanges: CodePointRange[];
 
     constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
         super((input, offsetStart) => {
@@ -256,14 +258,94 @@ export class CharacterClassParser extends Parser<string> {
     get pattern(): string {
         return (
             (this.isInverse ? '^' : '') +
-            this.__codePointRanges
-                .map(({ minCodePoint, maxCodePoint }) =>
-                    minCodePoint === maxCodePoint
-                        ? String.fromCodePoint(minCodePoint)
-                        : String.fromCodePoint(minCodePoint) +
-                          '-' +
-                          String.fromCodePoint(maxCodePoint),
+            this.__normalizeCodePointRanges(this.__codePointRanges)
+                .reduce(
+                    (state, codePointRange, index, codePointRanges) => {
+                        const { minCodePoint, maxCodePoint } = codePointRange;
+                        let insertCodePointRange = true;
+
+                        if (
+                            index === 0 &&
+                            !this.isInverse &&
+                            minCodePoint === 0x005e
+                        ) {
+                            state.codePointRanges.push(
+                                ...this.__normalizeCodePointRanges([
+                                    {
+                                        ...codePointRange,
+                                        minCodePoint: minCodePoint + 1,
+                                    },
+                                ]),
+                            );
+                            state.appendSecond = {
+                                minCodePoint: minCodePoint,
+                                maxCodePoint: minCodePoint,
+                            };
+                            insertCodePointRange = false;
+                        }
+
+                        if (
+                            index !== 0 &&
+                            minCodePoint === maxCodePoint &&
+                            minCodePoint === 0x002d
+                        ) {
+                            state.appendAfterRangeOrEnd = codePointRange;
+                            insertCodePointRange = false;
+                        }
+
+                        if (insertCodePointRange) {
+                            state.codePointRanges.push(codePointRange);
+                        }
+                        if (
+                            state.appendSecond &&
+                            state.codePointRanges.length >= 1
+                        ) {
+                            state.codePointRanges.splice(
+                                1,
+                                0,
+                                state.appendSecond,
+                            );
+                            state.appendSecond = null;
+                        }
+                        if (state.appendAfterRangeOrEnd) {
+                            const lastCodePointRange =
+                                state.codePointRanges[
+                                    state.codePointRanges.length - 1
+                                ];
+                            const isAfterRange =
+                                lastCodePointRange.maxCodePoint -
+                                    lastCodePointRange.minCodePoint >=
+                                2;
+                            const isEnd = index === codePointRanges.length - 1;
+                            if (isAfterRange || isEnd) {
+                                state.codePointRanges.push(
+                                    state.appendAfterRangeOrEnd,
+                                );
+                                state.appendAfterRangeOrEnd = null;
+                            }
+                        }
+
+                        return state;
+                    },
+                    {
+                        codePointRanges: [] as CodePointRange[],
+                        appendSecond: null as CodePointRange | null,
+                        appendAfterRangeOrEnd: null as CodePointRange | null,
+                    },
                 )
+                .codePointRanges.map(({ minCodePoint, maxCodePoint }) => {
+                    const minChar = String.fromCodePoint(minCodePoint);
+                    if (minCodePoint === maxCodePoint) {
+                        return minChar;
+                    }
+
+                    const maxChar = String.fromCodePoint(maxCodePoint);
+                    if (maxCodePoint - minCodePoint === 1) {
+                        return `${minChar}${maxChar}`;
+                    }
+
+                    return `${minChar}-${maxChar}`;
+                })
                 .join('')
         );
     }
@@ -299,13 +381,8 @@ export class CharacterClassParser extends Parser<string> {
         return !this.isInverse ? null : String.fromCodePoint(codePoint);
     }
 
-    private __pattern2ranges(
-        pattern: string,
-    ): { minCodePoint: number; maxCodePoint: number }[] {
-        const codePointRanges: {
-            minCodePoint: number;
-            maxCodePoint: number;
-        }[] = [];
+    private __pattern2ranges(pattern: string): CodePointRange[] {
+        const codePointRanges: CodePointRange[] = [];
         const patternRegExp = /(.)-(.)|(.)/gsu;
 
         let match;
@@ -342,7 +419,14 @@ export class CharacterClassParser extends Parser<string> {
                 const prevRange = rangeList.pop();
                 if (!prevRange) return [range];
 
-                if (prevRange.maxCodePoint + 1 === range.minCodePoint) {
+                if (
+                    prevRange.minCodePoint <= range.minCodePoint &&
+                    range.maxCodePoint <= prevRange.maxCodePoint
+                ) {
+                    return [...rangeList, prevRange];
+                }
+
+                if (range.minCodePoint <= prevRange.maxCodePoint + 1) {
                     return [
                         ...rangeList,
                         {
@@ -354,6 +438,31 @@ export class CharacterClassParser extends Parser<string> {
 
                 return [...rangeList, prevRange, range];
             }, []);
+    }
+
+    private __normalizeCodePointRanges(
+        codePointRanges: CodePointRange[],
+    ): CodePointRange[] {
+        return codePointRanges.reduce<CodePointRange[]>(
+            (codePointRangesList, codePointRange) => {
+                const { minCodePoint, maxCodePoint } = codePointRange;
+                const newCodePointRangesList =
+                    minCodePoint + 1 === maxCodePoint
+                        ? [minCodePoint, maxCodePoint].map(codePoint => ({
+                              minCodePoint: codePoint,
+                              maxCodePoint: codePoint,
+                          }))
+                        : [codePointRange];
+                return [
+                    ...codePointRangesList,
+                    ...newCodePointRangesList,
+                ].filter(
+                    ({ minCodePoint, maxCodePoint }) =>
+                        minCodePoint <= maxCodePoint,
+                );
+            },
+            [],
+        );
     }
 }
 
