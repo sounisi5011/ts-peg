@@ -34,7 +34,13 @@
       "groupSlug": "code-formatter-packages"
     },
     {
-      "packageNames": ["ava", "ts-node", "typepark", "simple-statistics"],
+      "packageNames": [
+        "ava",
+        "ts-node",
+        "typepark",
+        "simple-statistics",
+        "iter-tools"
+      ],
       "groupName": "dependencies: test packages",
       "groupSlug": "tester-packages"
     },
