@@ -1,11 +1,8 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, {
-    ActionExecutionEnvironment,
-    Parser,
-    ParserGenerator,
-} from '../../../src';
+import p, { Parser, ParserGenerator } from '../../../src';
+import { ActionExecutionEnvironment } from '../../../src/parser';
 
 test('should convert result value', t => {
     const exp1 = p.any.action(char => char.length);
