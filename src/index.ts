@@ -422,7 +422,7 @@ export class ParserGenerator {
         });
     }
 
-    chars(chars: string): Parser<string> {
+    chars(chars: string): CharacterClassParser {
         return new CharacterClassParser(chars, this);
     }
 
