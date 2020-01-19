@@ -44,9 +44,9 @@ export const Factor = p.or(() => [
 
 export const Integer = p
     .label('integer')
-    .seq(() => [ws, p.range('0', '9').oneOrMore])
+    .seq(() => [ws, p.chars('0-9').oneOrMore])
     .action((_, { text }) => parseInt(text, 10));
 
-export const ws = p.label('whitespace').or(' ', '\t', '\n', '\r').zeroOrMore;
+export const ws = p.label('whitespace').chars(' \t\n\r').zeroOrMore;
 
 export default Expression;

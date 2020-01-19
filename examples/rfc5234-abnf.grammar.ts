@@ -30,13 +30,13 @@ function abnfStr(str: string): Parser<string> {
 // ----- B.1. Core Rules -----
 // See: https://tools.ietf.org/html/rfc5234#appendix-B.1
 
-export const ALPHA = p.or(p.range('\x41', '\x5A'), p.range('\x61', '\x7A')); // A-Z / a-z
+export const ALPHA = p.chars('\x41-\x5A\x61-\x7A'); // A-Z / a-z
 export const BIT = p.or(abnfStr('0'), abnfStr('1'));
-export const CHAR = p.range('\x01', '\x7F'); // any 7-bit US-ASCII character, excluding NUL
+export const CHAR = p.chars('\x01-\x7F'); // any 7-bit US-ASCII character, excluding NUL
 export const CR = p.str('\x0D'); // carriage return
 export const CRLF = p.seq(() => [CR, LF]); // Internet standard newline
-export const CTL = p.or(p.range('\x00', '\x1F'), '\x7F'); // controls
-export const DIGIT = p.range('\x30', '\x39'); // 0-9
+export const CTL = p.chars('\x00-\x1F\x7F'); // controls
+export const DIGIT = p.chars('\x30-\x39'); // 0-9
 export const DQUOTE = p.str('\x22'); // " (Double Quote)
 export const HEXDIG = p.or(
     DIGIT,
@@ -54,7 +54,7 @@ export const LWSP = p.zeroOrMore(() => [p.or(WSP, p.seq(CRLF, WSP))]);
 // Do not use when defining mail
 // headers and use with caution in
 // other contexts.
-export const OCTET = p.range('\x00', '\xFF'); // 8 bits of data
+export const OCTET = p.chars('\x00-\xFF'); // 8 bits of data
 export const SP = p.str('\x20');
-export const VCHAR = p.range('\x21', '\x7E'); // visible (printing) characters
+export const VCHAR = p.chars('\x21-\x7E'); // visible (printing) characters
 export const WSP = p.or(SP, HTAB); // white space

@@ -11,7 +11,7 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<['x', 'y', string][]>>>();
 }
 {
-    const parser = p.range('0', '9').zeroOrMore;
+    const parser = p.chars('0-9').zeroOrMore;
     assertType<TypeEq<typeof parser, Parser<string[]>>>();
 }
 
@@ -29,7 +29,7 @@ import p, { Parser } from '../../src';
     >();
 }
 {
-    const parser = p.range('0', '9').oneOrMore;
+    const parser = p.chars('0-9').oneOrMore;
     assertType<TypeEq<typeof parser, Parser<[string, ...string[]]>>>();
 }
 
@@ -42,6 +42,6 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<['x', 'y', string] | undefined>>>();
 }
 {
-    const parser = p.range('0', '9').optional;
+    const parser = p.chars('0-9').optional;
     assertType<TypeEq<typeof parser, Parser<string | undefined>>>();
 }

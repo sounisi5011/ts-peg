@@ -95,7 +95,7 @@ const number = p
     .seq(() => [minus.optional, int, frac.optional, exp.optional])
     .action((_, { text }) => parseFloat(text));
 const decimal_point = p.str('\x2E'); // .
-const digit1_9 = p.range('\x31', '\x39'); // 1-9
+const digit1_9 = p.chars('\x31-\x39'); // 1-9
 const e = p.or('\x65', '\x45'); // e E
 const exp = p.seq(() => [e, p.or(minus, plus).optional, DIGIT.oneOrMore]);
 const frac = p.seq(() => [decimal_point, DIGIT.oneOrMore]);
@@ -135,10 +135,6 @@ const char = p.or(() => [
 ]);
 const escape = p.str('\x5C'); // \
 const quotation_mark = p.str('\x22'); // "
-const unescaped = p.or(
-    p.range('\x20', '\x21'),
-    p.range('\x23', '\x5B'),
-    p.range('\x5D', '\u{10FFFF}'),
-);
+const unescaped = p.chars('\x20-\x21\x23-\x5B\x5D-\u{10FFFF}');
 
 export default JSON_text;

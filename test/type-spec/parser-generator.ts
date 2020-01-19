@@ -1,6 +1,6 @@
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser } from '../../src';
+import p, { CharacterClassParser, Parser } from '../../src';
 
 {
     const parser = p.any;
@@ -17,8 +17,8 @@ import p, { Parser } from '../../src';
 }
 
 {
-    const parser = p.range('a', 'z');
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    const parser = p.chars('a-z');
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
 }
 
 {
@@ -38,12 +38,12 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<['x', 'y', string][]>>>();
 }
 {
-    const parser = p.zeroOrMore(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.zeroOrMore(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<TypeEq<typeof parser, Parser<[string, '-', string][]>>>();
 }
 {
     const parser = p.zeroOrMore(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
+        () => [p.chars('A-Z'), '-', p.chars('0-9')] as const,
     );
     assertType<TypeEq<typeof parser, Parser<[string, '-', string][]>>>();
 }
@@ -88,7 +88,7 @@ import p, { Parser } from '../../src';
     >();
 }
 {
-    const parser = p.oneOrMore(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.oneOrMore(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<
         TypeEq<
             typeof parser,
@@ -97,11 +97,7 @@ import p, { Parser } from '../../src';
     >();
 }
 {
-    const parser = p.oneOrMore(() => [
-        p.range('A', 'Z'),
-        '-',
-        p.range('0', '9'),
-    ]);
+    const parser = p.oneOrMore(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
     assertType<
         TypeEq<
             typeof parser,
@@ -111,7 +107,7 @@ import p, { Parser } from '../../src';
 }
 {
     const parser = p.oneOrMore(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
+        () => [p.chars('A-Z'), '-', p.chars('0-9')] as const,
     );
     assertType<
         TypeEq<
@@ -148,24 +144,20 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<['x', 'y', string] | undefined>>>();
 }
 {
-    const parser = p.optional(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.optional(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<
         TypeEq<typeof parser, Parser<[string, '-', string] | undefined>>
     >();
 }
 {
-    const parser = p.optional(() => [
-        p.range('A', 'Z'),
-        '-',
-        p.range('0', '9'),
-    ]);
+    const parser = p.optional(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
     assertType<
         TypeEq<typeof parser, Parser<[string, string, string] | undefined>>
     >();
 }
 {
     const parser = p.optional(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
+        () => [p.chars('A-Z'), '-', p.chars('0-9')] as const,
     );
     assertType<
         TypeEq<typeof parser, Parser<[string, '-', string] | undefined>>
@@ -197,20 +189,16 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
-    const parser = p.followedBy(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.followedBy(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
-    const parser = p.followedBy(() => [
-        p.range('A', 'Z'),
-        '-',
-        p.range('0', '9'),
-    ]);
+    const parser = p.followedBy(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
     const parser = p.followedBy(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
+        () => [p.chars('A-Z'), '-', p.chars('0-9')] as const,
     );
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
@@ -240,20 +228,16 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
-    const parser = p.notFollowedBy(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.notFollowedBy(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
-    const parser = p.notFollowedBy(() => [
-        p.range('A', 'Z'),
-        '-',
-        p.range('0', '9'),
-    ]);
+    const parser = p.notFollowedBy(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
 {
     const parser = p.notFollowedBy(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
+        () => [p.chars('A-Z'), '-', p.chars('0-9')] as const,
     );
     assertType<TypeEq<typeof parser, Parser<undefined>>>();
 }
@@ -283,17 +267,15 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<['x', 'y', string]>>>();
 }
 {
-    const parser = p.seq(p.range('A', 'Z'), '-', p.range('0', '9'));
+    const parser = p.seq(p.chars('A-Z'), '-', p.chars('0-9'));
     assertType<TypeEq<typeof parser, Parser<[string, '-', string]>>>();
 }
 {
-    const parser = p.seq(() => [p.range('A', 'Z'), '-', p.range('0', '9')]);
+    const parser = p.seq(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
     assertType<TypeEq<typeof parser, Parser<[string, string, string]>>>();
 }
 {
-    const parser = p.seq(
-        () => [p.range('A', 'Z'), '-', p.range('0', '9')] as const,
-    );
+    const parser = p.seq(() => [p.chars('A-Z'), '-', p.chars('0-9')] as const);
     assertType<TypeEq<typeof parser, Parser<[string, '-', string]>>>();
 }
 
