@@ -214,6 +214,149 @@ export type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
+const characterClassParserCacheMap = new WeakMap<
+    ParserGenerator,
+    Map<string, CharacterClassParser>
+>();
+
+export class CharacterClassParser extends Parser<string> {
+    readonly isInverse: boolean;
+    private readonly __codePointRanges: {
+        minCodePoint: number;
+        maxCodePoint: number;
+    }[];
+
+    constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
+        super((input, offsetStart) => {
+            const matchChar = this.isMatch(
+                input.substring(offsetStart, offsetStart + 2),
+            );
+            return matchChar
+                ? { offsetEnd: offsetStart + matchChar.length, data: matchChar }
+                : undefined;
+        });
+
+        this.isInverse = charactersPattern.startsWith('^');
+        this.__codePointRanges = this.__pattern2ranges(
+            this.isInverse ? charactersPattern.substring(1) : charactersPattern,
+        );
+
+        let parserCacheMap = characterClassParserCacheMap.get(parserGenerator);
+        if (!parserCacheMap) {
+            parserCacheMap = new Map();
+            characterClassParserCacheMap.set(parserGenerator, parserCacheMap);
+        }
+
+        const pattern = this.pattern;
+        const cachedParser = parserCacheMap.get(pattern);
+        if (cachedParser) return cachedParser;
+        parserCacheMap.set(pattern, this);
+    }
+
+    get pattern(): string {
+        return (
+            (this.isInverse ? '^' : '') +
+            this.__codePointRanges
+                .map(({ minCodePoint, maxCodePoint }) =>
+                    minCodePoint === maxCodePoint
+                        ? String.fromCodePoint(minCodePoint)
+                        : String.fromCodePoint(minCodePoint) +
+                          '-' +
+                          String.fromCodePoint(maxCodePoint),
+                )
+                .join('')
+        );
+    }
+
+    isMatch(char: string): string | null {
+        const codePoint = char.codePointAt(0);
+        if (typeof codePoint !== 'number') return null;
+
+        if (
+            this.__codePointRanges.some(
+                ({ minCodePoint, maxCodePoint }) =>
+                    minCodePoint <= codePoint && codePoint <= maxCodePoint,
+            )
+        ) {
+            return !this.isInverse ? String.fromCodePoint(codePoint) : null;
+        }
+
+        if (!this.isInverse) {
+            const charCode = char.charCodeAt(0);
+            if (typeof charCode === 'number') {
+                if (
+                    this.__codePointRanges.some(
+                        ({ minCodePoint, maxCodePoint }) =>
+                            minCodePoint <= charCode &&
+                            charCode <= maxCodePoint,
+                    )
+                ) {
+                    return String.fromCodePoint(charCode);
+                }
+            }
+        }
+
+        return !this.isInverse ? null : String.fromCodePoint(codePoint);
+    }
+
+    private __pattern2ranges(
+        pattern: string,
+    ): { minCodePoint: number; maxCodePoint: number }[] {
+        const codePointRanges: {
+            minCodePoint: number;
+            maxCodePoint: number;
+        }[] = [];
+        const patternRegExp = /(.)-(.)|(.)/gsu;
+
+        let match;
+        while ((match = patternRegExp.exec(pattern))) {
+            const [, char1, char2, singleChar] = match;
+            if (singleChar) {
+                const code = singleChar.codePointAt(0);
+                if (typeof code === 'number') {
+                    codePointRanges.push({
+                        minCodePoint: code,
+                        maxCodePoint: code,
+                    });
+                }
+            } else {
+                const code1 = char1.codePointAt(0);
+                const code2 = char2.codePointAt(0);
+                if (typeof code1 === 'number' && typeof code2 === 'number') {
+                    codePointRanges.push({
+                        minCodePoint: Math.min(code1, code2),
+                        maxCodePoint: Math.max(code1, code2),
+                    });
+                }
+            }
+        }
+
+        return codePointRanges
+            .sort((a, b) => {
+                const minDiff = a.minCodePoint - b.minCodePoint;
+                return minDiff !== 0
+                    ? minDiff
+                    : a.maxCodePoint - b.maxCodePoint;
+            })
+            .reduce<typeof codePointRanges>((rangeList, range) => {
+                const prevRange = rangeList.pop();
+                if (!prevRange) return [range];
+
+                if (prevRange.maxCodePoint + 1 === range.minCodePoint) {
+                    return [
+                        ...rangeList,
+                        {
+                            minCodePoint: prevRange.minCodePoint,
+                            maxCodePoint: range.maxCodePoint,
+                        },
+                    ];
+                }
+
+                return [...rangeList, prevRange, range];
+            }, []);
+    }
+}
+
 interface StringParserCacheMap extends Map<string, Parser<string>> {
     get<T>(key: T): Parser<T> | undefined;
     set<T>(key: T, value: Parser<T>): this;
@@ -277,6 +420,10 @@ export class ParserGenerator {
             }
             return undefined;
         });
+    }
+
+    chars(chars: string): Parser<string> {
+        return new CharacterClassParser(chars, this);
     }
 
     zeroOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
