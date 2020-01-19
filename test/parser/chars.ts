@@ -225,6 +225,46 @@ test('should match character range and "-": "-0-9"', t => {
     t.is(parser.tryParse('😊', 0), undefined);
 });
 
+test('should match all ASCII characters, including control characters', t => {
+    const allAsciiChars = [...Array(0x80).keys()]
+        .map(c => String.fromCodePoint(c))
+        .join('');
+
+    const parser = p.chars(allAsciiChars.replace(/-/g, '') + '-');
+    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+
+    for (const controlChar of allAsciiChars) {
+        const message = util.inspect(
+            { controlChar },
+            { breakLength: Infinity },
+        );
+        t.deepEqual(
+            parser.tryParse(controlChar, 0),
+            {
+                offsetEnd: 1,
+                data: controlChar,
+            },
+            message,
+        );
+        t.deepEqual(
+            parser.tryParse(controlChar + 'x', 0),
+            {
+                offsetEnd: 1,
+                data: controlChar,
+            },
+            message,
+        );
+        t.deepEqual(
+            parser.tryParse('x' + controlChar, 1),
+            {
+                offsetEnd: 2,
+                data: controlChar,
+            },
+            message,
+        );
+    }
+});
+
 test('should match emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('\uD83C\uDF47-\uD83C\uDF53'); // U+1F347 - U+1F353
     assertType<TypeEq<typeof parser, CharacterClassParser>>();
@@ -584,25 +624,39 @@ function patternTest(
         expectedPattern: string;
         message: string;
     }) => void,
-    patternsListConverter: (patternsList: string[]) => string[] = list => list,
+    patternsListConverter: (
+        patternsList: string[],
+        expectedPattern: string,
+    ) => (
+        | string
+        | { patternsList: string[]; expectedPattern: string }
+    )[] = list => list,
 ): void {
     for (const [expectedPattern, patternsList] of Object.entries(patternsDef)) {
         for (const patterns of typeof patternsList === 'string'
             ? [patternsList]
             : patternsList) {
-            for (const pattern of patternsListConverter(
+            const convertedPatterns = patternsListConverter(
                 typeof patterns === 'string'
                     ? patternCombinations(patterns)
                     : patternCombinations(...patterns),
-            )) {
-                implementation({
-                    pattern,
-                    expectedPattern,
-                    message: util.inspect(
-                        { pattern, expectedPattern },
-                        { breakLength: Infinity },
-                    ),
-                });
+                expectedPattern,
+            ).map(pattern =>
+                typeof pattern === 'string'
+                    ? { patternsList: [pattern], expectedPattern }
+                    : pattern,
+            );
+            for (const { patternsList, expectedPattern } of convertedPatterns) {
+                for (const pattern of patternsList) {
+                    implementation({
+                        pattern,
+                        expectedPattern,
+                        message: util.inspect(
+                            { pattern, expectedPattern },
+                            { breakLength: Infinity },
+                        ),
+                    });
+                }
             }
         }
     }
@@ -616,12 +670,19 @@ test('validate "pattern" property value', t => {
             a: 'a',
             '-': '-',
             'a-z': 'a-z',
+            '0-9': [
+                ['0-9', '0-9'],
+                ['0-9', '3-7'],
+                ['0-4', '4-9'],
+                ['0-4', '5-9'],
+            ],
+            '0-46-9': [['0-4', '6-9']],
             '0-9a-f': [['0-9', 'a-f']],
             'a-k': [['a-g', 'c-i', 'e-k']],
-            '0-9A-Z_a-z-': [['0-9', 'a-z', 'A-Z', '_', '-']],
+            '-0-9A-Z_a-z': [['0-9', 'a-z', 'A-Z', '_', '-']],
             '--9': '--9',
             '*-9': ['*-9', ['-', '*-9']],
-            '!-*0-9-': [['!-*', '0-9', '-']],
+            '!-*-0-9': [['!-*', '0-9', '-']],
             '12': [['1', '2'], '1-2'],
             '1-3': [['1', '2', '3'], ['12', '23'], '1-3'],
             '1-3a-d': [
@@ -631,41 +692,37 @@ test('validate "pattern" property value', t => {
                 ['abcd', '1-3'],
                 ['a-d', '1-3'],
             ],
+            // see https://github.com/tc39/proposal-regexp-dotall-flag
+            '\u000A': '\u000A',
+            '\u000B': '\u000B',
+            '\u000C': '\u000C',
+            '\u000D': '\u000D',
+            '\u000A\u000D': '\r\n',
+            '\u0085': '\u0085',
+            '\u2028': '\u2028',
+            '\u2029': '\u2029',
         },
         ({ pattern, expectedPattern, message }) => {
             const parser = p.chars(pattern);
             t.is(parser.pattern, expectedPattern, message);
             t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
         },
-    );
-
-    patternTest(
-        {
-            '^a': 'a',
-            '^-': '-',
-            '^a-z': 'a-z',
-            '^0-9a-f': [['0-9', 'a-f']],
-            '^a-k': [['a-g', 'c-i', 'e-k']],
-            '^0-9A-Z_a-z-': [['0-9', 'a-z', 'A-Z', '_', '-']],
-            '^--9': '--9',
-            '^*-9': ['*-9', ['-', '*-9']],
-            '^!-*0-9-': [['!-*', '0-9', '-']],
-            '^12': [['1', '2'], '1-2'],
-            '^1-3': [['1', '2', '3'], ['12', '23'], '1-3'],
-            '^1-3a-d': [
-                ['abcd', '123'],
-                ['ab', 'cd', '123'],
-                ['a-d', '123'],
-                ['abcd', '1-3'],
-                ['a-d', '1-3'],
-            ],
+        (patterns, expectedPattern) => {
+            const patternsList = patterns.filter(
+                pattern =>
+                    !(
+                        expectedPattern === '-0-9A-Z_a-z' &&
+                        pattern.includes('_-')
+                    ),
+            );
+            return [
+                { expectedPattern, patternsList },
+                {
+                    expectedPattern: `^${expectedPattern}`,
+                    patternsList: patternsList.map(pattern => `^${pattern}`),
+                },
+            ];
         },
-        ({ pattern, expectedPattern, message }) => {
-            const parser = p.chars(pattern);
-            t.is(parser.pattern, expectedPattern, message);
-            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
-        },
-        patternsList => patternsList.map(pattern => `^${pattern}`),
     );
 });
 
@@ -703,7 +760,7 @@ test('validate "pattern" property value: "^" should not be a pattern prefix', t 
             '0^a-fo-v': [['0', '^', 'a-f', 'o-v']],
             '0-9^-f': [['0-9', '^-f']],
             '0-9A-Z^': [['0-9', 'A-Z', '^']],
-            '0-9A-Z^-z': [['0-9', 'A-Z', '^-f']],
+            '0-9A-Z^-f': [['0-9', 'A-Z', '^-f']],
         },
         ({ pattern, expectedPattern, message }) => {
             const parser = p.chars(pattern);
@@ -752,6 +809,66 @@ test('validate "pattern" property value: "^" should not be a pattern prefix', t 
             t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
         },
         patternsList => patternsList.map(pattern => `^${pattern}`),
+    );
+});
+
+test('validate "pattern" property value: "-" should be a pattern or character range prefix or suffix', t => {
+    const p2 = new ParserGenerator();
+
+    patternTest(
+        {
+            '-': ['-'],
+            '--9': ['--9'],
+            '!--': ['!--'],
+            '!9-': [['!', '-', '9']],
+            ',9-': [[',', '-', '9']],
+            '!.-': [['!', '-', '.']],
+            ',-.': [[',', '-', '.']], // "," and "-" and "."  =  U+002C and U+002D and U+002E  =  U+002C - U+002E  =  "," - "."
+            '!.a-z-': [['!', '-', '.', 'a-z']],
+            ',-.a-z': [[',', '-', '.', 'a-z']],
+            '!.0-9-a-z': [['!', '-', '.', '0-9', 'a-z']],
+            ',-.0-9a-z': [[',', '-', '.', '0-9', 'a-z']],
+            '!-%*/A-Z-': [['!-%', '*', '-', '/', 'A-Z']],
+            '!-%*/A-Z-a-z': [['!-%', '*', '-', '/', 'A-Z', 'a-z']],
+            '!-%*/1-9-A-Z': [['!-%', '*', '-', '/', '1-9', 'A-Z']],
+            '!-%*/1-9-A-Za-z': [['!-%', '*', '-', '/', '1-9', 'A-Z', 'a-z']],
+            '!-%-^z': [['!-%', '-', '^', 'z']],
+        },
+        ({ pattern, expectedPattern, message }) => {
+            const parser = p.chars(pattern);
+            t.is(parser.pattern, expectedPattern, message);
+            t.is(p2.chars(parser.pattern).pattern, expectedPattern, message);
+        },
+        (patternsList, expectedPattern) => {
+            const expectedPatternParts = new Set(
+                expectedPattern.match(/.-.|./gsu) || [],
+            );
+            if (expectedPatternParts.has(',-.')) {
+                expectedPatternParts.add(',');
+                expectedPatternParts.add('-');
+                expectedPatternParts.add('.');
+            }
+
+            const newPatternsList = patternsList.filter(pattern =>
+                (pattern.match(/.-.|./gsu) || []).every(
+                    part =>
+                        expectedPatternParts.has(part) ||
+                        expectedPatternParts.has([...part].reverse().join('')),
+                ),
+            );
+            return [
+                {
+                    expectedPattern,
+                    patternsList: newPatternsList.filter(
+                        pattern => !/^\^/.test(pattern),
+                    ),
+                },
+                {
+                    expectedPattern: `^${expectedPattern}`,
+                    patternsList: newPatternsList.map(pattern => `^${pattern}`),
+                },
+            ];
+        },
     );
 });
 
