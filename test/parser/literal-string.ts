@@ -1,7 +1,17 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../src';
+import p, {
+    LiteralStringParser,
+    Parser,
+    ParserGenerator,
+    ParserResult,
+} from '../../src';
+
+assertType<TypeEq<LiteralStringParser<string>, Parser<string>>>();
+assertType<TypeEq<LiteralStringParser<'foo'>, Parser<'foo'>>>();
+assertType<TypeEq<ParserResult<LiteralStringParser<string>>, string>>();
+assertType<TypeEq<ParserResult<LiteralStringParser<'bar'>>, 'bar'>>();
 
 test('should match string', t => {
     t.deepEqual(p.str('hoge').tryParse('hoge fuga', 0), {
@@ -59,12 +69,20 @@ test('if the arguments have the same value, they should return the same Parser o
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
 
+    assertType<TypeEq<typeof str1H1, LiteralStringParser<'hoge'>>>();
     assertType<TypeEq<typeof str1H1, Parser<'hoge'>>>();
+    assertType<TypeEq<typeof str1F1, LiteralStringParser<'fuga'>>>();
     assertType<TypeEq<typeof str1F1, Parser<'fuga'>>>();
+    assertType<TypeEq<typeof str1H2, LiteralStringParser<'hoge'>>>();
     assertType<TypeEq<typeof str1H2, Parser<'hoge'>>>();
+    assertType<TypeEq<typeof str1F2, LiteralStringParser<'fuga'>>>();
     assertType<TypeEq<typeof str1F2, Parser<'fuga'>>>();
+    assertType<TypeEq<typeof str2H1, LiteralStringParser<'hoge'>>>();
     assertType<TypeEq<typeof str2H1, Parser<'hoge'>>>();
+    assertType<TypeEq<typeof str2F1, LiteralStringParser<'fuga'>>>();
     assertType<TypeEq<typeof str2F1, Parser<'fuga'>>>();
+    assertType<TypeEq<typeof str2H2, LiteralStringParser<'hoge'>>>();
     assertType<TypeEq<typeof str2H2, Parser<'hoge'>>>();
+    assertType<TypeEq<typeof str2F2, LiteralStringParser<'fuga'>>>();
     assertType<TypeEq<typeof str2F2, Parser<'fuga'>>>();
 });
