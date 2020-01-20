@@ -43,7 +43,7 @@ const value: Parser<JSONValue> = p.or(() => [
     string,
 ]);
 const false_ = p.str('\x66\x61\x6c\x73\x65').action(() => false); // false
-const null_ = p.str('\x6e\x75\x6c\x6c').action<null>(() => null); // null
+const null_ = p.str('\x6e\x75\x6c\x6c').action(() => null); // null
 const true_ = p.str('\x74\x72\x75\x65').action(() => true); // true
 
 // ----- 4. Objects -----
