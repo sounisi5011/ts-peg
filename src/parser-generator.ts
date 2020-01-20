@@ -1,4 +1,5 @@
 import Parser, { ParseFunc, ParserResult } from './parser';
+import { AnyCharacterParser } from './parser/any-character';
 import CharacterClassParser from './parser/character-class';
 import {
     isReadonlyOrWritableArray,
@@ -23,16 +24,8 @@ interface StringParserCacheMap extends Map<string, Parser<string>> {
 }
 
 export default class ParserGenerator {
-    private __anyCache?: Parser<string>;
-    get any(): Parser<string> {
-        if (this.__anyCache) return this.__anyCache;
-        return (this.__anyCache = new Parser((input, offsetStart) => {
-            // Note: Use a string iterator to retrieve Unicode surrogate pair one character (eg, emoji, old kanji, etc.).
-            for (const char of input.substring(offsetStart, offsetStart + 2)) {
-                return { offsetEnd: offsetStart + char.length, data: char };
-            }
-            return undefined;
-        }));
+    get any(): AnyCharacterParser {
+        return new AnyCharacterParser(this);
     }
 
     private readonly __strParserCacheMap: StringParserCacheMap = new Map();
