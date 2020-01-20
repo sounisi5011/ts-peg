@@ -61,6 +61,16 @@ class CodePointRange {
         return this.minCodePoint <= codePoint && codePoint <= this.maxCodePoint;
     }
 
+    exclude(codePoint: number): CodePointRange[] {
+        if (!this.has(codePoint)) return [this];
+        return ([
+            [this.minCodePoint, codePoint - 1],
+            [codePoint + 1, this.maxCodePoint],
+        ] as const)
+            .filter(([min, max]) => min <= max)
+            .map(([min, max]) => new CodePointRange(min, max));
+    }
+
     toString(): string {
         const minChar = String.fromCodePoint(this.minCodePoint);
         if (this.length === 1) {
@@ -144,16 +154,11 @@ class CodePointRangeSet {
             const { minCodePoint } = codePointRange;
 
             if (!isInverse && index === 0 && minCodePoint === 0x005e) {
-                if (codePointRange.length >= 2) {
-                    codePointRanges.push(
-                        ...this.__splitTwoCharsCodePointRanges([
-                            new CodePointRange(
-                                minCodePoint + 1,
-                                codePointRange.maxCodePoint,
-                            ),
-                        ]),
-                    );
-                }
+                codePointRanges.push(
+                    ...this.__splitTwoCharsCodePointRanges(
+                        codePointRange.exclude(minCodePoint),
+                    ),
+                );
                 appendSecond = new CodePointRange(minCodePoint);
             } else if (
                 index !== 0 &&
