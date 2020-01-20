@@ -59,36 +59,20 @@ export default class Parser<TResult> {
     private __zeroOrMoreCache?: Parser<TResult[]>;
     get zeroOrMore(): Parser<TResult[]> {
         if (this.__zeroOrMoreCache) return this.__zeroOrMoreCache;
-        return (this.__zeroOrMoreCache = new Parser((input, offsetStart) => {
-            const data: TResult[] = [];
-
-            let result;
-            let offset = offsetStart;
-            while ((result = this.tryParse(input, offset))) {
-                data.push(result.data);
-                offset = result.offsetEnd;
-            }
-
-            return { offsetEnd: offset, data };
-        }));
+        return (this.__zeroOrMoreCache = new Parser((input, offsetStart) =>
+            this.__repetitionsParse(input, offsetStart),
+        ));
     }
 
     private __oneOrMoreCache?: Parser<OneOrMoreTuple<TResult>>;
     get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
         if (this.__oneOrMoreCache) return this.__oneOrMoreCache;
         return (this.__oneOrMoreCache = new Parser((input, offsetStart) => {
-            const data: TResult[] = [];
-
-            let result;
-            let offset = offsetStart;
-            while ((result = this.tryParse(input, offset))) {
-                data.push(result.data);
-                offset = result.offsetEnd;
-            }
-
-            return isOneOrMoreTuple(data)
-                ? { offsetEnd: offset, data }
-                : undefined;
+            const { data, offsetEnd } = this.__repetitionsParse(
+                input,
+                offsetStart,
+            );
+            return isOneOrMoreTuple(data) ? { offsetEnd, data } : undefined;
         }));
     }
 
@@ -180,6 +164,23 @@ export default class Parser<TResult> {
         memoStore.set(offsetStart, { result });
 
         return result;
+    }
+
+    private __repetitionsParse(
+        input: string,
+        offsetStart: number,
+    ): { offsetEnd: number; data: TResult[] } {
+        const results: TResult[] = [];
+        let result;
+        let offset = offsetStart;
+        while ((result = this.tryParse(input, offset))) {
+            results.push(result.data);
+            offset = result.offsetEnd;
+        }
+        return {
+            offsetEnd: offset,
+            data: results,
+        };
     }
 }
 
