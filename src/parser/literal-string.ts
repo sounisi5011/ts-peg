@@ -1,5 +1,5 @@
-import ParserGenerator from '../parser-generator';
-import Parser from '.';
+import { ParserGenerator } from '../parser-generator';
+import { Parser } from '.';
 
 interface LiteralStringParserMapType
     extends Map<string, LiteralStringParser<string>> {

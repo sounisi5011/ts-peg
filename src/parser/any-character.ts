@@ -1,5 +1,5 @@
-import ParserGenerator from '../parser-generator';
-import Parser from '.';
+import { ParserGenerator } from '../parser-generator';
+import { Parser } from '.';
 
 const anyCharacterParserCacheMap = new WeakMap<
     ParserGenerator,

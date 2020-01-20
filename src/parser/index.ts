@@ -45,7 +45,7 @@ interface ActionParserCacheMap extends WeakMap<Function, Parser<unknown>> {
     set<T>(key: (...args: any) => T, value: Parser<T>): this;
 }
 
-export default class Parser<TResult> {
+export class Parser<TResult> {
     private readonly __parseFunc: ParseFunc<TResult>;
     private readonly __memoMap: Map<
         string,

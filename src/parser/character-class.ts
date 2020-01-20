@@ -1,7 +1,7 @@
-import ParserGenerator from '../parser-generator';
+import { ParserGenerator } from '../parser-generator';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 import { matchAll } from '../utils';
-import Parser from '.';
+import { Parser } from '.';
 
 const characterClassParserCacheMap = new WeakMap<
     ParserGenerator,
@@ -230,7 +230,7 @@ class CodePointRangeSet {
     }
 }
 
-export default class CharacterClassParser extends Parser<string> {
+export class CharacterClassParser extends Parser<string> {
     readonly isInverse: boolean;
     private readonly __codePointRanges: CodePointRangeSet;
 

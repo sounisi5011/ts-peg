@@ -1,6 +1,6 @@
-import Parser, { ParseFunc, ParserResult } from './parser';
+import { ParseFunc, Parser, ParserResult } from './parser';
 import { AnyCharacterParser } from './parser/any-character';
-import CharacterClassParser from './parser/character-class';
+import { CharacterClassParser } from './parser/character-class';
 import { LiteralStringParser } from './parser/literal-string';
 import {
     isReadonlyOrWritableArray,
@@ -19,7 +19,7 @@ type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
-export default class ParserGenerator {
+export class ParserGenerator {
     get any(): AnyCharacterParser {
         return new AnyCharacterParser(this);
     }
