@@ -1,7 +1,16 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../src';
+import p, {
+    AnyCharacterParser,
+    Parser,
+    ParserGenerator,
+    ParserResult,
+} from '../../src';
+
+assertType<TypeEq<typeof p.any, AnyCharacterParser>>();
+assertType<TypeEq<typeof p.any, Parser<string>>>();
+assertType<TypeEq<ParserResult<typeof p.any>, string>>();
 
 test('should match one character', t => {
     t.deepEqual(p.any.tryParse('abc', 0), {
@@ -83,7 +92,11 @@ test('getter property "any" should return the same object', t => {
     );
 
     assertType<TypeEq<typeof any11, Parser<string>>>();
+    assertType<TypeEq<typeof any11, AnyCharacterParser>>();
     assertType<TypeEq<typeof any12, Parser<string>>>();
+    assertType<TypeEq<typeof any12, AnyCharacterParser>>();
     assertType<TypeEq<typeof any21, Parser<string>>>();
+    assertType<TypeEq<typeof any21, AnyCharacterParser>>();
     assertType<TypeEq<typeof any22, Parser<string>>>();
+    assertType<TypeEq<typeof any22, AnyCharacterParser>>();
 });
