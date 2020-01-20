@@ -1,6 +1,7 @@
 import Parser, { ParseFunc, ParserResult } from './parser';
 import { AnyCharacterParser } from './parser/any-character';
 import CharacterClassParser from './parser/character-class';
+import { LiteralStringParser } from './parser/literal-string';
 import {
     isReadonlyOrWritableArray,
     OneOrMoreReadonlyTuple,
@@ -18,28 +19,13 @@ type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
-interface StringParserCacheMap extends Map<string, Parser<string>> {
-    get<T>(key: T): Parser<T> | undefined;
-    set<T>(key: T, value: Parser<T>): this;
-}
-
 export default class ParserGenerator {
     get any(): AnyCharacterParser {
         return new AnyCharacterParser(this);
     }
 
-    private readonly __strParserCacheMap: StringParserCacheMap = new Map();
-    str<T extends string>(str: T): Parser<T> {
-        let cachedParser = this.__strParserCacheMap.get(str);
-        if (cachedParser) return cachedParser;
-
-        cachedParser = new Parser((input, offsetStart) =>
-            input.startsWith(str, offsetStart)
-                ? { offsetEnd: offsetStart + str.length, data: str }
-                : undefined,
-        );
-        this.__strParserCacheMap.set(str, cachedParser);
-        return cachedParser;
+    str<T extends string>(str: T): LiteralStringParser<T> {
+        return new LiteralStringParser(str, this);
     }
 
     range(str1: string, str2: string): Parser<string> {
