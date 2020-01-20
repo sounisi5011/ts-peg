@@ -1,5 +1,6 @@
 import ParserGenerator from '../parser-generator';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
+import { matchAll } from '../utils';
 import Parser from '.';
 
 const characterClassParserCacheMap = new WeakMap<
@@ -82,21 +83,20 @@ class CodePointRangeSet {
 
     static fromPattern(pattern: string): CodePointRangeSet {
         const codePointRanges = new this();
-        const patternRegExp = /(.)-(.)|(.)/gsu;
 
-        let match;
-        while ((match = patternRegExp.exec(pattern))) {
-            const [, char1, char2, singleChar] = match;
-            if (singleChar) {
-                const code = singleChar.codePointAt(0);
-                if (typeof code === 'number')
-                    codePointRanges.add(new CodePointRange(code));
-            } else {
-                const code1 = char1.codePointAt(0);
-                const code2 = char2.codePointAt(0);
-                if (typeof code1 === 'number' && typeof code2 === 'number')
-                    codePointRanges.add(new CodePointRange(code1, code2));
-            }
+        for (const match of matchAll(pattern, /(.)(?:-(.))?/gsu)) {
+            const [, char1, char2] = match;
+
+            const code1 = char1.codePointAt(0);
+            if (typeof code1 !== 'number') continue;
+
+            const code2 = char2?.codePointAt(0);
+
+            codePointRanges.add(
+                typeof code2 === 'number'
+                    ? new CodePointRange(code1, code2)
+                    : new CodePointRange(code1),
+            );
         }
 
         return codePointRanges;
