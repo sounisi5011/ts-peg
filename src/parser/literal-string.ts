@@ -1,5 +1,5 @@
 import { ParserGenerator } from '../parser-generator';
-import { Parser } from '.';
+import { Parser, ParseResult } from '.';
 
 interface LiteralStringParserMapType
     extends Map<string, LiteralStringParser<string>> {
@@ -13,19 +13,15 @@ const LiteralStringParserCacheMap = new WeakMap<
 >();
 
 export class LiteralStringParser<T extends string> extends Parser<T> {
+    private readonly __literalString: T;
+
     constructor(literalString: T, parserGenerator: ParserGenerator) {
         if (typeof literalString !== 'string') {
             throw new TypeError('first argument must be a string');
         }
 
-        super((input, offsetStart) =>
-            input.startsWith(literalString, offsetStart)
-                ? {
-                      offsetEnd: offsetStart + literalString.length,
-                      data: literalString,
-                  }
-                : undefined,
-        );
+        super();
+        this.__literalString = literalString;
 
         let parserCacheMap = LiteralStringParserCacheMap.get(parserGenerator);
         if (!parserCacheMap) {
@@ -36,5 +32,14 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         const cachedParser = parserCacheMap.get(literalString);
         if (cachedParser) return cachedParser;
         parserCacheMap.set(literalString, this);
+    }
+
+    protected __parse(input: string, offsetStart: number): ParseResult<T> {
+        return input.startsWith(this.__literalString, offsetStart)
+            ? {
+                  offsetEnd: offsetStart + this.__literalString.length,
+                  data: this.__literalString,
+              }
+            : undefined;
     }
 }

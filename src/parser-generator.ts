@@ -1,4 +1,9 @@
-import { ParseFunc, Parser, ParserResult } from './parser';
+import {
+    CustomizableParser,
+    ParseFunc,
+    Parser,
+    ParserResultDataType,
+} from './parser';
 import { AnyCharacterParser } from './parser/any-character';
 import { CharacterClassParser } from './parser/character-class';
 import { LiteralStringParser } from './parser/literal-string';
@@ -11,7 +16,7 @@ import {
 type ParserLike = Parser<unknown> | string;
 
 type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
-    ? ParserResult<T>
+    ? ParserResultDataType<T>
     : T;
 type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
     -readonly [P in keyof T]: T[P] extends ParserLike
@@ -44,7 +49,8 @@ export class ParserGenerator {
         const minCodePoint = Math.min(codePoint1, codePoint2);
         const maxCodePoint = Math.max(codePoint1, codePoint2);
 
-        return new Parser((input, offsetStart) => {
+        // TODO: Rewrite to code that does not use CustomizableParser
+        return new CustomizableParser((input, offsetStart) => {
             const currentCodePoint = input.codePointAt(offsetStart);
             if (
                 typeof currentCodePoint === 'number' &&
@@ -87,7 +93,8 @@ export class ParserGenerator {
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
-        return new Parser((input, offsetStart) =>
+        // TODO: Rewrite to code that does not use CustomizableParser
+        return new CustomizableParser((input, offsetStart) =>
             exp.tryParse(input, offsetStart)
                 ? { offsetEnd: offsetStart, data: undefined }
                 : undefined,
@@ -98,7 +105,8 @@ export class ParserGenerator {
         ...args: T | [() => T]
     ): Parser<undefined> {
         const exp = this.seq(...args);
-        return new Parser((input, offsetStart) =>
+        // TODO: Rewrite to code that does not use CustomizableParser
+        return new CustomizableParser((input, offsetStart) =>
             exp.tryParse(input, offsetStart)
                 ? undefined
                 : { offsetEnd: offsetStart, data: undefined },
@@ -195,7 +203,8 @@ export class ParserGenerator {
         const [firstArg] = args;
 
         if (typeof firstArg === 'function' && !(firstArg instanceof Parser)) {
-            return new Parser((...parseArgs) => {
+            // TODO: Rewrite to code that does not use CustomizableParser
+            return new CustomizableParser((...parseArgs) => {
                 const exps = firstArg();
                 if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
                     throw new TypeError(
@@ -214,6 +223,9 @@ export class ParserGenerator {
             args,
             'Only string values and Parser objects can be specified in the arguments',
         );
-        return new Parser((...parseArgs) => callback(args, ...parseArgs));
+        // TODO: Rewrite to code that does not use CustomizableParser
+        return new CustomizableParser((...parseArgs) =>
+            callback(args, ...parseArgs),
+        );
     }
 }

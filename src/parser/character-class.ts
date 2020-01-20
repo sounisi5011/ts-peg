@@ -1,7 +1,7 @@
 import { ParserGenerator } from '../parser-generator';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 import { matchAll } from '../utils';
-import { Parser } from '.';
+import { Parser, ParseResult } from '.';
 
 const characterClassParserCacheMap = new WeakMap<
     ParserGenerator,
@@ -235,12 +235,7 @@ export class CharacterClassParser extends Parser<string> {
     private readonly __codePointRanges: CodePointRangeSet;
 
     constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
-        super((input, offsetStart) => {
-            const matchChar = this.isMatch(input, offsetStart);
-            return matchChar
-                ? { offsetEnd: offsetStart + matchChar.length, data: matchChar }
-                : undefined;
-        });
+        super();
 
         this.isInverse = charactersPattern.startsWith('^');
         this.__codePointRanges = CodePointRangeSet.fromPattern(
@@ -282,5 +277,12 @@ export class CharacterClassParser extends Parser<string> {
         }
 
         return !this.isInverse ? null : String.fromCodePoint(codePoint);
+    }
+
+    protected __parse(input: string, offsetStart: number): ParseResult<string> {
+        const matchChar = this.isMatch(input, offsetStart);
+        return matchChar
+            ? { offsetEnd: offsetStart + matchChar.length, data: matchChar }
+            : undefined;
     }
 }

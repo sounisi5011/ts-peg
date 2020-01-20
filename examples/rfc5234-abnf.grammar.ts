@@ -3,7 +3,7 @@
 //
 // See: https://tools.ietf.org/html/rfc5234
 
-import p, { Parser } from '../src';
+import p, { CustomizableParser } from '../src';
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -16,9 +16,9 @@ function usAsciiCaseInsensitive(str: string): string {
  * ABNF strings are case insensitive and the character set for these strings is US-ASCII.
  * @see https://tools.ietf.org/html/rfc5234#section-2.3
  */
-function abnfStr(str: string): Parser<string> {
+function abnfStr(str: string): CustomizableParser<string> {
     const istr = usAsciiCaseInsensitive(str);
-    return new Parser((input, offsetStart) => {
+    return new CustomizableParser((input, offsetStart) => {
         const offsetEnd = offsetStart + str.length;
         const inputStr = input.substring(offsetStart, offsetEnd);
         return usAsciiCaseInsensitive(inputStr) === istr

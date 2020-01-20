@@ -7,7 +7,17 @@ import {
 export type ParseFunc<TResult> = (
     input: string,
     offsetStart: number,
-) => { offsetEnd: number; data: TResult } | undefined;
+) => ParseResult<TResult>;
+
+export type ParseResult<TResult> =
+    | { offsetEnd: number; data: TResult }
+    | undefined;
+
+export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
+    infer U
+>
+    ? U
+    : never;
 
 export class PredicateExecutionEnvironment {
     readonly input: string;
@@ -45,47 +55,57 @@ interface ActionParserCacheMap extends WeakMap<Function, Parser<unknown>> {
     set<T>(key: (...args: any) => T, value: Parser<T>): this;
 }
 
-export class Parser<TResult> {
-    private readonly __parseFunc: ParseFunc<TResult>;
+export abstract class Parser<TResult> {
     private readonly __memoMap: Map<
         string,
         Map<number, { result: ReturnType<ParseFunc<TResult>> }>
     > = new Map();
 
-    constructor(parseFunc: ParseFunc<TResult>) {
-        this.__parseFunc = parseFunc;
-    }
+    protected abstract __parse(
+        input: string,
+        offsetStart: number,
+    ): ParseResult<TResult>;
 
     private __zeroOrMoreCache?: Parser<TResult[]>;
     get zeroOrMore(): Parser<TResult[]> {
         if (this.__zeroOrMoreCache) return this.__zeroOrMoreCache;
-        return (this.__zeroOrMoreCache = new Parser((input, offsetStart) =>
-            this.__repetitionsParse(input, offsetStart),
+        // TODO: Rewrite to code that does not use CustomizableParser
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return (this.__zeroOrMoreCache = new CustomizableParser(
+            (input, offsetStart) => this.__repetitionsParse(input, offsetStart),
         ));
     }
 
     private __oneOrMoreCache?: Parser<OneOrMoreTuple<TResult>>;
     get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
         if (this.__oneOrMoreCache) return this.__oneOrMoreCache;
-        return (this.__oneOrMoreCache = new Parser((input, offsetStart) => {
-            const { data, offsetEnd } = this.__repetitionsParse(
-                input,
-                offsetStart,
-            );
-            return isOneOrMoreTuple(data) ? { offsetEnd, data } : undefined;
-        }));
+        // TODO: Rewrite to code that does not use CustomizableParser
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return (this.__oneOrMoreCache = new CustomizableParser(
+            (input, offsetStart) => {
+                const { data, offsetEnd } = this.__repetitionsParse(
+                    input,
+                    offsetStart,
+                );
+                return isOneOrMoreTuple(data) ? { offsetEnd, data } : undefined;
+            },
+        ));
     }
 
     private __optionalCache?: Parser<TResult | undefined>;
     get optional(): Parser<TResult | undefined> {
         if (this.__optionalCache) return this.__optionalCache;
-        return (this.__optionalCache = new Parser((input, offsetStart) => {
-            const result = this.tryParse(input, offsetStart);
-            return {
-                offsetEnd: result ? result.offsetEnd : offsetStart,
-                data: result ? result.data : undefined,
-            };
-        }));
+        // TODO: Rewrite to code that does not use CustomizableParser
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return (this.__optionalCache = new CustomizableParser(
+            (input, offsetStart) => {
+                const result = this.tryParse(input, offsetStart);
+                return {
+                    offsetEnd: result ? result.offsetEnd : offsetStart,
+                    data: result ? result.data : undefined,
+                };
+            },
+        ));
     }
 
     private readonly __actionParserCacheMap: ActionParserCacheMap = new WeakMap<
@@ -116,7 +136,9 @@ export class Parser<TResult> {
         let cachedParser = this.__actionParserCacheMap.get(actionFn);
         if (cachedParser) return cachedParser;
 
-        cachedParser = new Parser((input, offsetStart) => {
+        // TODO: Rewrite to code that does not use CustomizableParser
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        cachedParser = new CustomizableParser((input, offsetStart) => {
             const result = this.tryParse(input, offsetStart);
             return result
                 ? {
@@ -162,7 +184,7 @@ export class Parser<TResult> {
             this.__memoMap.set(input, memoStore);
         }
 
-        const result = this.__parseFunc(input, offsetStart);
+        const result = this.__parse(input, offsetStart);
         memoStore.set(offsetStart, { result });
 
         return result;
@@ -186,6 +208,18 @@ export class Parser<TResult> {
     }
 }
 
-export type ParserResult<T extends Parser<unknown>> = T extends Parser<infer U>
-    ? U
-    : never;
+export class CustomizableParser<TResult> extends Parser<TResult> {
+    private readonly __parseFunc: ParseFunc<TResult>;
+
+    constructor(parseFunc: ParseFunc<TResult>) {
+        super();
+        this.__parseFunc = parseFunc;
+    }
+
+    protected __parse(
+        input: string,
+        offsetStart: number,
+    ): ParseResult<TResult> {
+        return this.__parseFunc(input, offsetStart);
+    }
+}
