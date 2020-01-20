@@ -141,8 +141,10 @@ export default class Parser<TResult> {
         if (!result) {
             throw new Error('Parse fail!');
         }
-        const { data } = result;
-        return data;
+        if (result.offsetEnd < input.length) {
+            throw new Error('Parse fail! end-of-input was not reached');
+        }
+        return result.data;
     }
 
     tryParse(
