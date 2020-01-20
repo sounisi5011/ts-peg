@@ -113,17 +113,7 @@ class CodePointRangeSet {
 
     add(...codePointRanges: OneOrMoreTuple<CodePointRange>): this {
         this.__normalized = false;
-
-        this.__codePointRanges = [...this.__codePointRanges, ...codePointRanges]
-            .sort(CodePointRange.compare)
-            .reduce<CodePointRange[]>((rangeList, range) => {
-                const prevRange = rangeList.pop();
-                if (!prevRange) return [range];
-                return [
-                    ...rangeList,
-                    ...CodePointRange.merge(prevRange, range),
-                ];
-            }, []);
+        this.__codePointRanges.push(...codePointRanges);
         return this;
     }
 
