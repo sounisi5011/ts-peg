@@ -45,3 +45,40 @@ import p, { Parser } from '../../src';
     const parser = p.chars('0-9').optional;
     assertType<TypeEq<typeof parser, Parser<string | undefined>>>();
 }
+
+{
+    const parser = p.any.times(0);
+    assertType<TypeEq<typeof parser, Parser<[]>>>();
+}
+{
+    const parser = p.any.times(1);
+    assertType<TypeEq<typeof parser, Parser<[string]>>>();
+}
+{
+    const parser = p.str('x').times(2);
+    assertType<TypeEq<typeof parser, Parser<['x', 'x']>>>();
+}
+{
+    const parser = p.str('8').times(4);
+    assertType<TypeEq<typeof parser, Parser<['8', '8', '8', '8']>>>();
+}
+{
+    const parser = p.seq('0', '1').times(8);
+    assertType<
+        TypeEq<
+            typeof parser,
+            Parser<
+                [
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                    ['0', '1'],
+                ]
+            >
+        >
+    >();
+}
