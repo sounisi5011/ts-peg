@@ -7,6 +7,7 @@ import p, { Parser } from '../src';
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
+// Expression <- Term (ws ('+' / '-') ws Term)*
 export const Expression: Parser<number> = p
     .seq(() => [
         Term,
@@ -22,6 +23,7 @@ export const Expression: Parser<number> = p
         ),
     );
 
+// Term       <- Factor (ws ('*' / '/') ws Factor)*
 export const Term = p
     .seq(() => [
         Factor,
@@ -37,16 +39,20 @@ export const Term = p
         ),
     );
 
+// Factor     <- '(' ws Expression ws ')'
+//             / Integer
 export const Factor = p.or(() => [
     p.seq('(', ws, Expression, ws, ')').action(([, , exp]) => exp),
     Integer,
 ]);
 
+// Integer    <- ws [0-9]+
 export const Integer = p
     .label('integer')
     .seq(() => [ws, p.chars('0-9').oneOrMore])
     .action((_, { text }) => parseInt(text, 10));
 
+// ws         <- [ \t\n\r]*
 export const ws = p.label('whitespace').chars(' \t\n\r').zeroOrMore;
 
 export default Expression;
