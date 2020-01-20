@@ -3,15 +3,12 @@ import { assertType, TypeEq } from 'typepark';
 
 import p, {
     LiteralStringParser,
-    Parser,
     ParserGenerator,
-    ParserResult,
+    ParserResultDataType,
 } from '../../src';
 
-assertType<TypeEq<LiteralStringParser<string>, Parser<string>>>();
-assertType<TypeEq<LiteralStringParser<'foo'>, Parser<'foo'>>>();
-assertType<TypeEq<ParserResult<LiteralStringParser<string>>, string>>();
-assertType<TypeEq<ParserResult<LiteralStringParser<'bar'>>, 'bar'>>();
+assertType<TypeEq<ParserResultDataType<LiteralStringParser<string>>, string>>();
+assertType<TypeEq<ParserResultDataType<LiteralStringParser<'bar'>>, 'bar'>>();
 
 test('should match string', t => {
     t.deepEqual(p.str('hoge').tryParse('hoge fuga', 0), {
@@ -55,8 +52,8 @@ test('if the arguments have the same value, they should return the same Parser o
     t.is(str2H1, str2H2);
     t.is(str2F1, str2F2);
 
-    t.not<Parser<string>>(str1H1, str1F1);
-    t.not<Parser<string>>(str2H1, str2F1);
+    t.not<LiteralStringParser<string>>(str1H1, str1F1);
+    t.not<LiteralStringParser<string>>(str2H1, str2F1);
 
     t.not(
         str1H1,
@@ -70,19 +67,11 @@ test('if the arguments have the same value, they should return the same Parser o
     );
 
     assertType<TypeEq<typeof str1H1, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str1H1, Parser<'hoge'>>>();
     assertType<TypeEq<typeof str1F1, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str1F1, Parser<'fuga'>>>();
     assertType<TypeEq<typeof str1H2, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str1H2, Parser<'hoge'>>>();
     assertType<TypeEq<typeof str1F2, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str1F2, Parser<'fuga'>>>();
     assertType<TypeEq<typeof str2H1, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str2H1, Parser<'hoge'>>>();
     assertType<TypeEq<typeof str2F1, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str2F1, Parser<'fuga'>>>();
     assertType<TypeEq<typeof str2H2, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str2H2, Parser<'hoge'>>>();
     assertType<TypeEq<typeof str2F2, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str2F2, Parser<'fuga'>>>();
 });

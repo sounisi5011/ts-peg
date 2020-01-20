@@ -6,11 +6,11 @@ import util from 'util';
 import p, {
     CharacterClassParser,
     ParserGenerator,
-    ParserResult,
+    ParserResultDataType,
 } from '../../src';
 import { OneOrMoreArray } from '../helpers/type';
 
-assertType<TypeEq<ParserResult<CharacterClassParser>, string>>();
+assertType<TypeEq<ParserResultDataType<CharacterClassParser>, string>>();
 
 test('should match characters: "abc123"', t => {
     const parser = p.chars('abc123');

@@ -1,19 +1,24 @@
 import { assertType, TypeEq } from 'typepark';
 
-import p, { CharacterClassParser, Parser } from '../../src';
+import p, {
+    AnyCharacterParser,
+    CharacterClassParser,
+    LiteralStringParser,
+    Parser,
+} from '../../src';
 
 {
     const parser = p.any;
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, AnyCharacterParser>>();
 }
 
 {
     const parser = p.str('1');
-    assertType<TypeEq<typeof parser, Parser<'1'>>>();
+    assertType<TypeEq<typeof parser, LiteralStringParser<'1'>>>();
 }
 {
     const parser = p.str((42).toString());
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<typeof parser, LiteralStringParser<string>>>();
 }
 
 {
