@@ -22,34 +22,17 @@ export class RepetitionParser<TResult> extends Parser<TResult[]> {
         maxCount: number,
         { parserGenerator }: { parserGenerator: ParserGenerator },
     ) {
-        if (typeof minCount !== 'number') {
-            throw new TypeError(
-                'second argument "minCount" must be zero or a positive integer',
-            );
-        }
-        if (!(Number.isInteger(minCount) && minCount >= 0)) {
-            throw new RangeError(
-                'second argument "minCount" must be zero or a positive integer',
-            );
-        }
-        if (typeof maxCount !== 'number') {
-            throw new TypeError(
-                'third argument "maxCount" must be zero or a positive integer or Infinity',
-            );
-        }
-        if (
-            !(
-                (Number.isInteger(maxCount) || maxCount === Infinity) &&
-                maxCount >= 0
-            )
-        ) {
-            throw new RangeError(
-                'third argument "maxCount" must be zero or a positive integer or Infinity',
-            );
-        }
-
         super(parserGenerator);
 
+        this.__validatePositiveInteger(
+            minCount,
+            'second argument "minCount" must be zero or a positive integer',
+        );
+        this.__validatePositiveInteger(
+            maxCount,
+            'third argument "maxCount" must be zero or a positive integer or Infinity',
+            { passInfinity: true },
+        );
         if (!(minCount <= maxCount)) {
             throw new RangeError(
                 'argument "maxCount" must be greater than or equal to "minCount"',
@@ -60,27 +43,8 @@ export class RepetitionParser<TResult> extends Parser<TResult[]> {
         this.__minCount = minCount;
         this.__maxCount = maxCount;
 
-        let parserCacheMapLv1 = repetitionParserCacheMap.get(parserGenerator);
-        if (!parserCacheMapLv1) {
-            parserCacheMapLv1 = new Map();
-            repetitionParserCacheMap.set(parserGenerator, parserCacheMapLv1);
-        }
-
-        let parserCacheMapLv2 = parserCacheMapLv1.get(prevParser);
-        if (!parserCacheMapLv2) {
-            parserCacheMapLv2 = new Map();
-            parserCacheMapLv1.set(prevParser, parserCacheMapLv2);
-        }
-
-        let parserCacheMapLv3 = parserCacheMapLv2.get(minCount);
-        if (!parserCacheMapLv3) {
-            parserCacheMapLv3 = new Map();
-            parserCacheMapLv2.set(minCount, parserCacheMapLv3);
-        }
-
-        const cachedParser = parserCacheMapLv3.get(maxCount);
+        const cachedParser = this.__getCachedParser(parserGenerator);
         if (cachedParser) return cachedParser;
-        parserCacheMapLv3.set(maxCount, this);
     }
 
     protected __parse(
@@ -100,5 +64,52 @@ export class RepetitionParser<TResult> extends Parser<TResult[]> {
         return this.__minCount <= results.length
             ? { offsetEnd: offsetNext, data: results }
             : undefined;
+    }
+
+    private __validatePositiveInteger(
+        value: unknown,
+        message: string,
+        { passInfinity = false } = {},
+    ): void {
+        if (typeof value !== 'number') {
+            throw new TypeError(message);
+        }
+        if (
+            !(
+                (Number.isInteger(value) && value >= 0) ||
+                (passInfinity && value === Infinity)
+            )
+        ) {
+            throw new RangeError(message);
+        }
+    }
+
+    private __getCachedParser(
+        parserGenerator: ParserGenerator,
+    ): RepetitionParser<TResult> | undefined {
+        let parserCacheMapLv1 = repetitionParserCacheMap.get(parserGenerator);
+        if (!parserCacheMapLv1) {
+            parserCacheMapLv1 = new Map();
+            repetitionParserCacheMap.set(parserGenerator, parserCacheMapLv1);
+        }
+
+        let parserCacheMapLv2 = parserCacheMapLv1.get(this.__prevParser);
+        if (!parserCacheMapLv2) {
+            parserCacheMapLv2 = new Map();
+            parserCacheMapLv1.set(this.__prevParser, parserCacheMapLv2);
+        }
+
+        let parserCacheMapLv3 = parserCacheMapLv2.get(this.__minCount);
+        if (!parserCacheMapLv3) {
+            parserCacheMapLv3 = new Map();
+            parserCacheMapLv2.set(this.__minCount, parserCacheMapLv3);
+        }
+
+        const cachedParser = parserCacheMapLv3.get(this.__maxCount);
+        if (!cachedParser) {
+            parserCacheMapLv3.set(this.__maxCount, this);
+        }
+
+        return cachedParser;
     }
 }
