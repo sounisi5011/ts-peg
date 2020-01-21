@@ -1,3 +1,5 @@
+import * as typepark from 'typepark';
+
 import {
     isOneOrMoreTuple,
     OneOrMoreReadonlyTuple,
@@ -108,6 +110,23 @@ export abstract class Parser<TResult> {
         ));
     }
 
+    times<TCount extends number>(
+        count: TCount,
+    ): Parser<typepark.Repeat<TResult, TCount>>;
+
+    times(count: number): Parser<TResult[]> {
+        // TODO: Rewrite to code that does not use CustomizableParser
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return new CustomizableParser((input, offsetStart) => {
+            const { data, offsetEnd } = this.__repetitionsParse(
+                input,
+                offsetStart,
+                { maxCount: count },
+            );
+            return data.length === count ? { offsetEnd, data } : undefined;
+        });
+    }
+
     private readonly __actionParserCacheMap: ActionParserCacheMap = new WeakMap<
         Function,
         Parser<any> // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -193,11 +212,13 @@ export abstract class Parser<TResult> {
     private __repetitionsParse(
         input: string,
         offsetStart: number,
+        { maxCount = Infinity } = {},
     ): { offsetEnd: number; data: TResult[] } {
         const results: TResult[] = [];
-        let result;
         let offset = offsetStart;
-        while ((result = this.tryParse(input, offset))) {
+        while (results.length <= maxCount) {
+            const result = this.tryParse(input, offset);
+            if (!result) break;
             results.push(result.data);
             offset = result.offsetEnd;
         }
