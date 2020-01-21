@@ -64,7 +64,7 @@ export class ParserGenerator {
                 };
             }
             return undefined;
-        });
+        }, this);
     }
 
     chars(chars: string): CharacterClassParser {
@@ -94,10 +94,12 @@ export class ParserGenerator {
     ): Parser<undefined> {
         const exp = this.seq(...args);
         // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser((input, offsetStart) =>
-            exp.tryParse(input, offsetStart)
-                ? { offsetEnd: offsetStart, data: undefined }
-                : undefined,
+        return new CustomizableParser(
+            (input, offsetStart) =>
+                exp.tryParse(input, offsetStart)
+                    ? { offsetEnd: offsetStart, data: undefined }
+                    : undefined,
+            this,
         );
     }
 
@@ -106,10 +108,12 @@ export class ParserGenerator {
     ): Parser<undefined> {
         const exp = this.seq(...args);
         // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser((input, offsetStart) =>
-            exp.tryParse(input, offsetStart)
-                ? undefined
-                : { offsetEnd: offsetStart, data: undefined },
+        return new CustomizableParser(
+            (input, offsetStart) =>
+                exp.tryParse(input, offsetStart)
+                    ? undefined
+                    : { offsetEnd: offsetStart, data: undefined },
+            this,
         );
     }
 
@@ -216,7 +220,7 @@ export class ParserGenerator {
                     'The return value array of function argument can only contain string values and Parser objects',
                 );
                 return callback(exps, ...parseArgs);
-            });
+            }, this);
         }
 
         this.__assertIsExpsArray(
@@ -224,8 +228,9 @@ export class ParserGenerator {
             'Only string values and Parser objects can be specified in the arguments',
         );
         // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser((...parseArgs) =>
-            callback(args, ...parseArgs),
+        return new CustomizableParser(
+            (...parseArgs) => callback(args, ...parseArgs),
+            this,
         );
     }
 }

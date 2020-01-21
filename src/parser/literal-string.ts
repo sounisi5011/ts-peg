@@ -20,7 +20,7 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
             throw new TypeError('first argument must be a string');
         }
 
-        super();
+        super(parserGenerator);
         this.__literalString = literalString;
 
         let parserCacheMap = LiteralStringParserCacheMap.get(parserGenerator);

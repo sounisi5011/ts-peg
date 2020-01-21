@@ -235,7 +235,7 @@ export class CharacterClassParser extends Parser<string> {
     private readonly __codePointRanges: CodePointRangeSet;
 
     constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
-        super();
+        super(parserGenerator);
 
         this.isInverse = charactersPattern.startsWith('^');
         this.__codePointRanges = CodePointRangeSet.fromPattern(

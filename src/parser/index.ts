@@ -1,9 +1,11 @@
+import { ParserGenerator } from '../parser-generator';
 import {
     isOneOrMoreTuple,
     OneOrMoreReadonlyTuple,
     OneOrMoreTuple,
     RepeatTuple,
 } from '../types';
+import { RepetitionParser } from './repetition';
 
 export type ParseFunc<TResult> = (
     input: string,
@@ -57,10 +59,15 @@ interface ActionParserCacheMap extends WeakMap<Function, Parser<unknown>> {
 }
 
 export abstract class Parser<TResult> {
+    private readonly __parserGenerator: ParserGenerator;
     private readonly __memoMap: Map<
         string,
         Map<number, { result: ReturnType<ParseFunc<TResult>> }>
     > = new Map();
+
+    constructor(parserGenerator: ParserGenerator) {
+        this.__parserGenerator = parserGenerator;
+    }
 
     protected abstract __parse(
         input: string,
@@ -74,6 +81,7 @@ export abstract class Parser<TResult> {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         return (this.__zeroOrMoreCache = new CustomizableParser(
             (input, offsetStart) => this.__repetitionsParse(input, offsetStart),
+            this.__parserGenerator,
         ));
     }
 
@@ -90,6 +98,7 @@ export abstract class Parser<TResult> {
                 );
                 return isOneOrMoreTuple(data) ? { offsetEnd, data } : undefined;
             },
+            this.__parserGenerator,
         ));
     }
 
@@ -106,6 +115,7 @@ export abstract class Parser<TResult> {
                     data: result ? result.data : undefined,
                 };
             },
+            this.__parserGenerator,
         ));
     }
 
@@ -114,16 +124,18 @@ export abstract class Parser<TResult> {
     ): Parser<RepeatTuple<TResult, TCount>>;
 
     times(count: number): Parser<TResult[]> {
-        // TODO: Rewrite to code that does not use CustomizableParser
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return new CustomizableParser((input, offsetStart) => {
-            const { data, offsetEnd } = this.__repetitionsParse(
-                input,
-                offsetStart,
-                { maxCount: count },
-            );
-            return data.length === count ? { offsetEnd, data } : undefined;
-        });
+        try {
+            return new RepetitionParser(this, count, count, {
+                parserGenerator: this.__parserGenerator,
+            });
+        } catch (error) {
+            if (error instanceof TypeError) {
+                throw new TypeError('repeat count must be a positive integer');
+            } else if (error instanceof RangeError) {
+                throw new RangeError('repeat count must be a positive integer');
+            }
+            throw error;
+        }
     }
 
     private readonly __actionParserCacheMap: ActionParserCacheMap = new WeakMap<
@@ -170,7 +182,7 @@ export abstract class Parser<TResult> {
                       ),
                   }
                 : undefined;
-        });
+        }, this.__parserGenerator);
         this.__actionParserCacheMap.set(actionFn, cachedParser);
 
         return cachedParser;
@@ -231,8 +243,11 @@ export abstract class Parser<TResult> {
 export class CustomizableParser<TResult> extends Parser<TResult> {
     private readonly __parseFunc: ParseFunc<TResult>;
 
-    constructor(parseFunc: ParseFunc<TResult>) {
-        super();
+    constructor(
+        parseFunc: ParseFunc<TResult>,
+        parserGenerator: ParserGenerator,
+    ) {
+        super(parserGenerator);
         this.__parseFunc = parseFunc;
     }
 

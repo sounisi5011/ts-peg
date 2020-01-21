@@ -24,7 +24,7 @@ function abnfStr(str: string): CustomizableParser<string> {
         return usAsciiCaseInsensitive(inputStr) === istr
             ? { offsetEnd, data: str }
             : undefined;
-    });
+    }, p);
 }
 
 // ----- B.1. Core Rules -----
