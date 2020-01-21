@@ -125,8 +125,8 @@ const char = p.or(() => [
                 p.str('\x72').action(() => `\u000D`), // r    carriage return U+000D
                 p.str('\x74').action(() => '\u0009'), // t    tab             U+0009
                 p
-                    .seq('\x75', HEXDIG, HEXDIG, HEXDIG, HEXDIG) // uXXXX                U+XXXX
-                    .action(([, ...digits]) =>
+                    .seq('\x75', HEXDIG.times(4)) // uXXXX                U+XXXX
+                    .action(([, digits]) =>
                         String.fromCharCode(parseInt(digits.join(''), 16)),
                     ),
             ),
