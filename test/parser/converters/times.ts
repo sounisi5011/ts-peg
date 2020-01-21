@@ -29,7 +29,7 @@ test('should match', t => {
     );
 
     t.deepEqual(p.any.times(1).tryParse('abc', 1), {
-        offsetEnd: 1,
+        offsetEnd: 2,
         data: ['b'],
     });
     t.deepEqual(
@@ -53,7 +53,7 @@ test('should match', t => {
             .times(2)
             .tryParse('xxyyzz', 0),
         {
-            offsetEnd: 1,
+            offsetEnd: 2,
             data: ['x', 'x'],
         },
     );
@@ -62,19 +62,11 @@ test('should match', t => {
         offsetEnd: 3,
         data: ['a', 'b', 'c'],
     });
-
-    t.deepEqual(p.any.times(Number.MAX_SAFE_INTEGER).tryParse('abc', 0), {
-        offsetEnd: 3,
-        data: ['a', 'b', 'c'],
-    });
-    t.deepEqual(p.any.times(Infinity).tryParse('abc', 0), {
-        offsetEnd: 3,
-        data: ['a', 'b', 'c'],
-    });
 });
 
 test('should not match', t => {
-    t.deepEqual(p.any.times(1).tryParse('', 0), undefined);
+    t.is(p.any.times(1).tryParse('', 0), undefined);
+    t.is(p.any.times(4).tryParse('abc', 0), undefined);
     t.is(
         p
             .str('x')
@@ -82,48 +74,60 @@ test('should not match', t => {
             .tryParse('abc', 0),
         undefined,
     );
+    t.is(
+        p
+            .str('x')
+            .times(2)
+            .tryParse('xxyyzz', 1),
+        undefined,
+    );
     t.is(p.any.times(1).tryParse('abc', 99), undefined);
+    t.is(p.any.times(Number.MAX_SAFE_INTEGER).tryParse('abc', 0), undefined);
 });
 
 test('should fail call method', t => {
     t.throws(() => p.any.times(-1 as number), {
         instanceOf: RangeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times(1.1 as number), {
         instanceOf: RangeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times(NaN), {
         instanceOf: RangeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
+    });
+    t.throws(() => p.any.times(Infinity), {
+        instanceOf: RangeError,
+        message: 'repeat count must be a positive integer',
     });
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     t.throws(() => p.any.times(null as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times(undefined as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times(true as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times('42' as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     t.throws(() => p.any.times({} as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     // eslint-disable-next-line no-new-wrappers
     t.throws(() => p.any.times(new Number(42) as any), {
         instanceOf: TypeError,
-        message: 'repeat count must be a positive integer or Infinity',
+        message: 'repeat count must be a positive integer',
     });
     /* eslint-enable */
 });
