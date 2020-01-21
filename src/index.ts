@@ -1,15 +1,15 @@
-import { ParserGenerator } from './parser-generator';
+import { ParserGenerator } from './internal';
 
 export {
     Parser,
     ParserResultDataType,
     ParseResult,
     CustomizableParser,
-} from './parser';
-export { AnyCharacterParser } from './parser/any-character';
-export { CharacterClassParser } from './parser/character-class';
-export { LiteralStringParser } from './parser/literal-string';
-export { RepetitionParser } from './parser/repetition';
-export { ParserGenerator } from './parser-generator';
+    AnyCharacterParser,
+    CharacterClassParser,
+    LiteralStringParser,
+    RepetitionParser,
+    ParserGenerator,
+} from './internal';
 
 export default new ParserGenerator();

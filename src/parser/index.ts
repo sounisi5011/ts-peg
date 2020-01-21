@@ -1,11 +1,10 @@
-import { ParserGenerator } from '../parser-generator';
+import { ParserGenerator, RepetitionParser } from '../internal';
 import {
     isOneOrMoreTuple,
     OneOrMoreReadonlyTuple,
     OneOrMoreTuple,
     RepeatTuple,
 } from '../types';
-import { RepetitionParser } from './repetition';
 
 export type ParseFunc<TResult> = (
     input: string,

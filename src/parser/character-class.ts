@@ -1,7 +1,6 @@
-import { ParserGenerator } from '../parser-generator';
+import { Parser, ParseResult, ParserGenerator } from '../internal';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 import { matchAll } from '../utils';
-import { Parser, ParseResult } from '.';
 
 const characterClassParserCacheMap = new WeakMap<
     ParserGenerator,

@@ -1,12 +1,12 @@
 import {
+    AnyCharacterParser,
+    CharacterClassParser,
     CustomizableParser,
+    LiteralStringParser,
     ParseFunc,
     Parser,
     ParserResultDataType,
-} from './parser';
-import { AnyCharacterParser } from './parser/any-character';
-import { CharacterClassParser } from './parser/character-class';
-import { LiteralStringParser } from './parser/literal-string';
+} from './internal';
 import {
     isReadonlyOrWritableArray,
     OneOrMoreReadonlyTuple,

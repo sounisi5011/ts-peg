@@ -1,5 +1,4 @@
-import { ParserGenerator } from '../parser-generator';
-import { Parser, ParseResult } from '.';
+import { Parser, ParseResult, ParserGenerator } from '../internal';
 
 type ParserCacheMapType = WeakMap<ParserGenerator, ParserCacheMapLv1Type>;
 interface ParserCacheMapLv1Type
