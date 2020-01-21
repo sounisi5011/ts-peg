@@ -112,7 +112,12 @@ export abstract class Parser<TResult> {
 
     times<TCount extends number>(
         count: TCount,
-    ): Parser<typepark.Repeat<TResult, TCount>>;
+    ): Parser<
+        // TResult tuple if TCount is a numeric literal type, otherwise a TResult array
+        //   TCount == 0 | 1 | 2 | ... -> typepark.Repeat<TResult, TCount>
+        //   TCount == number          -> TResult[]
+        number extends TCount ? TResult[] : typepark.Repeat<TResult, TCount>
+    >;
 
     times(count: number): Parser<TResult[]> {
         // TODO: Rewrite to code that does not use CustomizableParser
