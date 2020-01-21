@@ -46,6 +46,7 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<string | undefined>>>();
 }
 
+// exp.times()
 {
     const parser = p.any.times(0);
     assertType<TypeEq<typeof parser, Parser<[]>>>();
@@ -55,8 +56,16 @@ import p, { Parser } from '../../src';
     assertType<TypeEq<typeof parser, Parser<[string]>>>();
 }
 {
+    const parser = p.any.times([].length);
+    assertType<TypeEq<typeof parser, Parser<string[]>>>();
+}
+{
     const parser = p.str('x').times(2);
     assertType<TypeEq<typeof parser, Parser<['x', 'x']>>>();
+}
+{
+    const parser = p.str('x').times(Math.PI);
+    assertType<TypeEq<typeof parser, Parser<'x'[]>>>();
 }
 {
     const parser = p.str('8').times(4);
@@ -81,4 +90,8 @@ import p, { Parser } from '../../src';
             >
         >
     >();
+}
+{
+    const parser = p.seq('0', '1').times(process.pid);
+    assertType<TypeEq<typeof parser, Parser<['0', '1'][]>>>();
 }
