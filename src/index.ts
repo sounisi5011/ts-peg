@@ -12,6 +12,9 @@ export {
     ParserGenerator,
     OneOrMoreParser,
     ZeroOrMoreParser,
+    ActionParser,
+    ActionExecutionEnvironment,
+    ActionFunc,
 } from './internal';
 
 export default new ParserGenerator();
