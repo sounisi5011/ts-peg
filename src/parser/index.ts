@@ -7,6 +7,7 @@ import {
     TimesParser,
     ZeroOrMoreParser,
 } from '../internal';
+import { RepeatTuple } from '../types';
 
 export type ParseFunc<TResult> = (
     input: string,
@@ -55,11 +56,11 @@ export abstract class Parser<TResult> {
         return this.__parserGenerator;
     }
 
-    get zeroOrMore(): ZeroOrMoreParser<TResult> {
+    get zeroOrMore(): Parser<[...TResult[]]> {
         return new ZeroOrMoreParser(this);
     }
 
-    get oneOrMore(): OneOrMoreParser<TResult> {
+    get oneOrMore(): Parser<[TResult, ...TResult[]]> {
         return new OneOrMoreParser(this);
     }
 
@@ -80,7 +81,11 @@ export abstract class Parser<TResult> {
         ));
     }
 
-    times<TCount extends number>(count: TCount): TimesParser<TResult, TCount> {
+    times<TCount extends number>(
+        count: TCount,
+    ): Parser<RepeatTuple<TResult, TCount>>;
+
+    times(count: number): Parser<TResult[]> {
         try {
             return new TimesParser(this, count);
         } catch (error) {
@@ -95,7 +100,7 @@ export abstract class Parser<TResult> {
 
     action<TActionRes>(
         actionFn: ActionFunc<TResult, TActionRes>,
-    ): ActionParser<TResult, TActionRes> {
+    ): Parser<TActionRes> {
         return new ActionParser(this, actionFn);
     }
 
