@@ -1,10 +1,10 @@
-import { ParserGenerator, RepetitionParser } from '../internal';
 import {
-    isOneOrMoreTuple,
-    OneOrMoreReadonlyTuple,
-    OneOrMoreTuple,
-    RepeatTuple,
-} from '../types';
+    OneOrMoreParser,
+    ParserGenerator,
+    RepetitionParser,
+    ZeroOrMoreParser,
+} from '../internal';
+import { OneOrMoreReadonlyTuple, OneOrMoreTuple, RepeatTuple } from '../types';
 
 export type ParseFunc<TResult> = (
     input: string,
@@ -73,32 +73,12 @@ export abstract class Parser<TResult> {
         offsetStart: number,
     ): ParseResult<TResult>;
 
-    private __zeroOrMoreCache?: Parser<TResult[]>;
     get zeroOrMore(): Parser<TResult[]> {
-        if (this.__zeroOrMoreCache) return this.__zeroOrMoreCache;
-        // TODO: Rewrite to code that does not use CustomizableParser
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return (this.__zeroOrMoreCache = new CustomizableParser(
-            (input, offsetStart) => this.__repetitionsParse(input, offsetStart),
-            this.__parserGenerator,
-        ));
+        return new ZeroOrMoreParser(this.__parserGenerator, this);
     }
 
-    private __oneOrMoreCache?: Parser<OneOrMoreTuple<TResult>>;
     get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
-        if (this.__oneOrMoreCache) return this.__oneOrMoreCache;
-        // TODO: Rewrite to code that does not use CustomizableParser
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return (this.__oneOrMoreCache = new CustomizableParser(
-            (input, offsetStart) => {
-                const { data, offsetEnd } = this.__repetitionsParse(
-                    input,
-                    offsetStart,
-                );
-                return isOneOrMoreTuple(data) ? { offsetEnd, data } : undefined;
-            },
-            this.__parserGenerator,
-        ));
+        return new OneOrMoreParser(this.__parserGenerator, this);
     }
 
     private __optionalCache?: Parser<TResult | undefined>;
@@ -217,25 +197,6 @@ export abstract class Parser<TResult> {
         memoStore.set(offsetStart, { result });
 
         return result;
-    }
-
-    private __repetitionsParse(
-        input: string,
-        offsetStart: number,
-        { maxCount = Infinity } = {},
-    ): { offsetEnd: number; data: TResult[] } {
-        const results: TResult[] = [];
-        let offset = offsetStart;
-        while (results.length <= maxCount) {
-            const result = this.tryParse(input, offset);
-            if (!result) break;
-            results.push(result.data);
-            offset = result.offsetEnd;
-        }
-        return {
-            offsetEnd: offset,
-            data: results,
-        };
     }
 }
 

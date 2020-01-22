@@ -7,5 +7,7 @@ export * from './parser';
 export * from './parser/any-character';
 export * from './parser/character-class';
 export * from './parser/literal-string';
+export * from './parser/one-or-more';
 export * from './parser/repetition';
+export * from './parser/zero-or-more';
 export * from './parser-generator';
