@@ -1,53 +1,25 @@
 import { Parser, ParseResult, ParserGenerator } from '../internal';
-import { MinToMaxTuple } from '../types';
 
 type ParserCacheMapType = WeakMap<ParserGenerator, ParserCacheMapLv1Type>;
 interface ParserCacheMapLv1Type
     extends WeakMap<Parser<unknown>, ParserCacheMapLv2Type<unknown>> {
-    get<TResult>(
-        key: Parser<TResult>,
-    ): ParserCacheMapLv2Type<TResult> | undefined;
-    set<TResult>(
-        key: Parser<TResult>,
-        value: ParserCacheMapLv2Type<TResult>,
-    ): this;
+    get<T>(key: Parser<T>): ParserCacheMapLv2Type<T> | undefined;
+    set<T>(key: Parser<T>, value: ParserCacheMapLv2Type<T>): this;
 }
-interface ParserCacheMapLv2Type<TResult>
-    extends Map<number, ParserCacheMapLv3Type<TResult, number>> {
-    get<TMin extends number>(
-        key: TMin,
-    ): ParserCacheMapLv3Type<TResult, TMin> | undefined;
-    set<TMin extends number>(
-        key: TMin,
-        value: ParserCacheMapLv3Type<TResult, TMin>,
-    ): this;
-}
-interface ParserCacheMapLv3Type<TResult, TMin extends number>
-    extends Map<number, RepetitionParser<TResult, TMin, number>> {
-    get<TMax extends number>(
-        key: TMax,
-    ): RepetitionParser<TResult, TMin, TMax> | undefined;
-    set<TMax extends number>(
-        key: TMax,
-        value: RepetitionParser<TResult, TMin, TMax>,
-    ): this;
-}
+type ParserCacheMapLv2Type<T> = Map<number, ParserCacheMapLv3Type<T>>;
+type ParserCacheMapLv3Type<T> = Map<number, RepetitionParser<T>>;
 
 const repetitionParserCacheMap: ParserCacheMapType = new WeakMap();
 
-export class RepetitionParser<
-    TResult,
-    TMin extends number,
-    TMax extends number
-> extends Parser<MinToMaxTuple<TResult, TMin, TMax>> {
+export class RepetitionParser<TResult> extends Parser<TResult[]> {
     private readonly __prevParser: Parser<TResult>;
-    private readonly __minCount: TMin;
-    private readonly __maxCount: TMax;
+    private readonly __minCount: number;
+    private readonly __maxCount: number;
 
     constructor(
         prevParser: Parser<TResult>,
-        minCount: TMin,
-        maxCount: TMax,
+        minCount: number,
+        maxCount: number,
         { parserGenerator }: { parserGenerator: ParserGenerator },
     ) {
         super(parserGenerator);
@@ -78,7 +50,7 @@ export class RepetitionParser<
     protected __parse(
         input: string,
         offsetStart: number,
-    ): ParseResult<MinToMaxTuple<TResult, TMin, TMax>> {
+    ): ParseResult<TResult[]> {
         const results: TResult[] = [];
 
         let offsetNext = offsetStart;
@@ -89,7 +61,7 @@ export class RepetitionParser<
             offsetNext = result.offsetEnd;
         }
 
-        return this.__isLengthInRange(results)
+        return this.__minCount <= results.length
             ? { offsetEnd: offsetNext, data: results }
             : undefined;
     }
@@ -114,7 +86,7 @@ export class RepetitionParser<
 
     private __getCachedParser(
         parserGenerator: ParserGenerator,
-    ): RepetitionParser<TResult, TMin, TMax> | undefined {
+    ): RepetitionParser<TResult> | undefined {
         let parserCacheMapLv1 = repetitionParserCacheMap.get(parserGenerator);
         if (!parserCacheMapLv1) {
             parserCacheMapLv1 = new Map();
@@ -139,13 +111,5 @@ export class RepetitionParser<
         }
 
         return cachedParser;
-    }
-
-    private __isLengthInRange<T>(
-        value: T[],
-    ): value is MinToMaxTuple<T, TMin, TMax> {
-        return (
-            this.__minCount <= value.length && value.length <= this.__maxCount
-        );
     }
 }
