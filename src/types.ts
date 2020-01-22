@@ -36,6 +36,92 @@ export type RepeatTuple<TValue, TCount extends number> = TCount extends unknown
         : typepark.Repeat<TValue, TCount>
     : never;
 
+/**
+ * @example
+ * MinToMaxTuple<ValueType, 0, 2> // returns: [] | [ValueType] | [ValueType, ValueType]
+ * @example
+ * MinToMaxTuple<ValueType, 1, 2> // returns: [ValueType] | [ValueType, ValueType]
+ * @example
+ * MinToMaxTuple<ValueType, 0, 0> // returns: []
+ * @example
+ * MinToMaxTuple<ValueType, 4, 4> // returns: [ValueType, ValueType, ValueType, ValueType]
+ */
+export type MinToMaxTuple<
+    TResult,
+    TMin extends number,
+    TMax extends number
+> = TMin extends unknown
+    ? TMax extends unknown
+        ? number extends TMax
+            ? OrMoreTuple<TResult, DefaultNumericLiteral<TMin, 0>> //      TMax: number
+            : MinToMax_<TResult, DefaultNumericLiteral<TMin, 0>, TMax> // TMax: numeric literal type
+        : never
+    : never;
+
+typepark.assertType<typepark.TypeEq<MinToMaxTuple<'42', 0, 0>, []>>();
+typepark.assertType<typepark.TypeEq<MinToMaxTuple<'42', 0, 1>, [] | ['42']>>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', 0, 2>, [] | ['42'] | ['42', '42']>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', 1, 2>, ['42'] | ['42', '42']>
+>();
+typepark.assertType<
+    typepark.TypeEq<
+        MinToMaxTuple<'42', 2, 4>,
+        ['42', '42'] | ['42', '42', '42'] | ['42', '42', '42', '42']
+    >
+>();
+typepark.assertType<typepark.TypeEq<MinToMaxTuple<'42', number, 0>, []>>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', number, 1>, [] | ['42']>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', number, 2>, [] | ['42'] | ['42', '42']>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', 0, number>, [...'42'[]]>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', 1, number>, ['42', ...'42'[]]>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', 2, number>, ['42', '42', ...'42'[]]>
+>();
+typepark.assertType<
+    typepark.TypeEq<MinToMaxTuple<'42', number, number>, [...'42'[]]>
+>();
+
+type OrMoreTuple<TResult, TMin extends number> = {
+    0: [...TResult[]];
+    1: [TResult, ...TResult[]];
+    2: [TResult, TResult, ...TResult[]];
+    3: [TResult, TResult, TResult, ...TResult[]];
+    4: [TResult, TResult, TResult, TResult, ...TResult[]];
+    5: [TResult, TResult, TResult, TResult, TResult, ...TResult[]];
+    6: [TResult, TResult, TResult, TResult, TResult, TResult, ...TResult[]];
+}[TMin extends 0 | 1 | 2 | 3 | 4 | 5 | 6 ? TMin : 0];
+
+type MinToMax_<TResult, TMin extends number, TMax extends number> = RepeatTuple<
+    TResult,
+    typepark.Range<TMin, TMax>[number]
+>;
+
+/**
+ * @example
+ * DefaultNumericLiteral<1, 0> // returns: 1
+ * @example
+ * DefaultNumericLiteral<2, 0> // returns: 2
+ * @example
+ * DefaultNumericLiteral<3, 0> // returns: 3
+ * @example
+ * DefaultNumericLiteral<number, 0> // returns: 0
+ */
+type DefaultNumericLiteral<
+    T extends number,
+    U extends number
+> = number extends T ? U : T;
+
 export function isOneOrMoreTuple<T>(value: T[]): value is OneOrMoreTuple<T>;
 export function isOneOrMoreTuple<T>(
     value: readonly T[],

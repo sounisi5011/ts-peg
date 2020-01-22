@@ -1,10 +1,5 @@
 import { ParserGenerator, RepetitionParser } from '../internal';
-import {
-    isOneOrMoreTuple,
-    OneOrMoreReadonlyTuple,
-    OneOrMoreTuple,
-    RepeatTuple,
-} from '../types';
+import { OneOrMoreReadonlyTuple, OneOrMoreTuple, RepeatTuple } from '../types';
 
 export type ParseFunc<TResult> = (
     input: string,
@@ -74,15 +69,17 @@ export abstract class Parser<TResult> {
     ): ParseResult<TResult>;
 
     get zeroOrMore(): Parser<TResult[]> {
-        return new RepetitionParser(this, 0, Infinity, {
+        const parser = new RepetitionParser(this, 0, Infinity, {
             parserGenerator: this.__parserGenerator,
         });
+        return parser;
     }
 
     get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
-        return new RepetitionParser(this, 1, Infinity, {
+        const parser = new RepetitionParser(this, 1, Infinity, {
             parserGenerator: this.__parserGenerator,
         });
+        return parser;
     }
 
     private __optionalCache?: Parser<TResult | undefined>;
@@ -104,13 +101,12 @@ export abstract class Parser<TResult> {
 
     times<TCount extends number>(
         count: TCount,
-    ): Parser<RepeatTuple<TResult, TCount>>;
-
-    times(count: number): Parser<TResult[]> {
+    ): Parser<RepeatTuple<TResult, TCount>> {
         try {
-            return new RepetitionParser(this, count, count, {
+            const parser = new RepetitionParser(this, count, count, {
                 parserGenerator: this.__parserGenerator,
             });
+            return parser;
         } catch (error) {
             if (error instanceof TypeError) {
                 throw new TypeError('repeat count must be a positive integer');
