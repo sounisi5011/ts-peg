@@ -15,26 +15,36 @@ interface ParserCacheMapLv1Type
 interface ParserCacheMapLv2Type<TResult>
     extends WeakMap<
         (results: TResult[]) => results is TResult[],
-        AnyOrMoreParser<TResult, TResult[]>
+        ParserCacheMapLv3Type<TResult, TResult[]>
     > {
     get<TResultData extends TResult[]>(
         key: (results: TResult[]) => results is TResultData,
-    ): AnyOrMoreParser<TResult, TResultData> | undefined;
+    ): ParserCacheMapLv3Type<TResult, TResultData> | undefined;
     set<TResultData extends TResult[]>(
         key: (results: TResult[]) => results is TResultData,
-        value: AnyOrMoreParser<TResult, TResultData>,
+        value: ParserCacheMapLv3Type<TResult, TResultData>,
     ): this;
 }
+type ParserCacheMapLv3Type<TResult, TResultData extends TResult[]> = Map<
+    number,
+    AnyOrMoreParser<TResult, TResultData>
+>;
 
 export abstract class AnyOrMoreParser<
     TResult,
     TResultData extends TResult[]
 > extends Parser<TResultData> {
     private readonly __prevParser: Parser<TResult>;
+    private readonly __resultsLengthLimit: number;
 
-    constructor(parserGenerator: ParserGenerator, prevParser: Parser<TResult>) {
+    constructor(
+        parserGenerator: ParserGenerator,
+        prevParser: Parser<TResult>,
+        { resultsLengthLimit = Infinity } = {},
+    ) {
         super(parserGenerator);
         this.__prevParser = prevParser;
+        this.__resultsLengthLimit = resultsLengthLimit;
 
         const cachedParser = this.__getCachedParser(parserGenerator);
         if (cachedParser) return cachedParser;
@@ -50,9 +60,9 @@ export abstract class AnyOrMoreParser<
     ): ParseResult<TResultData> {
         const results: TResult[] = [];
 
-        let result;
         let offsetNext = offsetStart;
-        while ((result = this.__prevParser.tryParse(input, offsetNext))) {
+        while (results.length < this.__resultsLengthLimit) {
+            const result = this.__prevParser.tryParse(input, offsetNext);
             if (!result) break;
             results.push(result.data);
             offsetNext = result.offsetEnd;
@@ -80,9 +90,15 @@ export abstract class AnyOrMoreParser<
             parserCacheMapLv1.set(this.__prevParser, parserCacheMapLv2);
         }
 
-        const cachedParser = parserCacheMapLv2.get(this.__resultsValidator);
+        let parserCacheMapLv3 = parserCacheMapLv2.get(this.__resultsValidator);
+        if (!parserCacheMapLv3) {
+            parserCacheMapLv3 = new Map();
+            parserCacheMapLv2.set(this.__resultsValidator, parserCacheMapLv3);
+        }
+
+        const cachedParser = parserCacheMapLv3.get(this.__resultsLengthLimit);
         if (!cachedParser) {
-            parserCacheMapLv2.set(this.__resultsValidator, this);
+            parserCacheMapLv3.set(this.__resultsLengthLimit, this);
         }
 
         return cachedParser;

@@ -104,9 +104,7 @@ export abstract class Parser<TResult> {
 
     times(count: number): Parser<TResult[]> {
         try {
-            return new RepetitionParser(this, count, count, {
-                parserGenerator: this.__parserGenerator,
-            });
+            return new RepetitionParser(this.__parserGenerator, this, count);
         } catch (error) {
             if (error instanceof TypeError) {
                 throw new TypeError('repeat count must be a positive integer');
