@@ -7,6 +7,7 @@ export * from './parser';
 export * from './parser/internal/any-or-more';
 export * from './parser/any-character';
 export * from './parser/character-class';
+export * from './parser/customizable';
 export * from './parser/literal-string';
 export * from './parser/one-or-more';
 export * from './parser/times';

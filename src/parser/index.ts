@@ -1,4 +1,5 @@
 import {
+    CustomizableParser,
     OneOrMoreParser,
     ParserGenerator,
     TimesParser,
@@ -193,24 +194,5 @@ export abstract class Parser<TResult> {
         memoStore.set(offsetStart, { result });
 
         return result;
-    }
-}
-
-export class CustomizableParser<TResult> extends Parser<TResult> {
-    private readonly __parseFunc: ParseFunc<TResult>;
-
-    constructor(
-        parseFunc: ParseFunc<TResult>,
-        parserGenerator: ParserGenerator,
-    ) {
-        super(parserGenerator);
-        this.__parseFunc = parseFunc;
-    }
-
-    protected __parse(
-        input: string,
-        offsetStart: number,
-    ): ParseResult<TResult> {
-        return this.__parseFunc(input, offsetStart);
     }
 }
