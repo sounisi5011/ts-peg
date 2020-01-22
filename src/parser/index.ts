@@ -76,12 +76,16 @@ export abstract class Parser<TResult> {
         offsetStart: number,
     ): ParseResult<TResult>;
 
+    get parserGenerator(): ParserGenerator {
+        return this.__parserGenerator;
+    }
+
     get zeroOrMore(): ZeroOrMoreParser<TResult> {
-        return new ZeroOrMoreParser(this.__parserGenerator, this);
+        return new ZeroOrMoreParser(this);
     }
 
     get oneOrMore(): OneOrMoreParser<TResult> {
-        return new OneOrMoreParser(this.__parserGenerator, this);
+        return new OneOrMoreParser(this);
     }
 
     private __optionalCache?: Parser<TResult | undefined>;
@@ -103,7 +107,7 @@ export abstract class Parser<TResult> {
 
     times<TCount extends number>(count: TCount): TimesParser<TResult, TCount> {
         try {
-            return new TimesParser(this.__parserGenerator, this, count);
+            return new TimesParser(this, count);
         } catch (error) {
             if (error instanceof TypeError) {
                 throw new TypeError('repeat count must be a positive integer');

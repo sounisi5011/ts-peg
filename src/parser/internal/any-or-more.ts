@@ -1,31 +1,31 @@
-import { Parser, ParseResult, ParserGenerator } from '../../internal';
+import { Parser, ParseResult } from '../../internal';
 
-const parserCacheMap: ParserCacheMapType = new WeakMap();
-type ParserCacheMapType = WeakMap<ParserGenerator, ParserCacheMapLv1Type>;
-interface ParserCacheMapLv1Type
-    extends WeakMap<Parser<unknown>, ParserCacheMapLv2Type<unknown>> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const parserCacheMap: ParserCacheMapType = new WeakMap<any, any>();
+interface ParserCacheMapType
+    extends WeakMap<Parser<unknown>, ParserCacheMapLv1Type<unknown>> {
     get<TResult>(
         key: Parser<TResult>,
-    ): ParserCacheMapLv2Type<TResult> | undefined;
+    ): ParserCacheMapLv1Type<TResult> | undefined;
     set<TResult>(
         key: Parser<TResult>,
-        value: ParserCacheMapLv2Type<TResult>,
+        value: ParserCacheMapLv1Type<TResult>,
     ): this;
 }
-interface ParserCacheMapLv2Type<TResult>
+interface ParserCacheMapLv1Type<TResult>
     extends WeakMap<
         (results: TResult[]) => results is TResult[],
-        ParserCacheMapLv3Type<TResult, TResult[]>
+        ParserCacheMapLv2Type<TResult, TResult[]>
     > {
     get<TResultData extends TResult[]>(
         key: (results: TResult[]) => results is TResultData,
-    ): ParserCacheMapLv3Type<TResult, TResultData> | undefined;
+    ): ParserCacheMapLv2Type<TResult, TResultData> | undefined;
     set<TResultData extends TResult[]>(
         key: (results: TResult[]) => results is TResultData,
-        value: ParserCacheMapLv3Type<TResult, TResultData>,
+        value: ParserCacheMapLv2Type<TResult, TResultData>,
     ): this;
 }
-type ParserCacheMapLv3Type<TResult, TResultData extends TResult[]> = Map<
+type ParserCacheMapLv2Type<TResult, TResultData extends TResult[]> = Map<
     number,
     AnyOrMoreParser<TResult, TResultData>
 >;
@@ -38,15 +38,14 @@ export abstract class AnyOrMoreParser<
     private readonly __resultsLengthLimit: number;
 
     constructor(
-        parserGenerator: ParserGenerator,
         prevParser: Parser<TResult>,
         { resultsLengthLimit = Infinity } = {},
     ) {
-        super(parserGenerator);
+        super(prevParser.parserGenerator);
         this.__prevParser = prevParser;
         this.__resultsLengthLimit = resultsLengthLimit;
 
-        const cachedParser = this.__getCachedParser(parserGenerator);
+        const cachedParser = this.__getCachedParser();
         if (cachedParser) return cachedParser;
     }
 
@@ -73,32 +72,25 @@ export abstract class AnyOrMoreParser<
             : undefined;
     }
 
-    private __getCachedParser(
-        parserGenerator: ParserGenerator,
-    ): AnyOrMoreParser<TResult, TResultData> | undefined {
-        let parserCacheMapLv1 = parserCacheMap.get(parserGenerator);
+    private __getCachedParser():
+        | AnyOrMoreParser<TResult, TResultData>
+        | undefined {
+        let parserCacheMapLv1 = parserCacheMap.get(this.__prevParser);
         if (!parserCacheMapLv1) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             parserCacheMapLv1 = new WeakMap<any, any>();
-            parserCacheMap.set(parserGenerator, parserCacheMapLv1);
+            parserCacheMap.set(this.__prevParser, parserCacheMapLv1);
         }
 
-        let parserCacheMapLv2 = parserCacheMapLv1.get(this.__prevParser);
+        let parserCacheMapLv2 = parserCacheMapLv1.get(this.__resultsValidator);
         if (!parserCacheMapLv2) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parserCacheMapLv2 = new WeakMap<any, any>();
-            parserCacheMapLv1.set(this.__prevParser, parserCacheMapLv2);
+            parserCacheMapLv2 = new Map();
+            parserCacheMapLv1.set(this.__resultsValidator, parserCacheMapLv2);
         }
 
-        let parserCacheMapLv3 = parserCacheMapLv2.get(this.__resultsValidator);
-        if (!parserCacheMapLv3) {
-            parserCacheMapLv3 = new Map();
-            parserCacheMapLv2.set(this.__resultsValidator, parserCacheMapLv3);
-        }
-
-        const cachedParser = parserCacheMapLv3.get(this.__resultsLengthLimit);
+        const cachedParser = parserCacheMapLv2.get(this.__resultsLengthLimit);
         if (!cachedParser) {
-            parserCacheMapLv3.set(this.__resultsLengthLimit, this);
+            parserCacheMapLv2.set(this.__resultsLengthLimit, this);
         }
 
         return cachedParser;

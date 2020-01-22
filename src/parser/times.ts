@@ -1,4 +1,4 @@
-import { AnyOrMoreParser, Parser, ParserGenerator } from '../internal';
+import { AnyOrMoreParser, Parser } from '../internal';
 import { RepeatTuple } from '../types';
 
 export class TimesParser<
@@ -7,11 +7,7 @@ export class TimesParser<
 > extends AnyOrMoreParser<TResult, RepeatTuple<TResult, TCount>> {
     private readonly __repeatCount: TCount;
 
-    constructor(
-        parserGenerator: ParserGenerator,
-        prevParser: Parser<TResult>,
-        count: TCount,
-    ) {
+    constructor(prevParser: Parser<TResult>, count: TCount) {
         if (typeof count !== 'number') {
             throw new TypeError(
                 'third argument "count" must be zero or a positive integer',
@@ -23,7 +19,7 @@ export class TimesParser<
             );
         }
 
-        super(parserGenerator, prevParser, { resultsLengthLimit: count });
+        super(prevParser, { resultsLengthLimit: count });
         this.__repeatCount = count;
     }
 
