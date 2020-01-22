@@ -98,6 +98,17 @@ export abstract class Parser<TResult> {
         }
     }
 
+    // Note: This line is **required**. DO NOT DELETE IT.
+    //       If you do not specify a return type definition for actionFn, tuples are converted to arrays.
+    //       However, this overload solves this problem.
+    action<TActionRes extends readonly [unknown, ...unknown[]]>(
+        actionFn: ActionFunc<TResult, TActionRes>,
+    ): Parser<TActionRes>;
+
+    action<TActionRes extends unknown>(
+        actionFn: ActionFunc<TResult, TActionRes>,
+    ): Parser<TActionRes>;
+
     action<TActionRes>(
         actionFn: ActionFunc<TResult, TActionRes>,
     ): Parser<TActionRes> {
