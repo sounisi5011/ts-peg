@@ -8,7 +8,7 @@ export {
     AnyCharacterParser,
     CharacterClassParser,
     LiteralStringParser,
-    RepetitionParser,
+    TimesParser,
     ParserGenerator,
 } from './internal';
 

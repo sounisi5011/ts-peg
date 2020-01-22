@@ -1,9 +1,6 @@
 import { AnyOrMoreParser, Parser, ParserGenerator } from '../internal';
 
-export class RepetitionParser<TResult> extends AnyOrMoreParser<
-    TResult,
-    TResult[]
-> {
+export class TimesParser<TResult> extends AnyOrMoreParser<TResult, TResult[]> {
     private readonly __repeatCount: number;
 
     constructor(

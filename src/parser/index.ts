@@ -1,7 +1,7 @@
 import {
     OneOrMoreParser,
     ParserGenerator,
-    RepetitionParser,
+    TimesParser,
     ZeroOrMoreParser,
 } from '../internal';
 import { OneOrMoreReadonlyTuple, OneOrMoreTuple, RepeatTuple } from '../types';
@@ -104,7 +104,7 @@ export abstract class Parser<TResult> {
 
     times(count: number): Parser<TResult[]> {
         try {
-            return new RepetitionParser(this.__parserGenerator, this, count);
+            return new TimesParser(this.__parserGenerator, this, count);
         } catch (error) {
             if (error instanceof TypeError) {
                 throw new TypeError('repeat count must be a positive integer');
