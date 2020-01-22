@@ -1,31 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, {
-    Parser,
-    ParserGenerator,
-    ParserResultDataType,
-    TimesParser,
-} from '../../../src';
-
-assertType<TypeEq<ParserResultDataType<TimesParser<42, 0>>, []>>();
-assertType<TypeEq<ParserResultDataType<TimesParser<42, 1>>, [42]>>();
-assertType<TypeEq<ParserResultDataType<TimesParser<'42', 2>>, ['42', '42']>>();
-assertType<
-    TypeEq<
-        ParserResultDataType<TimesParser<'42', 1 | 3>>,
-        ['42'] | ['42', '42', '42']
-    >
->();
-assertType<
-    TypeEq<
-        ParserResultDataType<TimesParser<string, 4>>,
-        [string, string, string, string]
-    >
->();
-assertType<
-    TypeEq<ParserResultDataType<TimesParser<string, number>>, string[]>
->();
+import p, { Parser, ParserGenerator } from '../../../src';
 
 test('should match', t => {
     t.deepEqual(p.any.times(0).tryParse('abc', 0), {
@@ -183,12 +159,12 @@ test('if the arguments have the same value, they should return the same Parser o
     );
     t.not<Parser<[string]>>(times1β1A, times2α1A);
 
-    assertType<TypeEq<typeof times1α1A, TimesParser<'α', 1>>>();
-    assertType<TypeEq<typeof times1α1B, TimesParser<'α', 1>>>();
-    assertType<TypeEq<typeof times1α2A, TimesParser<'α', 2>>>();
-    assertType<TypeEq<typeof times1α2B, TimesParser<'α', 2>>>();
-    assertType<TypeEq<typeof times1β1A, TimesParser<'β', 1>>>();
-    assertType<TypeEq<typeof times1β1B, TimesParser<'β', 1>>>();
-    assertType<TypeEq<typeof times2α1A, TimesParser<'α', 1>>>();
-    assertType<TypeEq<typeof times2α1B, TimesParser<'α', 1>>>();
+    assertType<TypeEq<typeof times1α1A, Parser<['α']>>>();
+    assertType<TypeEq<typeof times1α1B, Parser<['α']>>>();
+    assertType<TypeEq<typeof times1α2A, Parser<['α', 'α']>>>();
+    assertType<TypeEq<typeof times1α2B, Parser<['α', 'α']>>>();
+    assertType<TypeEq<typeof times1β1A, Parser<['β']>>>();
+    assertType<TypeEq<typeof times1β1B, Parser<['β']>>>();
+    assertType<TypeEq<typeof times2α1A, Parser<['α']>>>();
+    assertType<TypeEq<typeof times2α1B, Parser<['α']>>>();
 });
