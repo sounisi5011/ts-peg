@@ -1,12 +1,16 @@
 import { AnyOrMoreParser, Parser, ParserGenerator } from '../internal';
+import { RepeatTuple } from '../types';
 
-export class TimesParser<TResult> extends AnyOrMoreParser<TResult, TResult[]> {
-    private readonly __repeatCount: number;
+export class TimesParser<
+    TResult,
+    TCount extends number
+> extends AnyOrMoreParser<TResult, RepeatTuple<TResult, TCount>> {
+    private readonly __repeatCount: TCount;
 
     constructor(
         parserGenerator: ParserGenerator,
         prevParser: Parser<TResult>,
-        count: number,
+        count: TCount,
     ) {
         if (typeof count !== 'number') {
             throw new TypeError(
@@ -23,7 +27,9 @@ export class TimesParser<TResult> extends AnyOrMoreParser<TResult, TResult[]> {
         this.__repeatCount = count;
     }
 
-    protected __resultsValidator(results: TResult[]): results is TResult[] {
+    protected __resultsValidator(
+        results: TResult[],
+    ): results is RepeatTuple<TResult, TCount> {
         return results.length === this.__repeatCount;
     }
 }

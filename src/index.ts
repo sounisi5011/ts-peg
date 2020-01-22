@@ -10,6 +10,8 @@ export {
     LiteralStringParser,
     TimesParser,
     ParserGenerator,
+    OneOrMoreParser,
+    ZeroOrMoreParser,
 } from './internal';
 
 export default new ParserGenerator();

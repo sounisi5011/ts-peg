@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { OneOrMoreParser, Parser, ParserGenerator } from '../../../src';
 import { ActionExecutionEnvironment } from '../../../src/parser';
 
 test('should convert result value', t => {
@@ -30,7 +30,7 @@ test('should convert result value', t => {
     });
 
     assertType<TypeEq<typeof exp1, Parser<number>>>();
-    assertType<TypeEq<typeof exp2, Parser<[number, ...number[]]>>>();
+    assertType<TypeEq<typeof exp2, OneOrMoreParser<number>>>();
     assertType<
         TypeEq<
             typeof exp3,

@@ -4,7 +4,7 @@ import {
     TimesParser,
     ZeroOrMoreParser,
 } from '../internal';
-import { OneOrMoreReadonlyTuple, OneOrMoreTuple, RepeatTuple } from '../types';
+import { OneOrMoreReadonlyTuple } from '../types';
 
 export type ParseFunc<TResult> = (
     input: string,
@@ -50,6 +50,8 @@ export class ActionExecutionEnvironment extends PredicateExecutionEnvironment {
 
 export type Predicate = (envs: PredicateExecutionEnvironment) => boolean;
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore - TS2589: Type instantiation is excessively deep and possibly infinite.
 interface ActionParserCacheMap extends WeakMap<Function, Parser<unknown>> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get<T>(key: (...args: any) => T): Parser<T> | undefined;
@@ -73,11 +75,11 @@ export abstract class Parser<TResult> {
         offsetStart: number,
     ): ParseResult<TResult>;
 
-    get zeroOrMore(): Parser<TResult[]> {
+    get zeroOrMore(): ZeroOrMoreParser<TResult> {
         return new ZeroOrMoreParser(this.__parserGenerator, this);
     }
 
-    get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
+    get oneOrMore(): OneOrMoreParser<TResult> {
         return new OneOrMoreParser(this.__parserGenerator, this);
     }
 
@@ -98,11 +100,7 @@ export abstract class Parser<TResult> {
         ));
     }
 
-    times<TCount extends number>(
-        count: TCount,
-    ): Parser<RepeatTuple<TResult, TCount>>;
-
-    times(count: number): Parser<TResult[]> {
+    times<TCount extends number>(count: TCount): TimesParser<TResult, TCount> {
         try {
             return new TimesParser(this.__parserGenerator, this, count);
         } catch (error) {
