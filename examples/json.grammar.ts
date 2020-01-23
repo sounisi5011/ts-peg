@@ -42,9 +42,9 @@ const value: Parser<JSONValue> = p.or(() => [
     number,
     string,
 ]);
-const false_ = p.str('\x66\x61\x6c\x73\x65').action(() => false); // false
-const null_ = p.str('\x6e\x75\x6c\x6c').action(() => null); // null
-const true_ = p.str('\x74\x72\x75\x65').action(() => true); // true
+const false_ = p.str('\x66\x61\x6c\x73\x65').value(false); // false
+const null_ = p.str('\x6e\x75\x6c\x6c').value(null); // null
+const true_ = p.str('\x74\x72\x75\x65').value(true); // true
 
 // ----- 4. Objects -----
 // See: https://tools.ietf.org/html/rfc8259#section-4
@@ -93,7 +93,7 @@ const array = p
 
 const number = p
     .seq(() => [minus.optional, int, frac.optional, exp.optional])
-    .action((_, { text }) => parseFloat(text));
+    .text.action(Number.parseFloat);
 const decimal_point = p.str('\x2E'); // .
 const digit1_9 = p.chars('\x31-\x39'); // 1-9
 const e = p.or('\x65', '\x45'); // e E
@@ -119,11 +119,11 @@ const char = p.or(() => [
                 '\x22', // "    quotation mark  U+0022
                 '\x5C', // \    reverse solidus U+005C
                 '\x2F', // /    solidus         U+002F
-                p.str('\x62').action(() => `\u0008`), // b    backspace       U+0008
-                p.str('\x66').action(() => `\u000C`), // f    form feed       U+000C
-                p.str('\x6E').action(() => `\u000A`), // n    line feed       U+000A
-                p.str('\x72').action(() => `\u000D`), // r    carriage return U+000D
-                p.str('\x74').action(() => '\u0009'), // t    tab             U+0009
+                p.str('\x62').value('\u0008'), // b    backspace       U+0008
+                p.str('\x66').value('\u000C'), // f    form feed       U+000C
+                p.str('\x6E').value('\u000A'), // n    line feed       U+000A
+                p.str('\x72').value('\u000D'), // r    carriage return U+000D
+                p.str('\x74').value('\u0009'), // t    tab             U+0009
                 p
                     .seq('\x75', HEXDIG.times(4)) // uXXXX                U+XXXX
                     .action(([, digits]) =>
