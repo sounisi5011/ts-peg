@@ -11,18 +11,9 @@ assertType<TypeEq<typeof p.any, AnyCharacterParser>>();
 assertType<TypeEq<ParserResultDataType<typeof p.any>, string>>();
 
 test('should match one character', t => {
-    t.deepEqual(p.any.tryParse('abc', 0), {
-        offsetEnd: 1,
-        data: 'a',
-    });
-    t.deepEqual(p.any.tryParse('abc', 1), {
-        offsetEnd: 2,
-        data: 'b',
-    });
-    t.deepEqual(p.any.tryParse('abc', 2), {
-        offsetEnd: 3,
-        data: 'c',
-    });
+    t.is(p.any.tryParse('abc', 0)?.data, 'a');
+    t.is(p.any.tryParse('abc', 1)?.data, 'b');
+    t.is(p.any.tryParse('abc', 2)?.data, 'c');
 });
 
 test('should not match empty string', t => {
@@ -35,41 +26,20 @@ test('should not match if starting offset is out of range', t => {
 });
 
 test('should match one emoji (Unicode surrogate pair char)', t => {
-    t.deepEqual(p.any.tryParse('🐉💭😋🏡', 0), {
-        offsetEnd: 2,
-        data: '\uD83D\uDC09',
-    });
-    t.deepEqual(
-        p.any.tryParse('🐉🗯🍽👪💦', 1),
-        {
-            offsetEnd: 2,
-            data: '\uDC09',
-        },
+    t.is(p.any.tryParse('🐉💭😋🏡', 0)?.data, '\uD83D\uDC09');
+    t.is(
+        p.any.tryParse('🐉🗯🍽👪💦', 1)?.data,
+        '\uDC09',
         'should match low surrogate char',
     );
-    t.deepEqual(p.any.tryParse('🐉💨💀💀💩', 2), {
-        offsetEnd: 4,
-        data: '\uD83D\uDCA8',
-    });
+    t.is(p.any.tryParse('🐉💨💀💀💩', 2)?.data, '\uD83D\uDCA8');
 });
 
 test('should not match one combining character sequence', t => {
-    t.deepEqual(p.any.tryParse('🇯🇵', 0), {
-        offsetEnd: 2,
-        data: '\u{1F1EF}',
-    });
-    t.deepEqual(p.any.tryParse('🇯🇵', 1), {
-        offsetEnd: 2,
-        data: '\uDDEF',
-    });
-    t.deepEqual(p.any.tryParse('🇯🇵', 2), {
-        offsetEnd: 4,
-        data: '\u{1F1F5}',
-    });
-    t.deepEqual(p.any.tryParse('🇯🇵', 3), {
-        offsetEnd: 4,
-        data: '\uDDF5',
-    });
+    t.is(p.any.tryParse('🇯🇵', 0)?.data, '\u{1F1EF}');
+    t.is(p.any.tryParse('🇯🇵', 1)?.data, '\uDDEF');
+    t.is(p.any.tryParse('🇯🇵', 2)?.data, '\u{1F1F5}');
+    t.is(p.any.tryParse('🇯🇵', 3)?.data, '\uDDF5');
     t.is(p.any.tryParse('🇯🇵', 4), undefined);
 });
 

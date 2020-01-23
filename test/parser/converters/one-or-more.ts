@@ -4,18 +4,9 @@ import { assertType, TypeEq } from 'typepark';
 import p, { Parser, ParserGenerator } from '../../../src';
 
 test('should match', t => {
-    t.deepEqual(p.any.oneOrMore.tryParse('abc', 0), {
-        offsetEnd: 3,
-        data: ['a', 'b', 'c'],
-    });
-    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 0), {
-        offsetEnd: 2,
-        data: ['x', 'x'],
-    });
-    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 1), {
-        offsetEnd: 2,
-        data: ['x'],
-    });
+    t.deepEqual(p.any.oneOrMore.tryParse('abc', 0)?.data, ['a', 'b', 'c']);
+    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 0)?.data, ['x', 'x']);
+    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 1)?.data, ['x']);
 });
 
 test('should not match', t => {

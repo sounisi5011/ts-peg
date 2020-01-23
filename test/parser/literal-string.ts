@@ -11,14 +11,8 @@ assertType<TypeEq<ParserResultDataType<LiteralStringParser<string>>, string>>();
 assertType<TypeEq<ParserResultDataType<LiteralStringParser<'bar'>>, 'bar'>>();
 
 test('should match string', t => {
-    t.deepEqual(p.str('hoge').tryParse('hoge fuga', 0), {
-        offsetEnd: 4,
-        data: 'hoge',
-    });
-    t.deepEqual(p.str('hoge').tryParse('foo bar hoge fuga', 8), {
-        offsetEnd: 12,
-        data: 'hoge',
-    });
+    t.is(p.str('hoge').tryParse('hoge fuga', 0)?.data, 'hoge');
+    t.is(p.str('hoge').tryParse('foo bar hoge fuga', 8)?.data, 'hoge');
 });
 
 test('should not match string', t => {

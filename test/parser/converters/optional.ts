@@ -4,22 +4,10 @@ import { assertType, TypeEq } from 'typepark';
 import p, { Parser, ParserGenerator } from '../../../src';
 
 test('should match', t => {
-    t.deepEqual(p.any.optional.tryParse('abc', 0), {
-        offsetEnd: 1,
-        data: 'a',
-    });
-    t.deepEqual(p.any.optional.tryParse('', 0), {
-        offsetEnd: 0,
-        data: undefined,
-    });
-    t.deepEqual(p.str('x').optional.tryParse('xxyyzz', 0), {
-        offsetEnd: 1,
-        data: 'x',
-    });
-    t.deepEqual(p.str('x').optional.tryParse('xxyyzz', 3), {
-        offsetEnd: 3,
-        data: undefined,
-    });
+    t.is(p.any.optional.tryParse('abc', 0)?.data, 'a');
+    t.is(p.any.optional.tryParse('', 0)?.data, undefined);
+    t.is(p.str('x').optional.tryParse('xxyyzz', 0)?.data, 'x');
+    t.is(p.str('x').optional.tryParse('xxyyzz', 3)?.data, undefined);
 });
 
 test('should not match if starting offset is out of range', t => {

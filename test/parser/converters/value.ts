@@ -23,34 +23,13 @@ test('should convert result value', t => {
         num,
     ] as const);
 
-    t.deepEqual(exp1.tryParse('abc', 0), {
-        offsetEnd: 1,
-        data: 42,
-    });
-    t.deepEqual(exp2.tryParse('abc', 0), {
-        offsetEnd: 3,
-        data: ['foo', 'foo', 'foo'],
-    });
-    t.deepEqual(exp3.tryParse('🐉💭😋🏡', 0), {
-        offsetEnd: 8,
-        data: num,
-    });
-    t.deepEqual(exp4.tryParse('bar', 0), {
-        offsetEnd: 3,
-        data: [null, null, null],
-    });
-    t.deepEqual(exp5.tryParse('hoge', 0), {
-        offsetEnd: 2,
-        data: [undefined, undefined],
-    });
-    t.deepEqual(exp6.tryParse('abc', 1), {
-        offsetEnd: 2,
-        data: true,
-    });
-    t.deepEqual(exp7.tryParse('abc', 2), {
-        offsetEnd: 3,
-        data: false,
-    });
+    t.is(exp1.tryParse('abc', 0)?.data, 42);
+    t.deepEqual(exp2.tryParse('abc', 0)?.data, ['foo', 'foo', 'foo']);
+    t.is(exp3.tryParse('🐉💭😋🏡', 0)?.data, num);
+    t.deepEqual(exp4.tryParse('bar', 0)?.data, [null, null, null]);
+    t.deepEqual(exp5.tryParse('hoge', 0)?.data, [undefined, undefined]);
+    t.is(exp6.tryParse('abc', 1)?.data, true);
+    t.is(exp7.tryParse('abc', 2)?.data, false);
 
     assertType<TypeEq<typeof exp1, Parser<42>>>();
     assertType<TypeEq<typeof exp2, Parser<['foo', ...'foo'[]]>>>();

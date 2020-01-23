@@ -4,64 +4,36 @@ import { assertType, TypeEq } from 'typepark';
 import p, { Parser, ParserGenerator } from '../../../src';
 
 test('should match', t => {
-    t.deepEqual(p.any.times(0).tryParse('abc', 0), {
-        offsetEnd: 0,
-        data: [],
-    });
-    t.deepEqual(p.any.times(0).tryParse('', 0), {
-        offsetEnd: 0,
-        data: [],
-    });
+    t.deepEqual(p.any.times(0).tryParse('abc', 0)?.data, []);
+    t.deepEqual(p.any.times(0).tryParse('', 0)?.data, []);
 
-    t.deepEqual(p.any.times(1).tryParse('abc', 0), {
-        offsetEnd: 1,
-        data: ['a'],
-    });
+    t.deepEqual(p.any.times(1).tryParse('abc', 0)?.data, ['a']);
     t.deepEqual(
         p
             .str('x')
             .times(1)
-            .tryParse('xxyyzz', 0),
-        {
-            offsetEnd: 1,
-            data: ['x'],
-        },
+            .tryParse('xxyyzz', 0)?.data,
+        ['x'],
     );
-
-    t.deepEqual(p.any.times(1).tryParse('abc', 1), {
-        offsetEnd: 2,
-        data: ['b'],
-    });
+    t.deepEqual(p.any.times(1).tryParse('abc', 1)?.data, ['b']);
     t.deepEqual(
         p
             .str('x')
             .times(1)
-            .tryParse('xxyyzz', 1),
-        {
-            offsetEnd: 2,
-            data: ['x'],
-        },
+            .tryParse('xxyyzz', 1)?.data,
+        ['x'],
     );
 
-    t.deepEqual(p.any.times(2).tryParse('abc', 0), {
-        offsetEnd: 2,
-        data: ['a', 'b'],
-    });
+    t.deepEqual(p.any.times(2).tryParse('abc', 0)?.data, ['a', 'b']);
     t.deepEqual(
         p
             .str('x')
             .times(2)
-            .tryParse('xxyyzz', 0),
-        {
-            offsetEnd: 2,
-            data: ['x', 'x'],
-        },
+            .tryParse('xxyyzz', 0)?.data,
+        ['x', 'x'],
     );
 
-    t.deepEqual(p.any.times(3).tryParse('abc', 0), {
-        offsetEnd: 3,
-        data: ['a', 'b', 'c'],
-    });
+    t.deepEqual(p.any.times(3).tryParse('abc', 0)?.data, ['a', 'b', 'c']);
 });
 
 test('should not match', t => {
