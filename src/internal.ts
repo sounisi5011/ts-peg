@@ -12,5 +12,6 @@ export * from './parser/customizable';
 export * from './parser/literal-string';
 export * from './parser/one-or-more';
 export * from './parser/times';
+export * from './parser/value';
 export * from './parser/zero-or-more';
 export * from './parser-generator';

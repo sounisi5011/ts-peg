@@ -5,6 +5,7 @@ import {
     OneOrMoreParser,
     ParserGenerator,
     TimesParser,
+    ValueConverterParser,
     ZeroOrMoreParser,
 } from '../internal';
 import { RepeatTuple } from '../types';
@@ -124,7 +125,7 @@ export abstract class Parser<TResult> {
 
     value<TValue extends unknown>(value: TValue): Parser<TValue>;
     value<TValue>(value: TValue): Parser<TValue> {
-        return new ActionParser(this, () => value);
+        return new ValueConverterParser(this, value);
     }
 
     parse(input: string, offsetStart: number = 0): TResult {

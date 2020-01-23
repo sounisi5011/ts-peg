@@ -15,6 +15,7 @@ export {
     ActionParser,
     ActionExecutionEnvironment,
     ActionFunc,
+    ValueConverterParser,
 } from './internal';
 
 export default new ParserGenerator();
