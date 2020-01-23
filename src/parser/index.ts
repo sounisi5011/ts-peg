@@ -115,6 +115,18 @@ export abstract class Parser<TResult> {
         return new ActionParser(this, actionFn);
     }
 
+    value<TValue extends boolean>(value: TValue): Parser<TValue>;
+    value<TValue extends number>(value: TValue): Parser<TValue>;
+    value<TValue extends string>(value: TValue): Parser<TValue>;
+    value<TValue extends readonly [unknown, ...unknown[]]>(
+        value: TValue,
+    ): Parser<TValue>;
+
+    value<TValue extends unknown>(value: TValue): Parser<TValue>;
+    value<TValue>(value: TValue): Parser<TValue> {
+        return new ActionParser(this, () => value);
+    }
+
     parse(input: string, offsetStart: number = 0): TResult {
         const result = this.tryParse(input, offsetStart);
         if (!result) {
