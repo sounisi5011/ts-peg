@@ -48,8 +48,13 @@ export class ActionParser<TPrevResult, TActionResult> extends Parser<
         this.__prevParser = prevParser;
         this.__actionFn = actionFn;
 
-        const cachedParser = parserCache.get([prevParser, actionFn], this);
-        if (this.__validateThis(cachedParser)) return cachedParser;
+        const cachedParser = parserCache.getWithTypeGuard(
+            [prevParser, actionFn],
+            (value): value is ActionParser<TPrevResult, TActionResult> =>
+                value instanceof this.constructor,
+            this,
+        );
+        if (cachedParser) return cachedParser;
     }
 
     protected __parse(
@@ -66,11 +71,5 @@ export class ActionParser<TPrevResult, TActionResult> extends Parser<
             }),
         );
         return { ...result, data };
-    }
-
-    private __validateThis(
-        value: unknown,
-    ): value is ActionParser<TPrevResult, TActionResult> {
-        return value instanceof this.constructor;
     }
 }

@@ -21,11 +21,13 @@ export abstract class AnyOrMoreParser<
         this.__prevParser = prevParser;
         this.__resultsLengthLimit = resultsLengthLimit;
 
-        const cachedParser = parserCache.get(
+        const cachedParser = parserCache.getWithTypeGuard(
             [prevParser, this.__resultsValidator, resultsLengthLimit],
+            (value): value is AnyOrMoreParser<TResult, TResultData> =>
+                value instanceof this.constructor,
             this,
         );
-        if (this.__validateThis(cachedParser)) return cachedParser;
+        if (cachedParser) return cachedParser;
     }
 
     protected abstract __resultsValidator(
@@ -49,11 +51,5 @@ export abstract class AnyOrMoreParser<
         return this.__resultsValidator(results)
             ? { offsetEnd: offsetNext, data: results }
             : undefined;
-    }
-
-    private __validateThis(
-        value: unknown,
-    ): value is AnyOrMoreParser<TResult, TResultData> {
-        return value instanceof this.constructor;
     }
 }

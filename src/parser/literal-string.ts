@@ -17,11 +17,13 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         super(parserGenerator);
         this.__literalString = literalString;
 
-        const cachedParser = literalStringParserCache.get(
+        const cachedParser = literalStringParserCache.getWithTypeGuard(
             [parserGenerator, literalString],
+            (value): value is LiteralStringParser<T> =>
+                value instanceof this.constructor,
             this,
         );
-        if (this.__validateThis(cachedParser)) return cachedParser;
+        if (cachedParser) return cachedParser;
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {
@@ -31,9 +33,5 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
                   data: this.__literalString,
               }
             : undefined;
-    }
-
-    private __validateThis(value: unknown): value is LiteralStringParser<T> {
-        return value instanceof this.constructor;
     }
 }

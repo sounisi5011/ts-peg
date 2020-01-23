@@ -21,6 +21,18 @@ export class CacheStore<K extends [unknown, ...unknown[]], V> {
         return store.value;
     }
 
+    getWithTypeGuard<U extends V>(
+        keys: K,
+        typeGuard: (value: V | undefined) => value is U,
+        defaultValue?: V,
+    ): U | undefined {
+        const value =
+            arguments.length >= 3
+                ? this.get(keys, defaultValue)
+                : this.get(keys);
+        return typeGuard(value) ? value : undefined;
+    }
+
     set(keys: K, value: V): this {
         const store = this.__getStore(keys);
         store.value = value;
@@ -43,31 +55,29 @@ export class CacheStore<K extends [unknown, ...unknown[]], V> {
     private __getStore(keys: K): StoreItem<V> {
         let targetStore = this.__store;
         for (const key of keys) {
-            let store: StoreItem<V> | undefined;
-            if (
-                (typeof key === 'object' && key !== null) ||
-                typeof key === 'function'
-            ) {
-                store = targetStore.childrenObjectMap.get(key);
-                if (!store) {
-                    store = {
-                        childrenPrimitiveMap: new Map(),
-                        childrenObjectMap: new WeakMap(),
-                    };
+            let store = this.__isObject(key)
+                ? targetStore.childrenObjectMap.get(key)
+                : targetStore.childrenPrimitiveMap.get(key);
+            if (!store) {
+                store = {
+                    childrenPrimitiveMap: new Map(),
+                    childrenObjectMap: new WeakMap(),
+                };
+                if (this.__isObject(key)) {
                     targetStore.childrenObjectMap.set(key, store);
-                }
-            } else {
-                store = targetStore.childrenPrimitiveMap.get(key);
-                if (!store) {
-                    store = {
-                        childrenPrimitiveMap: new Map(),
-                        childrenObjectMap: new WeakMap(),
-                    };
+                } else {
                     targetStore.childrenPrimitiveMap.set(key, store);
                 }
             }
             targetStore = store;
         }
         return targetStore;
+    }
+
+    private __isObject(value: unknown): value is object {
+        return (
+            (typeof value === 'object' && value !== null) ||
+            typeof value === 'function'
+        );
     }
 }
