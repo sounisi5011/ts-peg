@@ -1,14 +1,9 @@
 import { Parser, ParseResult, ParserGenerator } from '../internal';
+import { CacheStore } from '../utils/cache-store';
 
-interface LiteralStringParserMapType
-    extends Map<string, LiteralStringParser<string>> {
-    get<T extends string>(key: T): LiteralStringParser<T> | undefined;
-    set<T extends string>(key: T, value: LiteralStringParser<T>): this;
-}
-
-const LiteralStringParserCacheMap = new WeakMap<
-    ParserGenerator,
-    LiteralStringParserMapType
+const literalStringParserCache = new CacheStore<
+    [ParserGenerator, string],
+    LiteralStringParser<string>
 >();
 
 export class LiteralStringParser<T extends string> extends Parser<T> {
@@ -22,15 +17,11 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         super(parserGenerator);
         this.__literalString = literalString;
 
-        let parserCacheMap = LiteralStringParserCacheMap.get(parserGenerator);
-        if (!parserCacheMap) {
-            parserCacheMap = new Map();
-            LiteralStringParserCacheMap.set(parserGenerator, parserCacheMap);
-        }
-
-        const cachedParser = parserCacheMap.get(literalString);
-        if (cachedParser) return cachedParser;
-        parserCacheMap.set(literalString, this);
+        const cachedParser = literalStringParserCache.get(
+            [parserGenerator, literalString],
+            this,
+        );
+        if (this.__validateThis(cachedParser)) return cachedParser;
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {
@@ -40,5 +31,9 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
                   data: this.__literalString,
               }
             : undefined;
+    }
+
+    private __validateThis(value: unknown): value is LiteralStringParser<T> {
+        return value instanceof this.constructor;
     }
 }

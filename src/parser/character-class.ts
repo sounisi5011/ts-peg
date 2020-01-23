@@ -1,13 +1,15 @@
 import { Parser, ParseResult, ParserGenerator } from '../internal';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 import { matchAll } from '../utils';
+import { CacheStore } from '../utils/cache-store';
 
-const characterClassParserCacheMap = new WeakMap<
-    ParserGenerator,
-    Map<string, CharacterClassParser>
+const characterClassParserCache = new CacheStore<
+    [ParserGenerator, string],
+    CharacterClassParser
 >();
 
-const codePointRangeCache = new Map<number, Map<number, CodePointRange>>();
+const codePointRangeCache = new CacheStore<[number, number], CodePointRange>();
+
 class CodePointRange {
     readonly minCodePoint: number;
     readonly maxCodePoint: number;
@@ -41,15 +43,11 @@ class CodePointRange {
         this.minCodePoint = Math.min(codePoint1, codePoint2);
         this.maxCodePoint = Math.max(codePoint1, codePoint2);
 
-        let cacheMap = codePointRangeCache.get(this.minCodePoint);
-        if (!cacheMap) {
-            cacheMap = new Map();
-            codePointRangeCache.set(this.minCodePoint, cacheMap);
-        }
-
-        const cachedCodePointRange = cacheMap.get(this.maxCodePoint);
+        const cachedCodePointRange = codePointRangeCache.get(
+            [this.minCodePoint, this.maxCodePoint],
+            this,
+        );
         if (cachedCodePointRange) return cachedCodePointRange;
-        cacheMap.set(this.maxCodePoint, this);
     }
 
     get length(): number {
@@ -241,16 +239,11 @@ export class CharacterClassParser extends Parser<string> {
             this.isInverse ? charactersPattern.substring(1) : charactersPattern,
         );
 
-        let parserCacheMap = characterClassParserCacheMap.get(parserGenerator);
-        if (!parserCacheMap) {
-            parserCacheMap = new Map();
-            characterClassParserCacheMap.set(parserGenerator, parserCacheMap);
-        }
-
-        const pattern = this.pattern;
-        const cachedParser = parserCacheMap.get(pattern);
+        const cachedParser = characterClassParserCache.get(
+            [parserGenerator, this.pattern],
+            this,
+        );
         if (cachedParser) return cachedParser;
-        parserCacheMap.set(pattern, this);
     }
 
     get pattern(): string {

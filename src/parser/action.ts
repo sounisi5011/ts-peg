@@ -3,6 +3,7 @@ import {
     ParseResult,
     PredicateExecutionEnvironment,
 } from '../internal';
+import { CacheStore } from '../utils/cache-store';
 
 export type ActionFunc<TPrevResult, TActionResult> = (
     exp: TPrevResult,
@@ -26,31 +27,12 @@ export class ActionExecutionEnvironment extends PredicateExecutionEnvironment {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const parserCacheMap: ParserCacheMapType = new WeakMap<any, any>();
-interface ParserCacheMapType
-    extends WeakMap<Parser<unknown>, ParserCacheMapLv1Type<unknown>> {
-    get<TPrevResult>(
-        key: Parser<TPrevResult>,
-    ): ParserCacheMapLv1Type<TPrevResult> | undefined;
-    set<TPrevResult>(
-        key: Parser<TPrevResult>,
-        value: ParserCacheMapLv1Type<TPrevResult>,
-    ): this;
-}
-interface ParserCacheMapLv1Type<TPrevResult>
-    extends WeakMap<
-        ActionFunc<TPrevResult, unknown>,
-        ActionParser<TPrevResult, unknown>
-    > {
-    get<TActionResult>(
-        key: ActionFunc<TPrevResult, TActionResult>,
-    ): ActionParser<TPrevResult, TActionResult> | undefined;
-    set<TActionResult>(
-        key: ActionFunc<TPrevResult, TActionResult>,
-        value: ActionParser<TPrevResult, TActionResult>,
-    ): this;
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const parserCache = new CacheStore<
+    [Parser<unknown>, ActionFunc<any, unknown>],
+    ActionParser<any, unknown>
+>();
+/* eslint-enable */
 
 export class ActionParser<TPrevResult, TActionResult> extends Parser<
     TActionResult
@@ -66,8 +48,8 @@ export class ActionParser<TPrevResult, TActionResult> extends Parser<
         this.__prevParser = prevParser;
         this.__actionFn = actionFn;
 
-        const cachedParser = this.__getCachedParser();
-        if (cachedParser) return cachedParser;
+        const cachedParser = parserCache.get([prevParser, actionFn], this);
+        if (this.__validateThis(cachedParser)) return cachedParser;
     }
 
     protected __parse(
@@ -86,21 +68,9 @@ export class ActionParser<TPrevResult, TActionResult> extends Parser<
         return { ...result, data };
     }
 
-    private __getCachedParser():
-        | ActionParser<TPrevResult, TActionResult>
-        | undefined {
-        let parserCacheMapLv1 = parserCacheMap.get(this.__prevParser);
-        if (!parserCacheMapLv1) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parserCacheMapLv1 = new WeakMap<any, any>();
-            parserCacheMap.set(this.__prevParser, parserCacheMapLv1);
-        }
-
-        const cachedParser = parserCacheMapLv1.get(this.__actionFn);
-        if (!cachedParser) {
-            parserCacheMapLv1.set(this.__actionFn, this);
-        }
-
-        return cachedParser;
+    private __validateThis(
+        value: unknown,
+    ): value is ActionParser<TPrevResult, TActionResult> {
+        return value instanceof this.constructor;
     }
 }
