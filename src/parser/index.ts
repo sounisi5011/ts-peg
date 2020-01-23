@@ -11,20 +11,30 @@ import {
 } from '../internal';
 import { RepeatTuple } from '../types';
 
-export type ParseFunc<TResult> = (
+export type ParseFunc<TResult, TRet = ParseResult<TResult>> = (
     input: string,
     offsetStart: number,
-) => ParseResult<TResult>;
+) => TRet;
 
-export type ParseResult<TResult> =
-    | { offsetEnd: number; data: TResult }
-    | undefined;
+export type ParseResult<TResult> = ParseSuccessResult<TResult> | undefined;
 
 export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
     infer U
 >
     ? U
     : never;
+
+export class ParseSuccessResult<TResult> {
+    private readonly __dataGenerator: () => TResult;
+
+    constructor(readonly offsetEnd: number, dataGenerator: () => TResult) {
+        this.__dataGenerator = dataGenerator;
+    }
+
+    get data(): TResult {
+        return this.__dataGenerator();
+    }
+}
 
 export class PredicateExecutionEnvironment {
     readonly input: string;
@@ -76,7 +86,7 @@ export abstract class Parser<TResult> {
                 const result = this.tryParse(input, offsetStart);
                 return {
                     offsetEnd: result ? result.offsetEnd : offsetStart,
-                    data: result ? result.data : undefined,
+                    valueGetter: () => (result ? result.data : undefined),
                 };
             },
             this.__parserGenerator,
@@ -144,10 +154,7 @@ export abstract class Parser<TResult> {
         return result.data;
     }
 
-    tryParse(
-        input: string,
-        offsetStart: number,
-    ): { offsetEnd: number; data: TResult } | undefined {
+    tryParse(input: string, offsetStart: number): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
         let memoStore = this.__memoMap.get(input);

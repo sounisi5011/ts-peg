@@ -1,4 +1,9 @@
-import { Parser, ParseResult, ParserGenerator } from '../internal';
+import {
+    Parser,
+    ParseResult,
+    ParserGenerator,
+    ParseSuccessResult,
+} from '../internal';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 import { matchAll } from '../utils';
 import { CacheStore } from '../utils/cache-store';
@@ -274,7 +279,10 @@ export class CharacterClassParser extends Parser<string> {
     protected __parse(input: string, offsetStart: number): ParseResult<string> {
         const matchChar = this.isMatch(input, offsetStart);
         return matchChar
-            ? { offsetEnd: offsetStart + matchChar.length, data: matchChar }
+            ? new ParseSuccessResult(
+                  offsetStart + matchChar.length,
+                  () => matchChar,
+              )
             : undefined;
     }
 }

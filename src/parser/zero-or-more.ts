@@ -1,10 +1,12 @@
-import { AnyOrMoreParser } from '../internal';
+import { AnyOrMoreParser, ParseSuccessResult } from '../internal';
 
 export class ZeroOrMoreParser<TResult> extends AnyOrMoreParser<
     TResult,
-    TResult[]
+    ParseSuccessResult<TResult>[]
 > {
-    protected __resultsValidator(results: TResult[]): results is TResult[] {
+    protected __resultsValidator(
+        results: ParseSuccessResult<TResult>[],
+    ): results is ParseSuccessResult<TResult>[] {
         return results.length >= 0;
     }
 }

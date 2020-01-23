@@ -1,4 +1,9 @@
-import { Parser, ParseResult, ParserGenerator } from '../internal';
+import {
+    Parser,
+    ParseResult,
+    ParserGenerator,
+    ParseSuccessResult,
+} from '../internal';
 import { CacheStore } from '../utils/cache-store';
 
 const literalStringParserCache = new CacheStore<
@@ -28,10 +33,10 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {
         return input.startsWith(this.__literalString, offsetStart)
-            ? {
-                  offsetEnd: offsetStart + this.__literalString.length,
-                  data: this.__literalString,
-              }
+            ? new ParseSuccessResult(
+                  offsetStart + this.__literalString.length,
+                  () => this.__literalString,
+              )
             : undefined;
     }
 }

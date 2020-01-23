@@ -1,4 +1,4 @@
-import { Parser, ParseResult } from '../../internal';
+import { Parser, ParseResult, ParseSuccessResult } from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
 const parserCache = new CacheStore<
@@ -47,13 +47,12 @@ export abstract class ValueConverter<
     ): ParseResult<TConvertedResult> {
         const result = this.__prevParser.tryParse(input, offsetStart);
         if (!result) return undefined;
-        return {
-            ...result,
-            data: this.__valueConverter(this.__value, {
+        return new ParseSuccessResult(result.offsetEnd, () =>
+            this.__valueConverter(this.__value, {
                 input,
                 offsetStart,
                 result,
             }),
-        };
+        );
     }
 }

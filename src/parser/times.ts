@@ -1,6 +1,9 @@
-import { AnyOrMoreParser, Parser } from '../internal';
+import { AnyOrMoreParser, Parser, ParseSuccessResult } from '../internal';
 
-export class TimesParser<TResult> extends AnyOrMoreParser<TResult, TResult[]> {
+export class TimesParser<TResult> extends AnyOrMoreParser<
+    TResult,
+    ParseSuccessResult<TResult>[]
+> {
     private readonly __repeatCount: number;
 
     constructor(prevParser: Parser<TResult>, count: number) {
@@ -19,7 +22,9 @@ export class TimesParser<TResult> extends AnyOrMoreParser<TResult, TResult[]> {
         this.__repeatCount = count;
     }
 
-    protected __resultsValidator(results: TResult[]): results is TResult[] {
+    protected __resultsValidator(
+        results: ParseSuccessResult<TResult>[],
+    ): results is ParseSuccessResult<TResult>[] {
         return results.length === this.__repeatCount;
     }
 }

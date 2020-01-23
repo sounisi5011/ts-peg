@@ -1,13 +1,13 @@
-import { AnyOrMoreParser } from '../internal';
+import { AnyOrMoreParser, ParseSuccessResult } from '../internal';
 import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
 
 export class OneOrMoreParser<TResult> extends AnyOrMoreParser<
     TResult,
-    OneOrMoreTuple<TResult>
+    OneOrMoreTuple<ParseSuccessResult<TResult>>
 > {
     protected __resultsValidator(
-        results: TResult[],
-    ): results is OneOrMoreTuple<TResult> {
+        results: ParseSuccessResult<TResult>[],
+    ): results is OneOrMoreTuple<ParseSuccessResult<TResult>> {
         return isOneOrMoreTuple(results);
     }
 }

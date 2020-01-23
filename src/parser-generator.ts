@@ -2,6 +2,7 @@ import {
     AnyCharacterParser,
     CharacterClassParser,
     CustomizableParser,
+    CustomizableParserParseFunc,
     LiteralStringParser,
     ParseFunc,
     Parser,
@@ -60,7 +61,7 @@ export class ParserGenerator {
                 const currentChar = String.fromCodePoint(currentCodePoint);
                 return {
                     offsetEnd: offsetStart + currentChar.length,
-                    data: currentChar,
+                    valueGetter: () => currentChar,
                 };
             }
             return undefined;
@@ -97,7 +98,7 @@ export class ParserGenerator {
         return new CustomizableParser(
             (input, offsetStart) =>
                 exp.tryParse(input, offsetStart)
-                    ? { offsetEnd: offsetStart, data: undefined }
+                    ? { offsetEnd: offsetStart, valueGetter: () => undefined }
                     : undefined,
             this,
         );
@@ -112,7 +113,7 @@ export class ParserGenerator {
             (input, offsetStart) =>
                 exp.tryParse(input, offsetStart)
                     ? undefined
-                    : { offsetEnd: offsetStart, data: undefined },
+                    : { offsetEnd: offsetStart, valueGetter: () => undefined },
             this,
         );
     }
@@ -135,7 +136,7 @@ export class ParserGenerator {
                 data.push(expData);
                 offset = result.offsetEnd;
             }
-            return { offsetEnd: offset, data };
+            return { offsetEnd: offset, valueGetter: () => data };
         });
     }
 
@@ -201,8 +202,8 @@ export class ParserGenerator {
         args: TExps | [() => TExps],
         callback: (
             exps: TExps,
-            ...args: Parameters<ParseFunc<TResult>>
-        ) => ReturnType<ParseFunc<TResult>>,
+            ...args: Parameters<CustomizableParserParseFunc<TResult>>
+        ) => ReturnType<CustomizableParserParseFunc<TResult>>,
     ): Parser<TResult> {
         const [firstArg] = args;
 

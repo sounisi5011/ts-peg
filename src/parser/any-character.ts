@@ -1,4 +1,9 @@
-import { Parser, ParseResult, ParserGenerator } from '../internal';
+import {
+    Parser,
+    ParseResult,
+    ParserGenerator,
+    ParseSuccessResult,
+} from '../internal';
 
 const anyCharacterParserCacheMap = new WeakMap<
     ParserGenerator,
@@ -17,7 +22,10 @@ export class AnyCharacterParser extends Parser<string> {
         const codePoint = input.codePointAt(offsetStart);
         if (typeof codePoint === 'number') {
             const data = String.fromCodePoint(codePoint);
-            return { offsetEnd: offsetStart + data.length, data };
+            return new ParseSuccessResult(
+                offsetStart + data.length,
+                () => data,
+            );
         }
         return undefined;
     }
