@@ -1,9 +1,8 @@
 import {
-    Parser,
-    ParseResult,
     PredicateExecutionEnvironment,
+    ValueConverter,
+    ValueConverterMetadata,
 } from '../internal';
-import { CacheStore } from '../utils/cache-store';
 
 export type ActionFunc<TPrevResult, TActionResult> = (
     exp: TPrevResult,
@@ -27,49 +26,21 @@ export class ActionExecutionEnvironment extends PredicateExecutionEnvironment {
     }
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const parserCache = new CacheStore<
-    [Parser<unknown>, ActionFunc<any, unknown>],
-    ActionParser<any, unknown>
->();
-/* eslint-enable */
-
-export class ActionParser<TPrevResult, TActionResult> extends Parser<
+export class ActionParser<TPrevResult, TActionResult> extends ValueConverter<
+    TPrevResult,
+    ActionFunc<TPrevResult, TActionResult>,
     TActionResult
 > {
-    private readonly __prevParser: Parser<TPrevResult>;
-    private readonly __actionFn: ActionFunc<TPrevResult, TActionResult>;
-
-    constructor(
-        prevParser: Parser<TPrevResult>,
-        actionFn: ActionFunc<TPrevResult, TActionResult>,
-    ) {
-        super(prevParser.parserGenerator);
-        this.__prevParser = prevParser;
-        this.__actionFn = actionFn;
-
-        const cachedParser = parserCache.getWithTypeGuard(
-            [prevParser, actionFn],
-            (value): value is ActionParser<TPrevResult, TActionResult> =>
-                value instanceof this.constructor,
-            this,
-        );
-        if (cachedParser) return cachedParser;
-    }
-
-    protected __parse(
-        input: string,
-        offsetStart: number,
-    ): ParseResult<TActionResult> {
-        const result = this.__prevParser.tryParse(input, offsetStart);
-        if (!result) return undefined;
-        const data = this.__actionFn(
+    protected __valueConverter(
+        value: ActionFunc<TPrevResult, TActionResult>,
+        { input, offsetStart, result }: ValueConverterMetadata<TPrevResult>,
+    ): TActionResult {
+        return value(
             result.data,
             new ActionExecutionEnvironment(input, {
                 offsetStart,
                 offsetEnd: result.offsetEnd,
             }),
         );
-        return { ...result, data };
     }
 }

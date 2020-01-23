@@ -1,39 +1,10 @@
-import { Parser, ParseResult } from '../internal';
-import { CacheStore } from '../utils/cache-store';
+import { ValueConverter } from '../internal';
 
-const parserCache = new CacheStore<
-    [Parser<unknown>, unknown],
-    ValueConverterParser<unknown, unknown>
->();
-
-export class ValueConverterParser<TPrevResult, TConvertedResult> extends Parser<
+export class ValueConverterParser<
+    TPrevResult,
     TConvertedResult
-> {
-    private readonly __prevParser: Parser<TPrevResult>;
-    private readonly __value: TConvertedResult;
-
-    constructor(prevParser: Parser<TPrevResult>, value: TConvertedResult) {
-        super(prevParser.parserGenerator);
-        this.__prevParser = prevParser;
-        this.__value = value;
-
-        const cachedParser = parserCache.getWithTypeGuard(
-            [prevParser, value],
-            (
-                value,
-            ): value is ValueConverterParser<TPrevResult, TConvertedResult> =>
-                value instanceof this.constructor,
-            this,
-        );
-        if (cachedParser) return cachedParser;
-    }
-
-    protected __parse(
-        input: string,
-        offsetStart: number,
-    ): ParseResult<TConvertedResult> {
-        const result = this.__prevParser.tryParse(input, offsetStart);
-        if (!result) return undefined;
-        return { ...result, data: this.__value };
+> extends ValueConverter<TPrevResult, TConvertedResult, TConvertedResult> {
+    protected __valueConverter(value: TConvertedResult): TConvertedResult {
+        return value;
     }
 }
