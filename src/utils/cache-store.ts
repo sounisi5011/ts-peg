@@ -53,25 +53,23 @@ export class CacheStore<K extends [unknown, ...unknown[]], V> {
     }
 
     private __getStore(keys: K): StoreItem<V> {
-        let targetStore = this.__store;
-        for (const key of keys) {
-            let store = this.__isObject(key)
-                ? targetStore.childrenObjectMap.get(key)
-                : targetStore.childrenPrimitiveMap.get(key);
-            if (!store) {
-                store = {
-                    childrenPrimitiveMap: new Map(),
-                    childrenObjectMap: new WeakMap(),
-                };
-                if (this.__isObject(key)) {
-                    targetStore.childrenObjectMap.set(key, store);
-                } else {
-                    targetStore.childrenPrimitiveMap.set(key, store);
-                }
+        return keys.reduce<StoreItem<V>>((parentStore, key) => {
+            const childStore = this.__isObject(key)
+                ? parentStore.childrenObjectMap.get(key)
+                : parentStore.childrenPrimitiveMap.get(key);
+            if (childStore) return childStore;
+
+            const newChildStore = {
+                childrenPrimitiveMap: new Map(),
+                childrenObjectMap: new WeakMap(),
+            };
+            if (this.__isObject(key)) {
+                parentStore.childrenObjectMap.set(key, newChildStore);
+            } else {
+                parentStore.childrenPrimitiveMap.set(key, newChildStore);
             }
-            targetStore = store;
-        }
-        return targetStore;
+            return newChildStore;
+        }, this.__store);
     }
 
     private __isObject(value: unknown): value is object {
