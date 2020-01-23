@@ -4,7 +4,6 @@ import {
     CustomizableParser,
     CustomizableParserParseFunc,
     LiteralStringParser,
-    ParseFunc,
     Parser,
     ParserResultDataType,
 } from './internal';

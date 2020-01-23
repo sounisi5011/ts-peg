@@ -22,7 +22,7 @@ function abnfStr(str: string): CustomizableParser<string> {
         const offsetEnd = offsetStart + str.length;
         const inputStr = input.substring(offsetStart, offsetEnd);
         return usAsciiCaseInsensitive(inputStr) === istr
-            ? { offsetEnd, data: str }
+            ? { offsetEnd, valueGetter: () => str }
             : undefined;
     }, p);
 }
