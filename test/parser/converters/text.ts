@@ -69,7 +69,7 @@ test('should not match if starting offset is out of range', t => {
     t.is(p.any.text.tryParse('abc', 99), undefined);
 });
 
-test.skip('should not invoke action callback', t => {
+test('should not invoke action callback', t => {
     let assertCallAction: () => void;
     let assertCount = 0;
     const parser = p.any.action(char => {
@@ -97,8 +97,8 @@ test.skip('should not invoke action callback', t => {
     });
 
     assertCallAction = () =>
-        t.fail(
-            'should not invoke action callback if the action has already been invoked',
+        t.pass(
+            'should invoke action callback if the action has already been invoked',
         );
     assertCount++;
     t.deepEqual(parser.tryParse('abc', 0), {
