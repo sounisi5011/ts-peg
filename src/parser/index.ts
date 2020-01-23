@@ -2,6 +2,7 @@ import {
     ActionFunc,
     ActionParser,
     CustomizableParser,
+    MatchedTextParser,
     OneOrMoreParser,
     ParserGenerator,
     TimesParser,
@@ -80,6 +81,10 @@ export abstract class Parser<TResult> {
             },
             this.__parserGenerator,
         ));
+    }
+
+    get text(): Parser<string> {
+        return new MatchedTextParser(this);
     }
 
     times<TCount extends number>(

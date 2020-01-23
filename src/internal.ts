@@ -11,6 +11,7 @@ export * from './parser/any-character';
 export * from './parser/character-class';
 export * from './parser/customizable';
 export * from './parser/literal-string';
+export * from './parser/matched-text';
 export * from './parser/one-or-more';
 export * from './parser/times';
 export * from './parser/value';
