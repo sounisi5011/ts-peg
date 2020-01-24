@@ -5,9 +5,18 @@ import p, { Parser, ParserGenerator } from '../../../src';
 
 test('should match', t => {
     t.is(p.any.optional.tryParse('abc', 0)?.data, 'a');
-    t.is(p.any.optional.tryParse('', 0)?.data, undefined);
+    {
+        const parseResult = p.any.optional.tryParse('', 0);
+        t.not(parseResult, undefined);
+        t.is(parseResult?.data, undefined);
+    }
+
     t.is(p.str('x').optional.tryParse('xxyyzz', 0)?.data, 'x');
-    t.is(p.str('x').optional.tryParse('xxyyzz', 3)?.data, undefined);
+    {
+        const parseResult = p.str('x').optional.tryParse('xxyyzz', 3);
+        t.not(parseResult, undefined);
+        t.is(parseResult?.data, undefined);
+    }
 });
 
 test('should not match if starting offset is out of range', t => {
