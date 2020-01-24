@@ -1,5 +1,5 @@
-import { AnyOrMoreParser, ParseSuccessResult } from '../internal';
-import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
+import { AnyOrMoreParser, ParseSuccessResult } from '../../internal';
+import { isOneOrMoreTuple, OneOrMoreTuple } from '../../types';
 
 export class OneOrMoreParser<TResult> extends AnyOrMoreParser<
     TResult,

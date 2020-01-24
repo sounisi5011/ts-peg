@@ -3,7 +3,7 @@ import {
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
-} from '../internal';
+} from '../../internal';
 
 const anyCharacterParserCacheMap = new WeakMap<
     ParserGenerator,

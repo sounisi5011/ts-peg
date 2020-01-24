@@ -2,7 +2,7 @@ import {
     PredicateExecutionEnvironment,
     ValueConverter,
     ValueConverterMetadata,
-} from '../internal';
+} from '../../internal';
 
 export type ActionFunc<TPrevResult, TActionResult> = (
     exp: TPrevResult,

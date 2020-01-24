@@ -1,4 +1,4 @@
-import { AnyOrMoreParser, Parser, ParseSuccessResult } from '../internal';
+import { AnyOrMoreParser, Parser, ParseSuccessResult } from '../../internal';
 
 export class TimesParser<TResult> extends AnyOrMoreParser<
     TResult,

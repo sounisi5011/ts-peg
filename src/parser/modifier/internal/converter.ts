@@ -1,4 +1,4 @@
-import { Parser } from '../../internal';
+import { Parser } from '../../../internal';
 
 export abstract class ConverterParser<
     TPrevResult,

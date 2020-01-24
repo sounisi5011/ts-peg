@@ -1,5 +1,5 @@
-import { ConverterParser, Parser, ParseSuccessResult } from '../internal';
-import { CacheStore } from '../utils/cache-store';
+import { ConverterParser, Parser, ParseSuccessResult } from '../../internal';
+import { CacheStore } from '../../utils/cache-store';
 
 const parserCache = new CacheStore<
     [Parser<unknown>],

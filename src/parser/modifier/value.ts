@@ -1,4 +1,4 @@
-import { ValueConverter } from '../internal';
+import { ValueConverter } from '../../internal';
 
 export class ValueConverterParser<
     TPrevResult,

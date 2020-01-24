@@ -3,8 +3,8 @@ import {
     Parser,
     ParseResult,
     ParseSuccessResult,
-} from '../../internal';
-import { CacheStore } from '../../utils/cache-store';
+} from '../../../internal';
+import { CacheStore } from '../../../utils/cache-store';
 
 const parserCache = new CacheStore<
     [Parser<unknown>, unknown],

@@ -8,9 +8,9 @@ import {
     TimesParser,
     ValueConverterParser,
     ZeroOrMoreParser,
-} from '../internal';
-import { RepeatTuple } from '../types';
-import { CacheStore } from '../utils/cache-store';
+} from '../../internal';
+import { RepeatTuple } from '../../types';
+import { CacheStore } from '../../utils/cache-store';
 
 export type ParseFunc<TResult, TRet = ParseResult<TResult>> = (
     input: string,

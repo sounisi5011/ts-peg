@@ -3,8 +3,8 @@ import {
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
-} from '../internal';
-import { CacheStore } from '../utils/cache-store';
+} from '../../internal';
+import { CacheStore } from '../../utils/cache-store';
 
 const literalStringParserCache = new CacheStore<
     [ParserGenerator, string],

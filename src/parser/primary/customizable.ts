@@ -4,7 +4,7 @@ import {
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
-} from '../internal';
+} from '../../internal';
 
 export type CustomizableParserParseFunc<TResult> = ParseFunc<
     TResult,

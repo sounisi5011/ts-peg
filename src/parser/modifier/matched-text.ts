@@ -1,4 +1,4 @@
-import { Parser, ValueConverter, ValueConverterMetadata } from '../internal';
+import { Parser, ValueConverter, ValueConverterMetadata } from '../../internal';
 
 export class MatchedTextParser extends ValueConverter<unknown, null, string> {
     constructor(prevParser: Parser<unknown>) {

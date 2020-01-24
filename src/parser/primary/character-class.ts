@@ -3,10 +3,10 @@ import {
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
-} from '../internal';
-import { isOneOrMoreTuple, OneOrMoreTuple } from '../types';
-import { matchAll } from '../utils';
-import { CacheStore } from '../utils/cache-store';
+} from '../../internal';
+import { isOneOrMoreTuple, OneOrMoreTuple } from '../../types';
+import { matchAll } from '../../utils';
+import { CacheStore } from '../../utils/cache-store';
 
 const characterClassParserCache = new CacheStore<
     [ParserGenerator, string],
