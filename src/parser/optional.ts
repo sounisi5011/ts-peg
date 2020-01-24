@@ -1,4 +1,4 @@
-import { Parser, ParseSuccessResult } from '../internal';
+import { ConverterParser, Parser, ParseSuccessResult } from '../internal';
 import { CacheStore } from '../utils/cache-store';
 
 const parserCache = new CacheStore<
@@ -6,12 +6,11 @@ const parserCache = new CacheStore<
     OptionalParser<unknown>
 >();
 
-export class OptionalParser<TResult> extends Parser<TResult | undefined> {
-    private readonly __prevParser: Parser<TResult>;
-
+export class OptionalParser<TResult> extends ConverterParser<
+    TResult | undefined
+> {
     constructor(prevParser: Parser<TResult>) {
-        super(prevParser.parserGenerator);
-        this.__prevParser = prevParser;
+        super(prevParser);
 
         const cachedParser = parserCache.getWithTypeGuard(
             [prevParser],

@@ -1,4 +1,9 @@
-import { Parser, ParseResult, ParseSuccessResult } from '../../internal';
+import {
+    ConverterParser,
+    Parser,
+    ParseResult,
+    ParseSuccessResult,
+} from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
 const parserCache = new CacheStore<
@@ -16,13 +21,11 @@ export abstract class ValueConverter<
     TPrevResult,
     TValue,
     TConvertedResult
-> extends Parser<TConvertedResult> {
-    private readonly __prevParser: Parser<TPrevResult>;
+> extends ConverterParser<TPrevResult, TConvertedResult> {
     protected readonly __value: TValue;
 
     constructor(prevParser: Parser<TPrevResult>, value: TValue) {
-        super(prevParser.parserGenerator);
-        this.__prevParser = prevParser;
+        super(prevParser);
         this.__value = value;
 
         const cachedParser = parserCache.getWithTypeGuard(

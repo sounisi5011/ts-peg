@@ -1,4 +1,9 @@
-import { Parser, ParseResult, ParseSuccessResult } from '../../internal';
+import {
+    ConverterParser,
+    Parser,
+    ParseResult,
+    ParseSuccessResult,
+} from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
 const parserCache = new CacheStore<
@@ -16,16 +21,14 @@ export abstract class AnyOrMoreParser<
     TResultData extends TResult[] = SuccessResultTuple2ResultTuple<
         TSuccessResultTuple
     >
-> extends Parser<TResultData> {
-    private readonly __prevParser: Parser<TResult>;
+> extends ConverterParser<TResult, TResultData> {
     private readonly __resultsLengthLimit: number;
 
     constructor(
         prevParser: Parser<TResult>,
         { resultsLengthLimit = Infinity } = {},
     ) {
-        super(prevParser.parserGenerator);
-        this.__prevParser = prevParser;
+        super(prevParser);
         this.__resultsLengthLimit = resultsLengthLimit;
 
         const cachedParser = parserCache.getWithTypeGuard(

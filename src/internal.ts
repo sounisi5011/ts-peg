@@ -4,6 +4,7 @@
  */
 
 export * from './parser';
+export * from './parser/internal/converter';
 export * from './parser/internal/any-or-more';
 export * from './parser/internal/value-converter';
 export * from './parser/action';
