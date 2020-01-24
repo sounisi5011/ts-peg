@@ -4,6 +4,7 @@ import {
     MatchedTextParser,
     OneOrMoreParser,
     OptionalParser,
+    ParseResult,
     ParserGenerator,
     TimesParser,
     ValueConverterParser,
@@ -17,25 +18,11 @@ export type ParseFunc<TResult, TRet = ParseResult<TResult>> = (
     offsetStart: number,
 ) => TRet;
 
-export type ParseResult<TResult> = ParseSuccessResult<TResult> | undefined;
-
 export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
     infer U
 >
     ? U
     : never;
-
-export class ParseSuccessResult<TResult> {
-    private readonly __dataGenerator: () => TResult;
-
-    constructor(readonly offsetEnd: number, dataGenerator: () => TResult) {
-        this.__dataGenerator = dataGenerator;
-    }
-
-    get data(): TResult {
-        return this.__dataGenerator();
-    }
-}
 
 export class PredicateExecutionEnvironment {
     readonly input: string;

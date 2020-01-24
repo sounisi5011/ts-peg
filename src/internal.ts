@@ -4,6 +4,7 @@
  */
 
 export * from './parser/internal';
+export * from './parser/internal/parse-result';
 export * from './parser/primary/any-character';
 export * from './parser/primary/character-class';
 export * from './parser/primary/customizable';
