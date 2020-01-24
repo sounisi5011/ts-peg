@@ -14,6 +14,7 @@ export {
     ParserGenerator,
     OneOrMoreParser,
     ZeroOrMoreParser,
+    OptionalParser,
     ActionParser,
     ActionExecutionEnvironment,
     ActionFunc,

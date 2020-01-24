@@ -13,6 +13,7 @@ export * from './parser/customizable';
 export * from './parser/literal-string';
 export * from './parser/matched-text';
 export * from './parser/one-or-more';
+export * from './parser/optional';
 export * from './parser/times';
 export * from './parser/value';
 export * from './parser/zero-or-more';

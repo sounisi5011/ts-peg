@@ -1,9 +1,9 @@
 import {
     ActionFunc,
     ActionParser,
-    CustomizableParser,
     MatchedTextParser,
     OneOrMoreParser,
+    OptionalParser,
     ParserGenerator,
     TimesParser,
     ValueConverterParser,
@@ -77,21 +77,8 @@ export abstract class Parser<TResult> {
         return new OneOrMoreParser(this);
     }
 
-    private __optionalCache?: Parser<TResult | undefined>;
     get optional(): Parser<TResult | undefined> {
-        if (this.__optionalCache) return this.__optionalCache;
-        // TODO: Rewrite to code that does not use CustomizableParser
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return (this.__optionalCache = new CustomizableParser(
-            (input, offsetStart) => {
-                const result = this.tryParse(input, offsetStart);
-                return {
-                    offsetEnd: result ? result.offsetEnd : offsetStart,
-                    valueGetter: () => (result ? result.data : undefined),
-                };
-            },
-            this.__parserGenerator,
-        ));
+        return new OptionalParser(this);
     }
 
     get text(): Parser<string> {
