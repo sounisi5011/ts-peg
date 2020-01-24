@@ -203,7 +203,7 @@ test('should fail by invalid arguments', t => {
         {
             instanceOf: Error,
             message:
-                'one or more values are required in the array returned by callback',
+                'one or more values are required in the array returned by callback function',
         },
     );
     t.throws(
