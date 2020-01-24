@@ -5,15 +5,16 @@ import {
     CustomizableParserParseFunc,
     LiteralStringParser,
     Parser,
+    ParserLike,
+    ParserLikeTuple2ResultTuple,
     ParserResultDataType,
+    SequenceParser,
 } from './internal';
 import {
     isReadonlyOrWritableArray,
     OneOrMoreReadonlyTuple,
     OneOrMoreTuple,
 } from './types';
-
-type ParserLike = Parser<unknown> | string;
 
 type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
     ? ParserResultDataType<T>
@@ -117,26 +118,13 @@ export class ParserGenerator {
         );
     }
 
-    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+    seq<T extends readonly [ParserLike, ...ParserLike[]]>(
         ...args: T | [() => T]
-    ): Parser<ParserTuple2ResultTuple<T>> {
-        return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-            // @ts-ignore - Type 'never[]' is not assignable to type 'ParserTuple2ResultTuple<T>'.
-            const data: ParserTuple2ResultTuple<T> = [];
-            let offset = offsetStart;
-            for (const exp of exps as readonly T[number][]) {
-                const expParser: Parser<ParserLike2Result<
-                    T[number]
-                >> = this.__toParser(exp);
-                const result = expParser.tryParse(input, offset);
-                if (!result) return undefined;
-                const expData: ParserLike2Result<T[number]> = result.data;
-                data.push(expData);
-                offset = result.offsetEnd;
-            }
-            return { offsetEnd: offset, valueGetter: () => data };
-        });
+    ): Parser<ParserLikeTuple2ResultTuple<T>> {
+        return new SequenceParser(
+            this,
+            typeof args[0] === 'function' ? args[0] : (args as T),
+        );
     }
 
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(

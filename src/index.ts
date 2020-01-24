@@ -20,6 +20,7 @@ export {
     ActionFunc,
     ValueConverterParser,
     MatchedTextParser,
+    SequenceParser,
 } from './internal';
 
 export default new ParserGenerator();
