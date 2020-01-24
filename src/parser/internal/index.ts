@@ -13,11 +13,6 @@ import {
 import { RepeatTuple } from '../../types';
 import { CacheStore } from '../../utils/cache-store';
 
-export type ParseFunc<TResult, TRet = ParseResult<TResult>> = (
-    input: string,
-    offsetStart: number,
-) => TRet;
-
 export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
     infer U
 >
@@ -40,7 +35,7 @@ export abstract class Parser<TResult> {
     private readonly __parserGenerator: ParserGenerator;
     private readonly __memoStore = new CacheStore<
         [string, number],
-        ReturnType<ParseFunc<TResult>>
+        ParseResult<TResult>
     >();
 
     constructor(parserGenerator: ParserGenerator) {

@@ -1,17 +1,17 @@
 import {
-    ParseFunc,
     Parser,
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
 } from '../../internal';
 
-export type CustomizableParserParseFunc<TResult> = ParseFunc<
-    TResult,
+export type CustomizableParserParseFunc<TResult> = (
+    input: string,
+    offsetStart: number,
+) =>
     | ParseSuccessResult<TResult>
     | { offsetEnd: number; valueGetter(): TResult }
-    | undefined
->;
+    | undefined;
 
 export class CustomizableParser<TResult> extends Parser<TResult> {
     private readonly __parseFunc: CustomizableParserParseFunc<TResult>;
