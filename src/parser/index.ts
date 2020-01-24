@@ -10,6 +10,7 @@ import {
     ZeroOrMoreParser,
 } from '../internal';
 import { RepeatTuple } from '../types';
+import { CacheStore } from '../utils/cache-store';
 
 export type ParseFunc<TResult, TRet = ParseResult<TResult>> = (
     input: string,
@@ -50,10 +51,10 @@ export type Predicate = (envs: PredicateExecutionEnvironment) => boolean;
 
 export abstract class Parser<TResult> {
     private readonly __parserGenerator: ParserGenerator;
-    private readonly __memoMap: Map<
-        string,
-        Map<number, { result: ReturnType<ParseFunc<TResult>> }>
-    > = new Map();
+    private readonly __memoStore = new CacheStore<
+        [string, number],
+        ReturnType<ParseFunc<TResult>>
+    >();
 
     constructor(parserGenerator: ParserGenerator) {
         this.__parserGenerator = parserGenerator;
@@ -157,18 +158,9 @@ export abstract class Parser<TResult> {
     tryParse(input: string, offsetStart: number): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
-        let memoStore = this.__memoMap.get(input);
-        if (memoStore) {
-            const memoData = memoStore.get(offsetStart);
-            if (memoData) return memoData.result;
-        } else {
-            memoStore = new Map();
-            this.__memoMap.set(input, memoStore);
-        }
-
-        const result = this.__parse(input, offsetStart);
-        memoStore.set(offsetStart, { result });
-
-        return result;
+        return this.__memoStore.getWithDefaultCallback(
+            [input, offsetStart],
+            () => this.__parse(input, offsetStart),
+        );
     }
 }
