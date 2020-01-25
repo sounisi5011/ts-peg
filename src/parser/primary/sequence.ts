@@ -82,29 +82,34 @@ export class SequenceParser<
         if (this.__cachedExps) return this.__cachedExps;
         const exps =
             typeof this.__inputExps === 'function'
-                ? this.__inputExps()
+                ? this.__callback2exps(this.__inputExps)
                 : this.__inputExps;
-        if (typeof this.__inputExps === 'function') {
-            if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
-                throw new TypeError(
-                    'the value returned by callback function must be an array with Parser objects or strings',
-                );
-            }
-            if (exps.length < 1) {
-                throw new Error(
-                    'one or more values are required in the array returned by callback function',
-                );
-            }
-            if (!SequenceParser.isValidExpressions(exps)) {
-                throw new TypeError(
-                    'the value returned by callback function must be an array with Parser objects or strings',
-                );
-            }
-        }
         return (this.__cachedExps = exps.map(expression =>
             expression instanceof Parser
                 ? expression
                 : this.parserGenerator.str(expression),
         ));
+    }
+
+    private __callback2exps(
+        callback: () => TParserLikeTuple,
+    ): TParserLikeTuple {
+        const exps = callback();
+        if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
+            throw new TypeError(
+                'the value returned by callback function must be an array with Parser objects or strings',
+            );
+        }
+        if (exps.length < 1) {
+            throw new Error(
+                'one or more values are required in the array returned by callback function',
+            );
+        }
+        if (!SequenceParser.isValidExpressions(exps)) {
+            throw new TypeError(
+                'the value returned by callback function must be an array with Parser objects or strings',
+            );
+        }
+        return exps;
     }
 }
