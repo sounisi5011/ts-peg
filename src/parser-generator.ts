@@ -2,18 +2,14 @@ import {
     AnyCharacterParser,
     CharacterClassParser,
     CustomizableParser,
-    CustomizableParserParseFunc,
     LiteralStringParser,
     Parser,
     ParserLike,
     ParserResultDataType,
+    PrioritizedChoiceParser,
     SequenceParser,
 } from './internal';
-import {
-    isReadonlyOrWritableArray,
-    OneOrMoreReadonlyTuple,
-    OneOrMoreTuple,
-} from './types';
+import { OneOrMoreReadonlyTuple, OneOrMoreTuple } from './types';
 
 type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
     ? ParserResultDataType<T>
@@ -148,95 +144,33 @@ export class ParserGenerator {
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<ParserLike2Result<T[number]>> {
-        return this.__validateSequenceArgs(args, (exps, input, offsetStart) => {
-            for (const exp of exps as readonly T[number][]) {
-                const expParser: Parser<ParserLike2Result<
-                    T[number]
-                >> = this.__toParser(exp);
-                const result = expParser.tryParse(input, offsetStart);
-                if (result) {
-                    return result;
-                }
+        if (args.length < 1) {
+            throw new Error('one or more arguments are required');
+        }
+        const [headArg, ...tailArgs] = args;
+        if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
+            if (tailArgs.length >= 1) {
+                throw new Error(
+                    'the second and subsequent arguments cannot be specified. the first argument is the callback function',
+                );
             }
-            return undefined;
-        });
+            return new PrioritizedChoiceParser(this, headArg);
+        }
+        if (!SequenceParser.isValidExpressions([headArg])) {
+            throw new TypeError(
+                'only the Parser object, string or function can be specified as the first argument',
+            );
+        }
+        if (!SequenceParser.isValidExpressions(args)) {
+            throw new TypeError(
+                'only the Parser object or string can be specified for the second argument and the subsequent arguments',
+            );
+        }
+        return new PrioritizedChoiceParser(this, args);
     }
 
     /** @TODO */
     label(_label: string): ParserGenerator {
         return this;
-    }
-
-    private __toParser<T>(value: Parser<T>): Parser<T>;
-    private __toParser(value: string): Parser<string>;
-    private __toParser<T extends ParserLike>(
-        value: T,
-    ): Parser<ParserLike2Result<T>>;
-
-    private __toParser(value: ParserLike): Parser<unknown> {
-        return value instanceof Parser ? value : this.str(value);
-    }
-
-    private __assertIsExpsArray(
-        value: unknown[],
-        errorMessage: string,
-    ): asserts value is ParserLike[];
-
-    private __assertIsExpsArray(
-        value: readonly unknown[],
-        errorMessage: string,
-    ): asserts value is readonly ParserLike[];
-
-    private __assertIsExpsArray(
-        value: readonly unknown[],
-        errorMessage: string,
-    ): asserts value is readonly ParserLike[] {
-        if (
-            !value.every(
-                item => typeof item === 'string' || item instanceof Parser,
-            )
-        ) {
-            throw new TypeError(errorMessage);
-        }
-    }
-
-    private __validateSequenceArgs<
-        TExps extends readonly ParserLike[],
-        TResult
-    >(
-        args: TExps | [() => TExps],
-        callback: (
-            exps: TExps,
-            ...args: Parameters<CustomizableParserParseFunc<TResult>>
-        ) => ReturnType<CustomizableParserParseFunc<TResult>>,
-    ): Parser<TResult> {
-        const [firstArg] = args;
-
-        if (typeof firstArg === 'function' && !(firstArg instanceof Parser)) {
-            // TODO: Rewrite to code that does not use CustomizableParser
-            return new CustomizableParser((...parseArgs) => {
-                const exps = firstArg();
-                if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
-                    throw new TypeError(
-                        'The return value of a function argument must be an array',
-                    );
-                }
-                this.__assertIsExpsArray(
-                    exps,
-                    'The return value array of function argument can only contain string values and Parser objects',
-                );
-                return callback(exps, ...parseArgs);
-            }, this);
-        }
-
-        this.__assertIsExpsArray(
-            args,
-            'Only string values and Parser objects can be specified in the arguments',
-        );
-        // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser(
-            (...parseArgs) => callback(args, ...parseArgs),
-            this,
-        );
     }
 }

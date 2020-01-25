@@ -21,6 +21,7 @@ export {
     ValueConverterParser,
     MatchedTextParser,
     SequenceParser,
+    PrioritizedChoiceParser,
 } from './internal';
 
 export default new ParserGenerator();

@@ -2,45 +2,32 @@ import {
     Parser,
     ParseResult,
     ParserGenerator,
-    ParserResultDataType,
+    ParserLike,
+    ParserLike2Result,
     ParseSuccessResult,
+    SequenceParser,
 } from '../../internal';
-import { isReadonlyOrWritableArray } from '../../types';
+import {
+    isReadonlyOrWritableArray,
+    OneOrMoreReadonlyTuple,
+    OneOrMoreTuple,
+} from '../../types';
 import { CacheStore } from '../../utils/cache-store';
-
-export type ParserLike = Parser<unknown> | string;
-
-// string | Parser<42> -> string | 42
-export type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
-    ? ParserResultDataType<T>
-    : T;
-
-// ['foo', Parser<42>, 'bar', Parser<true>, ...] -> ['foo', 42, 'bar', true, ...]
-export type ParserLikeTuple2ResultTuple<T extends readonly ParserLike[]> = {
-    -readonly [P in keyof T]: T[P] extends ParserLike
-        ? ParserLike2Result<T[P]>
-        : T[P];
-};
 
 const parserCache = new CacheStore<
     | [ParserGenerator, ...Parser<unknown>[]]
     | [ParserGenerator, () => readonly ParserLike[]],
-    SequenceParser<readonly ParserLike[]>
+    PrioritizedChoiceParser<OneOrMoreReadonlyTuple<ParserLike>>
 >();
 
-export class SequenceParser<
-    TParserLikeTuple extends readonly ParserLike[]
-> extends Parser<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
-    private readonly __inputExps: Parser<unknown>[] | (() => TParserLikeTuple);
-    private __cachedExps: Parser<unknown>[] | undefined;
+export class PrioritizedChoiceParser<
+    TParserLikeTuple extends OneOrMoreReadonlyTuple<ParserLike>
+> extends Parser<ParserLike2Result<TParserLikeTuple[number]>> {
+    private readonly __inputExps:
+        | OneOrMoreTuple<Parser<unknown>>
+        | (() => TParserLikeTuple);
 
-    static isValidExpressions(
-        expressions: readonly unknown[],
-    ): expressions is readonly ParserLike[] {
-        return expressions.every(
-            exp => typeof exp === 'string' || exp instanceof Parser,
-        );
-    }
+    private __cachedExps: OneOrMoreTuple<Parser<unknown>> | undefined;
 
     constructor(
         parserGenerator: ParserGenerator,
@@ -54,29 +41,34 @@ export class SequenceParser<
                 ? expressions
                 : this.__parserLikeList2ParserList(expressions);
 
-        const cachedParser = this.__getCachedParser();
+        const cachedParser = parserCache.upsertWithTypeGuard(
+            typeof this.__inputExps === 'function'
+                ? [this.parserGenerator, this.__inputExps]
+                : [this.parserGenerator, ...this.__inputExps],
+            undefined,
+            () => this,
+            (value): value is this => value instanceof this.constructor,
+        );
         if (cachedParser !== this) return cachedParser;
     }
 
     protected __parse(
         input: string,
         offsetStart: number,
-    ): ParseResult<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
-        const results: ParseSuccessResult<unknown>[] = [];
-        let nextOffset = offsetStart;
-        for (const expression of this.__exps) {
-            const result = expression.tryParse(input, nextOffset);
-            if (!result) return undefined;
-            results.push(result);
-            nextOffset = result.offsetEnd;
+    ): ParseResult<ParserLike2Result<TParserLikeTuple[number]>> {
+        for (const expression of this.__exps()) {
+            const result = expression.tryParse(input, offsetStart);
+            if (result) {
+                return new ParseSuccessResult(
+                    result.offsetEnd,
+                    () => result.data as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                );
+            }
         }
-        return new ParseSuccessResult(
-            nextOffset,
-            () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        );
+        return undefined;
     }
 
-    private get __exps(): Parser<unknown>[] {
+    private __exps(): OneOrMoreTuple<Parser<unknown>> {
         if (this.__cachedExps) return this.__cachedExps;
         const exps =
             typeof this.__inputExps === 'function'
@@ -86,11 +78,11 @@ export class SequenceParser<
     }
 
     private __parserLikeList2ParserList(
-        list: readonly ParserLike[],
-    ): Parser<unknown>[] {
+        list: OneOrMoreReadonlyTuple<ParserLike>,
+    ): OneOrMoreTuple<Parser<unknown>> {
         return list.map(item =>
             item instanceof Parser ? item : this.parserGenerator.str(item),
-        );
+        ) as OneOrMoreTuple<Parser<unknown>>;
     }
 
     private __validateInputExps(
@@ -107,24 +99,17 @@ export class SequenceParser<
             );
         }
         if ((Array.isArray as isReadonlyOrWritableArray)(expressions)) {
+            if (expressions.length < 1) {
+                throw new RangeError(
+                    'one or more values are required in the array of second argument',
+                );
+            }
             if (!SequenceParser.isValidExpressions(expressions)) {
                 throw new TypeError(
                     'the second argument array can contain only Parser objects or strings',
                 );
             }
         }
-    }
-
-    private __getCachedParser(): SequenceParser<TParserLikeTuple> {
-        return parserCache.upsertWithTypeGuard(
-            typeof this.__inputExps === 'function'
-                ? [this.parserGenerator, this.__inputExps]
-                : [this.parserGenerator, ...this.__inputExps],
-            undefined,
-            () => this,
-            (value): value is SequenceParser<TParserLikeTuple> =>
-                value instanceof this.constructor,
-        );
     }
 
     private __callback2exps(
@@ -137,7 +122,7 @@ export class SequenceParser<
             );
         }
         if (exps.length < 1) {
-            throw new Error(
+            throw new RangeError(
                 'one or more values are required in the array returned by callback function',
             );
         }
