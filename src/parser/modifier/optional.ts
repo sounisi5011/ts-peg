@@ -12,13 +12,14 @@ export class OptionalParser<TResult> extends ConverterParser<
     constructor(prevParser: Parser<TResult>) {
         super(prevParser);
 
-        const cachedParser = parserCache.getWithTypeGuard(
+        const cachedParser = parserCache.upsertWithTypeGuard(
             [prevParser],
+            undefined,
+            () => this,
             (value): value is OptionalParser<TResult> =>
                 value instanceof this.constructor,
-            this,
         );
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected __parse(

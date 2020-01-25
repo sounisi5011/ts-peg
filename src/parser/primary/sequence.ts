@@ -55,7 +55,7 @@ export class SequenceParser<
                 : this.__parserLikeList2ParserList(expressions);
 
         const cachedParser = this.__getCachedParser();
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected __parse(
@@ -116,13 +116,14 @@ export class SequenceParser<
     }
 
     private __getCachedParser(): SequenceParser<TParserLikeTuple> {
-        return parserCache.getWithTypeGuard(
+        return parserCache.upsertWithTypeGuard(
             typeof this.__inputExps === 'function'
                 ? [this.parserGenerator, this.__inputExps]
                 : [this.parserGenerator, ...this.__inputExps],
+            undefined,
+            () => this,
             (value): value is SequenceParser<TParserLikeTuple> =>
                 value instanceof this.constructor,
-            this,
         );
     }
 

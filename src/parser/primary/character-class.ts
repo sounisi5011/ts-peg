@@ -48,11 +48,12 @@ class CodePointRange {
         this.minCodePoint = Math.min(codePoint1, codePoint2);
         this.maxCodePoint = Math.max(codePoint1, codePoint2);
 
-        const cachedCodePointRange = codePointRangeCache.get(
+        const cachedCodePointRange = codePointRangeCache.upsert(
             [this.minCodePoint, this.maxCodePoint],
-            this,
+            undefined,
+            () => this,
         );
-        if (cachedCodePointRange) return cachedCodePointRange;
+        if (cachedCodePointRange !== this) return cachedCodePointRange;
     }
 
     get length(): number {
@@ -244,11 +245,12 @@ export class CharacterClassParser extends Parser<string> {
             this.isInverse ? charactersPattern.substring(1) : charactersPattern,
         );
 
-        const cachedParser = characterClassParserCache.get(
+        const cachedParser = characterClassParserCache.upsert(
             [parserGenerator, this.pattern],
-            this,
+            undefined,
+            () => this,
         );
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     get pattern(): string {

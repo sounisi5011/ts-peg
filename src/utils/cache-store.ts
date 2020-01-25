@@ -12,43 +12,19 @@ export class CacheStore<K extends [unknown, ...unknown[]], V> {
         childrenObjectMap: new WeakMap(),
     };
 
-    get(keys: K): V | undefined;
-    get(keys: K, defaultValue: V): V;
-    get(keys: K, ...args: [] | [V]): V | undefined {
+    get(keys: K): V | undefined {
         const store = this.__getStore(keys);
-        if (!hasProperty(store, 'value') && args.length !== 0) {
-            store.value = args[0];
-        }
         return store.value;
     }
 
-    getWithDefaultCallback(keys: K, defaultCallback: () => V): V {
+    getWithTypeGuard<GV extends V>(
+        keys: K,
+        typeGuard: (value: V) => value is GV,
+    ): GV | undefined {
         const store = this.__getStore(keys);
-        if (hasProperty(store, 'value')) {
-            return store.value;
-        }
-        return (store.value = defaultCallback());
-    }
-
-    getWithTypeGuard<U extends V>(
-        keys: K,
-        typeGuard: (value: V | undefined) => value is U,
-    ): U | undefined;
-
-    getWithTypeGuard<U extends V>(
-        keys: K,
-        typeGuard: (value: V | undefined) => value is U,
-        defaultValue: V,
-    ): U;
-
-    getWithTypeGuard<U extends V>(
-        keys: K,
-        typeGuard: (value: V | undefined) => value is U,
-        ...args: [] | [V]
-    ): U | undefined {
-        const value =
-            args.length !== 0 ? this.get(keys, args[0]) : this.get(keys);
-        return typeGuard(value) ? value : undefined;
+        return hasProperty(store, 'value') && typeGuard(store.value)
+            ? store.value
+            : undefined;
     }
 
     set(keys: K, value: V): this {
@@ -68,6 +44,85 @@ export class CacheStore<K extends [unknown, ...unknown[]], V> {
             return delete store.value;
         }
         return false;
+    }
+
+    /**
+     * @see https://tc39.es/proposal-upsert/
+     */
+    upsert<UV extends V>(
+        keys: K,
+        updateFn: (old: V, keys: K, store: this) => UV,
+        insertFn?: undefined,
+    ): UV | undefined;
+
+    upsert<IV extends V>(
+        keys: K,
+        updateFn: undefined,
+        insertFn: (keys: K, store: this) => IV,
+    ): V | IV;
+
+    upsert<UV extends V, IV extends V>(
+        keys: K,
+        updateFn: (old: V, keys: K, store: this) => UV,
+        insertFn: (keys: K, store: this) => IV,
+    ): UV | IV;
+
+    upsert(
+        keys: K,
+        updateFn: ((old: V, keys: K, store: this) => V) | undefined,
+        insertFn?: (keys: K, store: this) => V,
+    ): V | undefined {
+        const store = this.__upsert(keys, updateFn, insertFn);
+        return store.value;
+    }
+
+    upsertWithTypeGuard<UV extends V, GV extends UV>(
+        keys: K,
+        updateFn: (old: V, keys: K, store: this) => UV,
+        insertFn: undefined,
+        typeGuard: (value: UV) => value is GV,
+    ): GV | undefined;
+
+    upsertWithTypeGuard<IV extends V, GV extends V>(
+        keys: K,
+        updateFn: undefined,
+        insertFn: (keys: K, store: this) => IV,
+        typeGuard: (value: V | IV) => value is GV,
+    ): GV;
+
+    upsertWithTypeGuard<UV extends V, IV extends V, GV extends UV | IV>(
+        keys: K,
+        updateFn: (old: V, keys: K, store: this) => UV,
+        insertFn: (keys: K, store: this) => IV,
+        typeGuard: (value: UV | IV) => value is GV,
+    ): GV;
+
+    upsertWithTypeGuard<GV extends V>(
+        keys: K,
+        updateFn: ((old: V, keys: K, store: this) => V) | undefined,
+        insertFn: ((keys: K, store: this) => V) | undefined,
+        typeGuard: (value: V) => value is GV,
+    ): GV | undefined {
+        const store = this.__upsert(keys, updateFn, insertFn);
+        return hasProperty(store, 'value') && typeGuard(store.value)
+            ? store.value
+            : undefined;
+    }
+
+    private __upsert(
+        keys: K,
+        updateFn: ((old: V, keys: K, store: this) => V) | undefined,
+        insertFn: ((keys: K, store: this) => V) | undefined,
+    ): StoreItem<V> {
+        const store = this.__getStore(keys);
+        if (hasProperty(store, 'value')) {
+            if (updateFn) {
+                store.value = updateFn(store.value, keys, this);
+            }
+        } else if (insertFn) {
+            store.value = insertFn(keys, this);
+        }
+        return store;
     }
 
     private __getStore(keys: K): StoreItem<V> {

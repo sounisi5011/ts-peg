@@ -22,13 +22,14 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         super(parserGenerator);
         this.__literalString = literalString;
 
-        const cachedParser = literalStringParserCache.getWithTypeGuard(
+        const cachedParser = literalStringParserCache.upsertWithTypeGuard(
             [parserGenerator, literalString],
+            undefined,
+            () => this,
             (value): value is LiteralStringParser<T> =>
                 value instanceof this.constructor,
-            this,
         );
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {

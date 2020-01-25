@@ -31,8 +31,10 @@ export abstract class AnyOrMoreParser<
         super(prevParser);
         this.__resultsLengthLimit = resultsLengthLimit;
 
-        const cachedParser = parserCache.getWithTypeGuard(
+        const cachedParser = parserCache.upsertWithTypeGuard(
             [prevParser, this.__resultsValidator, resultsLengthLimit],
+            undefined,
+            () => this,
             (
                 value,
             ): value is AnyOrMoreParser<
@@ -40,9 +42,8 @@ export abstract class AnyOrMoreParser<
                 TSuccessResultTuple,
                 TResultData
             > => value instanceof this.constructor,
-            this,
         );
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected abstract __resultsValidator(

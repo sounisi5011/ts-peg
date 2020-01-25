@@ -28,15 +28,16 @@ export abstract class ValueConverter<
         super(prevParser);
         this.__value = value;
 
-        const cachedParser = parserCache.getWithTypeGuard(
+        const cachedParser = parserCache.upsertWithTypeGuard(
             [prevParser, value],
+            undefined,
+            () => this,
             (
                 value,
             ): value is ValueConverter<TPrevResult, TValue, TConvertedResult> =>
                 value instanceof this.constructor,
-            this,
         );
-        if (cachedParser) return cachedParser;
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected abstract __valueConverter(

@@ -127,9 +127,8 @@ export abstract class Parser<TResult> {
     tryParse(input: string, offsetStart: number): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
-        return this.__memoStore.getWithDefaultCallback(
-            [input, offsetStart],
-            () => this.__parse(input, offsetStart),
+        return this.__memoStore.upsert([input, offsetStart], undefined, () =>
+            this.__parse(input, offsetStart),
         );
     }
 }
