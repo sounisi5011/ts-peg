@@ -2,6 +2,7 @@ import {
     AnyCharacterParser,
     CharacterClassParser,
     CustomizableParser,
+    isParserLikeList,
     LiteralStringParser,
     Parser,
     ParserLike,
@@ -140,12 +141,12 @@ export class ParserGenerator {
             }
             return headArg;
         }
-        if (!SequenceParser.isValidExpressions([headArg])) {
+        if (!isParserLikeList([headArg])) {
             throw new TypeError(
                 'only the Parser object, string or function can be specified as the first argument',
             );
         }
-        if (!SequenceParser.isValidExpressions(args)) {
+        if (!isParserLikeList(args)) {
             throw new TypeError(
                 'only the Parser object or string can be specified for the second argument and the subsequent arguments',
             );
