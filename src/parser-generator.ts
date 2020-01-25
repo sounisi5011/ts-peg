@@ -6,7 +6,6 @@ import {
     LiteralStringParser,
     Parser,
     ParserLike,
-    ParserLike2Result,
     ParserLikeTuple2ResultTuple,
     PrioritizedChoiceParser,
     SequenceParser,
@@ -113,8 +112,16 @@ export class ParserGenerator {
     }
 
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        arg: () => T,
+    ): PrioritizedChoiceParser<T>;
+
+    or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        ...args: T
+    ): PrioritizedChoiceParser<T>;
+
+    or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<ParserLike2Result<T[number]>> {
+    ): PrioritizedChoiceParser<T> {
         return new PrioritizedChoiceParser(
             this,
             this.__validateSequenceLikeArgs(args),

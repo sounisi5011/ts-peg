@@ -5,6 +5,7 @@ import p, {
     CharacterClassParser,
     LiteralStringParser,
     Parser,
+    ParserResultDataType,
 } from '../../src';
 import { assertExtendType } from '../helpers/type';
 
@@ -287,49 +288,53 @@ import { assertExtendType } from '../helpers/type';
 
 {
     const parser = p.or('1');
-    assertType<TypeEq<typeof parser, Parser<'1'>>>();
+    assertType<TypeEq<'1', ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['1']);
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['1'] as const);
-    assertType<TypeEq<typeof parser, Parser<'1'>>>();
+    assertType<TypeEq<'1', ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or('x', 'y', 'z');
-    assertType<TypeEq<typeof parser, Parser<'x' | 'y' | 'z'>>>();
+    assertType<TypeEq<'x' | 'y' | 'z', ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['x', 'y', 'z']);
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['x', 'y', 'z'] as const);
-    assertType<TypeEq<typeof parser, Parser<'x' | 'y' | 'z'>>>();
+    assertType<TypeEq<'x' | 'y' | 'z', ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or('x', 'y', p.any);
-    assertType<TypeEq<typeof parser, Parser<'x' | 'y' | string>>>();
+    assertType<
+        TypeEq<'x' | 'y' | string, ParserResultDataType<typeof parser>>
+    >();
 }
 {
     const parser = p.or(() => ['x', 'y', p.any]);
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['x', 'y', p.any] as const);
-    assertType<TypeEq<typeof parser, Parser<'x' | 'y' | string>>>();
+    assertType<
+        TypeEq<'x' | 'y' | string, ParserResultDataType<typeof parser>>
+    >();
 }
 {
     const parser = p.or('α', 'β', p.str('γ'));
-    assertType<TypeEq<typeof parser, Parser<'α' | 'β' | 'γ'>>>();
+    assertType<TypeEq<'α' | 'β' | 'γ', ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['α', 'β', p.str('γ')]);
-    assertType<TypeEq<typeof parser, Parser<string>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.or(() => ['α', 'β', p.str('γ')] as const);
-    assertType<TypeEq<typeof parser, Parser<'α' | 'β' | 'γ'>>>();
+    assertType<TypeEq<'α' | 'β' | 'γ', ParserResultDataType<typeof parser>>>();
 }
