@@ -141,6 +141,14 @@ export class ParserGenerator {
             return headArg;
         }
 
+        this.__validateParserLikeList(args, headArg);
+        return args;
+    }
+
+    private __validateParserLikeList(
+        args: readonly unknown[],
+        headArg: unknown,
+    ): asserts args is readonly ParserLike[] {
         if (!isParserLikeList([headArg]))
             throw new TypeError(
                 'only the Parser object, string or function can be specified as the first argument',
@@ -149,6 +157,5 @@ export class ParserGenerator {
             throw new TypeError(
                 'only the Parser object or string can be specified for the second argument and the subsequent arguments',
             );
-        return args;
     }
 }
