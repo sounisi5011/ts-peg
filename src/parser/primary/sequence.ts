@@ -6,6 +6,7 @@ import {
     ParseSuccessResult,
 } from '../../internal';
 import { isReadonlyOrWritableArray } from '../../types';
+import { CacheStore } from '../../utils/cache-store';
 
 export type ParserLike = Parser<unknown> | string;
 
@@ -21,10 +22,16 @@ export type ParserLikeTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
+const parserCache = new CacheStore<
+    | [ParserGenerator, ...Parser<unknown>[]]
+    | [ParserGenerator, () => readonly ParserLike[]],
+    SequenceParser<readonly ParserLike[]>
+>();
+
 export class SequenceParser<
     TParserLikeTuple extends readonly ParserLike[]
 > extends Parser<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
-    private readonly __inputExps: TParserLikeTuple | (() => TParserLikeTuple);
+    private readonly __inputExps: Parser<unknown>[] | (() => TParserLikeTuple);
     private __cachedExps: Parser<unknown>[] | undefined;
 
     static isValidExpressions(
@@ -57,7 +64,20 @@ export class SequenceParser<
                 );
             }
         }
-        this.__inputExps = expressions;
+        this.__inputExps =
+            typeof expressions === 'function'
+                ? expressions
+                : this.__parserLikeList2ParserList(expressions);
+
+        const cachedParser = parserCache.getWithTypeGuard(
+            typeof this.__inputExps === 'function'
+                ? [parserGenerator, this.__inputExps]
+                : [parserGenerator, ...this.__inputExps],
+            (value): value is SequenceParser<TParserLikeTuple> =>
+                value instanceof this.constructor,
+            this,
+        );
+        if (cachedParser) return cachedParser;
     }
 
     protected __parse(
@@ -84,11 +104,15 @@ export class SequenceParser<
             typeof this.__inputExps === 'function'
                 ? this.__callback2exps(this.__inputExps)
                 : this.__inputExps;
-        return (this.__cachedExps = exps.map(expression =>
-            expression instanceof Parser
-                ? expression
-                : this.parserGenerator.str(expression),
-        ));
+        return (this.__cachedExps = this.__parserLikeList2ParserList(exps));
+    }
+
+    private __parserLikeList2ParserList(
+        list: readonly ParserLike[],
+    ): Parser<unknown>[] {
+        return list.map(item =>
+            item instanceof Parser ? item : this.parserGenerator.str(item),
+        );
     }
 
     private __callback2exps(
