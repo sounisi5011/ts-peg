@@ -47,36 +47,14 @@ export class SequenceParser<
         expressions: TParserLikeTuple | (() => TParserLikeTuple),
     ) {
         super(parserGenerator);
-        if (
-            !(
-                typeof expressions === 'function' ||
-                (Array.isArray as isReadonlyOrWritableArray)(expressions)
-            )
-        ) {
-            throw new TypeError(
-                'only a function or an array containing Parser object and string can be specified as the second argument',
-            );
-        }
-        if ((Array.isArray as isReadonlyOrWritableArray)(expressions)) {
-            if (!SequenceParser.isValidExpressions(expressions)) {
-                throw new TypeError(
-                    'the second argument array can contain only Parser objects or strings',
-                );
-            }
-        }
+
+        this.__validateInputExps(expressions);
         this.__inputExps =
             typeof expressions === 'function'
                 ? expressions
                 : this.__parserLikeList2ParserList(expressions);
 
-        const cachedParser = parserCache.getWithTypeGuard(
-            typeof this.__inputExps === 'function'
-                ? [parserGenerator, this.__inputExps]
-                : [parserGenerator, ...this.__inputExps],
-            (value): value is SequenceParser<TParserLikeTuple> =>
-                value instanceof this.constructor,
-            this,
-        );
+        const cachedParser = this.__getCachedParser();
         if (cachedParser) return cachedParser;
     }
 
@@ -112,6 +90,39 @@ export class SequenceParser<
     ): Parser<unknown>[] {
         return list.map(item =>
             item instanceof Parser ? item : this.parserGenerator.str(item),
+        );
+    }
+
+    private __validateInputExps(
+        expressions: TParserLikeTuple | (() => TParserLikeTuple),
+    ): void {
+        if (
+            !(
+                typeof expressions === 'function' ||
+                (Array.isArray as isReadonlyOrWritableArray)(expressions)
+            )
+        ) {
+            throw new TypeError(
+                'only a function or an array containing Parser object and string can be specified as the second argument',
+            );
+        }
+        if ((Array.isArray as isReadonlyOrWritableArray)(expressions)) {
+            if (!SequenceParser.isValidExpressions(expressions)) {
+                throw new TypeError(
+                    'the second argument array can contain only Parser objects or strings',
+                );
+            }
+        }
+    }
+
+    private __getCachedParser(): SequenceParser<TParserLikeTuple> {
+        return parserCache.getWithTypeGuard(
+            typeof this.__inputExps === 'function'
+                ? [this.parserGenerator, this.__inputExps]
+                : [this.parserGenerator, ...this.__inputExps],
+            (value): value is SequenceParser<TParserLikeTuple> =>
+                value instanceof this.constructor,
+            this,
         );
     }
 
