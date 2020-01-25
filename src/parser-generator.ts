@@ -5,20 +5,12 @@ import {
     LiteralStringParser,
     Parser,
     ParserLike,
-    ParserResultDataType,
+    ParserLike2Result,
+    ParserLikeTuple2ResultTuple,
     PrioritizedChoiceParser,
     SequenceParser,
 } from './internal';
 import { OneOrMoreReadonlyTuple, OneOrMoreTuple } from './types';
-
-type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
-    ? ParserResultDataType<T>
-    : T;
-type ParserTuple2ResultTuple<T extends readonly ParserLike[]> = {
-    -readonly [P in keyof T]: T[P] extends ParserLike
-        ? ParserLike2Result<T[P]>
-        : T[P];
-};
 
 export class ParserGenerator {
     get any(): AnyCharacterParser {
@@ -69,19 +61,19 @@ export class ParserGenerator {
 
     zeroOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<ParserTuple2ResultTuple<T>[]> {
+    ): Parser<ParserLikeTuple2ResultTuple<T>[]> {
         return this.seq(...args).zeroOrMore;
     }
 
     oneOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<OneOrMoreTuple<ParserTuple2ResultTuple<T>>> {
+    ): Parser<OneOrMoreTuple<ParserLikeTuple2ResultTuple<T>>> {
         return this.seq(...args).oneOrMore;
     }
 
     optional<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
-    ): Parser<ParserTuple2ResultTuple<T> | undefined> {
+    ): Parser<ParserLikeTuple2ResultTuple<T> | undefined> {
         return this.seq(...args).optional;
     }
 
