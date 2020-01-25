@@ -116,34 +116,26 @@ export class ParserGenerator {
     seq<T extends readonly [ParserLike, ...ParserLike[]]>(
         ...args: T | [() => T]
     ): SequenceParser<T> {
-        if (args.length < 1) {
-            throw new Error('one or more arguments are required');
-        }
-        const [headArg, ...tailArgs] = args;
-        if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
-            if (tailArgs.length >= 1) {
-                throw new Error(
-                    'the second and subsequent arguments cannot be specified. the first argument is the callback function',
-                );
-            }
-            return new SequenceParser(this, headArg);
-        }
-        if (!SequenceParser.isValidExpressions([headArg])) {
-            throw new TypeError(
-                'only the Parser object, string or function can be specified as the first argument',
-            );
-        }
-        if (!SequenceParser.isValidExpressions(args)) {
-            throw new TypeError(
-                'only the Parser object or string can be specified for the second argument and the subsequent arguments',
-            );
-        }
-        return new SequenceParser(this, args);
+        return new SequenceParser(this, this.__validateSequenceLikeArgs(args));
     }
 
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): Parser<ParserLike2Result<T[number]>> {
+        return new PrioritizedChoiceParser(
+            this,
+            this.__validateSequenceLikeArgs(args),
+        );
+    }
+
+    /** @TODO */
+    label(_label: string): ParserGenerator {
+        return this;
+    }
+
+    private __validateSequenceLikeArgs<
+        T extends OneOrMoreReadonlyTuple<ParserLike>
+    >(args: T | [() => T]): T | (() => T) {
         if (args.length < 1) {
             throw new Error('one or more arguments are required');
         }
@@ -154,7 +146,7 @@ export class ParserGenerator {
                     'the second and subsequent arguments cannot be specified. the first argument is the callback function',
                 );
             }
-            return new PrioritizedChoiceParser(this, headArg);
+            return headArg;
         }
         if (!SequenceParser.isValidExpressions([headArg])) {
             throw new TypeError(
@@ -166,11 +158,6 @@ export class ParserGenerator {
                 'only the Parser object or string can be specified for the second argument and the subsequent arguments',
             );
         }
-        return new PrioritizedChoiceParser(this, args);
-    }
-
-    /** @TODO */
-    label(_label: string): ParserGenerator {
-        return this;
+        return args;
     }
 }
