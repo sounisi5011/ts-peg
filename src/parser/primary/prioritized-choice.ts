@@ -1,6 +1,5 @@
 import {
     ParseResult,
-    ParserGenerator,
     ParserLike,
     ParserLike2Result,
     ParseSuccessResult,
@@ -13,16 +12,6 @@ export class PrioritizedChoiceParser<
     ParserLike2Result<TParserLikeTuple[number]>,
     TParserLikeTuple
 > {
-    constructor(
-        parserGenerator: ParserGenerator,
-        expressions: TParserLikeTuple | (() => TParserLikeTuple),
-    ) {
-        super(parserGenerator, expressions);
-
-        const cachedParser = this.__getCachedParser();
-        if (cachedParser) return cachedParser;
-    }
-
     protected __parse(
         input: string,
         offsetStart: number,

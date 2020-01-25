@@ -57,6 +57,16 @@ export abstract class ReduceParser<
             typeof expressions === 'function'
                 ? expressions
                 : this.__parserLikeList2ParserList(expressions);
+
+        const cachedParser = parserCache.upsertWithTypeGuard(
+            typeof this.__inputExps === 'function'
+                ? [this.parserGenerator, this.__inputExps]
+                : [this.parserGenerator, ...this.__inputExps],
+            undefined,
+            () => this,
+            (value): value is this => value instanceof this.constructor,
+        );
+        if (cachedParser && cachedParser !== this) return cachedParser;
     }
 
     protected __exps(): OneOrMoreTuple<Parser<unknown>> {
@@ -66,18 +76,6 @@ export abstract class ReduceParser<
                 ? this.__callback2exps(this.__inputExps)
                 : this.__inputExps;
         return (this.__cachedExps = this.__parserLikeList2ParserList(exps));
-    }
-
-    protected __getCachedParser(): this | undefined {
-        const cachedParser = parserCache.upsertWithTypeGuard(
-            typeof this.__inputExps === 'function'
-                ? [this.parserGenerator, this.__inputExps]
-                : [this.parserGenerator, ...this.__inputExps],
-            undefined,
-            () => this,
-            (value): value is this => value instanceof this.constructor,
-        );
-        return cachedParser !== this ? cachedParser : undefined;
     }
 
     private __parserLikeList2ParserList(
