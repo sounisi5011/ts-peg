@@ -89,27 +89,22 @@ export abstract class ReduceParser<
     private __validateInputExps(
         expressions: TParserLikeTuple | (() => TParserLikeTuple),
     ): void {
-        if (
-            !(
-                typeof expressions === 'function' ||
-                (Array.isArray as isReadonlyOrWritableArray)(expressions)
-            )
-        ) {
+        if (typeof expressions === 'function') return;
+        if (!(Array.isArray as isReadonlyOrWritableArray)(expressions)) {
             throw new TypeError(
                 'only a function or an array containing Parser object and string can be specified as the second argument',
             );
         }
-        if ((Array.isArray as isReadonlyOrWritableArray)(expressions)) {
-            if (expressions.length < 1) {
-                throw new RangeError(
-                    'one or more values are required in the array of second argument',
-                );
-            }
-            if (!isParserLikeList(expressions)) {
-                throw new TypeError(
-                    'the second argument array can contain only Parser objects or strings',
-                );
-            }
+
+        if (expressions.length < 1) {
+            throw new RangeError(
+                'one or more values are required in the array of second argument',
+            );
+        }
+        if (!isParserLikeList(expressions)) {
+            throw new TypeError(
+                'the second argument array can contain only Parser objects or strings',
+            );
         }
     }
 

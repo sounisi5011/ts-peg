@@ -129,28 +129,26 @@ export class ParserGenerator {
     private __validateSequenceLikeArgs<
         T extends OneOrMoreReadonlyTuple<ParserLike>
     >(args: T | [() => T]): T | (() => T) {
-        if (args.length < 1) {
+        if (args.length < 1)
             throw new Error('one or more arguments are required');
-        }
+
         const [headArg, ...tailArgs] = args;
         if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
-            if (tailArgs.length >= 1) {
+            if (tailArgs.length >= 1)
                 throw new Error(
                     'the second and subsequent arguments cannot be specified. the first argument is the callback function',
                 );
-            }
             return headArg;
         }
-        if (!isParserLikeList([headArg])) {
+
+        if (!isParserLikeList([headArg]))
             throw new TypeError(
                 'only the Parser object, string or function can be specified as the first argument',
             );
-        }
-        if (!isParserLikeList(args)) {
+        if (!isParserLikeList(args))
             throw new TypeError(
                 'only the Parser object or string can be specified for the second argument and the subsequent arguments',
             );
-        }
         return args;
     }
 }
