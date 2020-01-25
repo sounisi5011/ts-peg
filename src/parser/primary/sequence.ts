@@ -5,6 +5,7 @@ import {
     ParserResultDataType,
     ParseSuccessResult,
 } from '../../internal';
+import { isReadonlyOrWritableArray } from '../../types';
 
 export type ParserLike = Parser<unknown> | string;
 
@@ -26,11 +27,36 @@ export class SequenceParser<
     private readonly __inputExps: TParserLikeTuple | (() => TParserLikeTuple);
     private __cachedExps: Parser<unknown>[] | undefined;
 
+    static isValidExpressions(
+        expressions: readonly unknown[],
+    ): expressions is readonly ParserLike[] {
+        return expressions.every(
+            exp => typeof exp === 'string' || exp instanceof Parser,
+        );
+    }
+
     constructor(
         parserGenerator: ParserGenerator,
         expressions: TParserLikeTuple | (() => TParserLikeTuple),
     ) {
         super(parserGenerator);
+        if (
+            !(
+                typeof expressions === 'function' ||
+                (Array.isArray as isReadonlyOrWritableArray)(expressions)
+            )
+        ) {
+            throw new TypeError(
+                'only a function or an array containing Parser object and string can be specified as the second argument',
+            );
+        }
+        if ((Array.isArray as isReadonlyOrWritableArray)(expressions)) {
+            if (!SequenceParser.isValidExpressions(expressions)) {
+                throw new TypeError(
+                    'the second argument array can contain only Parser objects or strings',
+                );
+            }
+        }
         this.__inputExps = expressions;
     }
 
@@ -58,6 +84,23 @@ export class SequenceParser<
             typeof this.__inputExps === 'function'
                 ? this.__inputExps()
                 : this.__inputExps;
+        if (typeof this.__inputExps === 'function') {
+            if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
+                throw new TypeError(
+                    'the value returned by callback function must be an array with Parser objects or strings',
+                );
+            }
+            if (exps.length < 1) {
+                throw new Error(
+                    'one or more values are required in the array returned by callback function',
+                );
+            }
+            if (!SequenceParser.isValidExpressions(exps)) {
+                throw new TypeError(
+                    'the value returned by callback function must be an array with Parser objects or strings',
+                );
+            }
+        }
         return (this.__cachedExps = exps.map(expression =>
             expression instanceof Parser
                 ? expression

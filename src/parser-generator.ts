@@ -121,10 +121,29 @@ export class ParserGenerator {
     seq<T extends readonly [ParserLike, ...ParserLike[]]>(
         ...args: T | [() => T]
     ): Parser<ParserLikeTuple2ResultTuple<T>> {
-        return new SequenceParser(
-            this,
-            typeof args[0] === 'function' ? args[0] : (args as T),
-        );
+        if (args.length < 1) {
+            throw new Error('one or more arguments are required');
+        }
+        const [headArg, ...tailArgs] = args;
+        if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
+            if (tailArgs.length >= 1) {
+                throw new Error(
+                    'the second and subsequent arguments cannot be specified. the first argument is the callback function',
+                );
+            }
+            return new SequenceParser(this, headArg);
+        }
+        if (!SequenceParser.isValidExpressions([headArg])) {
+            throw new TypeError(
+                'only the Parser object, string or function can be specified as the first argument',
+            );
+        }
+        if (!SequenceParser.isValidExpressions(args)) {
+            throw new TypeError(
+                'only the Parser object or string can be specified for the second argument and the subsequent arguments',
+            );
+        }
+        return new SequenceParser(this, args);
     }
 
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
