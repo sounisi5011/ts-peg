@@ -6,6 +6,7 @@ import p, {
     LiteralStringParser,
     Parser,
 } from '../../src';
+import { assertExtendType } from '../helpers/type';
 
 {
     const parser = p.any;
@@ -249,39 +250,39 @@ import p, {
 
 {
     const parser = p.seq('1');
-    assertType<TypeEq<typeof parser, Parser<['1']>>>();
+    assertExtendType<Parser<['1']>, typeof parser>();
 }
 {
     const parser = p.seq(() => ['1']);
-    assertType<TypeEq<typeof parser, Parser<[string]>>>();
+    assertExtendType<Parser<[string]>, typeof parser>();
 }
 {
     const parser = p.seq(() => ['1'] as const);
-    assertType<TypeEq<typeof parser, Parser<['1']>>>();
+    assertExtendType<Parser<['1']>, typeof parser>();
 }
 {
     const parser = p.seq('x', 'y', p.any);
-    assertType<TypeEq<typeof parser, Parser<['x', 'y', string]>>>();
+    assertExtendType<Parser<['x', 'y', string]>, typeof parser>();
 }
 {
     const parser = p.seq(() => ['x', 'y', p.any]);
-    assertType<TypeEq<typeof parser, Parser<[string, string, string]>>>();
+    assertExtendType<Parser<[string, string, string]>, typeof parser>();
 }
 {
     const parser = p.seq(() => ['x', 'y', p.any] as const);
-    assertType<TypeEq<typeof parser, Parser<['x', 'y', string]>>>();
+    assertExtendType<Parser<['x', 'y', string]>, typeof parser>();
 }
 {
     const parser = p.seq(p.chars('A-Z'), '-', p.chars('0-9'));
-    assertType<TypeEq<typeof parser, Parser<[string, '-', string]>>>();
+    assertExtendType<Parser<[string, '-', string]>, typeof parser>();
 }
 {
     const parser = p.seq(() => [p.chars('A-Z'), '-', p.chars('0-9')]);
-    assertType<TypeEq<typeof parser, Parser<[string, string, string]>>>();
+    assertExtendType<Parser<[string, string, string]>, typeof parser>();
 }
 {
     const parser = p.seq(() => [p.chars('A-Z'), '-', p.chars('0-9')] as const);
-    assertType<TypeEq<typeof parser, Parser<[string, '-', string]>>>();
+    assertExtendType<Parser<[string, '-', string]>, typeof parser>();
 }
 
 {

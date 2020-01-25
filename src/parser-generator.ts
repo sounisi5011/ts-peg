@@ -6,7 +6,6 @@ import {
     LiteralStringParser,
     Parser,
     ParserLike,
-    ParserLikeTuple2ResultTuple,
     ParserResultDataType,
     SequenceParser,
 } from './internal';
@@ -120,7 +119,7 @@ export class ParserGenerator {
 
     seq<T extends readonly [ParserLike, ...ParserLike[]]>(
         ...args: T | [() => T]
-    ): Parser<ParserLikeTuple2ResultTuple<T>> {
+    ): SequenceParser<T> {
         if (args.length < 1) {
             throw new Error('one or more arguments are required');
         }
