@@ -111,22 +111,30 @@ export class ParserGenerator {
     is_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        return new PredicateParser({
-            parserGenerator: this,
-            predicate,
-            negative: false,
-        });
+        if (arguments.length < 1) throw new Error('one argument required');
+        return this.__convertPredicateParserError(
+            () =>
+                new PredicateParser({
+                    parserGenerator: this,
+                    predicate,
+                    negative: false,
+                }),
+        );
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
     not_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        return new PredicateParser({
-            parserGenerator: this,
-            predicate,
-            negative: true,
-        });
+        if (arguments.length < 1) throw new Error('one argument required');
+        return this.__convertPredicateParserError(
+            () =>
+                new PredicateParser({
+                    parserGenerator: this,
+                    predicate,
+                    negative: true,
+                }),
+        );
     }
 
     seq<T extends readonly [ParserLike, ...ParserLike[]]>(
@@ -188,5 +196,29 @@ export class ParserGenerator {
             throw new TypeError(
                 'only the Parser object or string can be specified for the second argument and the subsequent arguments',
             );
+    }
+
+    private __convertPredicateParserError<T>(func: () => T): T {
+        try {
+            return func();
+        } catch (error) {
+            if (
+                error instanceof TypeError &&
+                error.message ===
+                    'only the Parser object, string or function can be specified for the predicate option'
+            ) {
+                error.message = error.message.replace(
+                    /can be specified for the predicate option$/,
+                    'can be specified as argument',
+                );
+                if (error.stack) {
+                    error.stack = error.stack.replace(
+                        /^(.+) can be specified for the predicate option(?=\n|$)/,
+                        '$1 can be specified as argument',
+                    );
+                }
+            }
+            throw error;
+        }
     }
 }

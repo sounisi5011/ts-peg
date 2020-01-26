@@ -48,9 +48,16 @@ export class PredicateParser extends Parser<null> {
         negative: boolean;
     }) {
         super(parserGenerator);
-        this.__predicate = isParserLike(predicate)
-            ? parserLike2Parser(parserGenerator, predicate)
-            : predicate;
+
+        if (isParserLike(predicate)) {
+            this.__predicate = parserLike2Parser(parserGenerator, predicate);
+        } else if (typeof predicate === 'function') {
+            this.__predicate = predicate;
+        } else {
+            throw new TypeError(
+                'only the Parser object, string or function can be specified for the predicate option',
+            );
+        }
         this.__negative = negative;
 
         const cachedParser = parserCache.upsertWithTypeGuard(
@@ -82,8 +89,14 @@ export class PredicateParser extends Parser<null> {
         const ret = this.__predicate(
             new PredicateExecutionEnvironment(input, { offsetStart }),
         );
-        return ret instanceof Parser
-            ? ret.tryParse(input, offsetStart)
-            : Boolean(ret);
+        if (ret instanceof Parser) {
+            return ret.tryParse(input, offsetStart);
+        } else if (typeof ret === 'boolean') {
+            return ret;
+        } else {
+            throw new TypeError(
+                'the value returned by callback function must be a Parser object or boolean',
+            );
+        }
     }
 }
