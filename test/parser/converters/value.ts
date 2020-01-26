@@ -57,6 +57,57 @@ test('should convert result value', t => {
     >();
 });
 
+test('should not invoke action callback', t => {
+    let assertCallAction: () => void;
+    let assertCount = 0;
+    const parser = p.any.action(char => {
+        assertCallAction();
+        assertCount++;
+        return { char };
+    }).zeroOrMore;
+
+    assertCallAction = () =>
+        t.fail(
+            'should not invoke action callback if only converted value is needed',
+        );
+    assertCount++;
+    t.is(parser.value(42).tryParse('abc', 0)?.data, 42);
+
+    assertCallAction = () =>
+        t.pass('should invoke action callback if not yet invoked the action');
+    assertCount++;
+    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+        { char: 'a' },
+        { char: 'b' },
+        { char: 'c' },
+    ]);
+
+    assertCallAction = () =>
+        t.pass(
+            'should invoke action callback if the action has already been invoked',
+        );
+    assertCount++;
+    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+        { char: 'a' },
+        { char: 'b' },
+        { char: 'c' },
+    ]);
+
+    t.plan(assertCount + 2);
+    t.deepEqual(
+        p.any.zeroOrMore
+            .value(42)
+            .action(val => {
+                t.pass(
+                    'should invoke action callback if the result of action is needed',
+                );
+                return { val };
+            })
+            .tryParse('abc', 0)?.data,
+        { val: 42 },
+    );
+});
+
 test('if the arguments have the same value, they should return the same Parser object', t => {
     const fn = (): number => 42;
     const obj = {};
