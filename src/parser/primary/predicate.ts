@@ -23,6 +23,7 @@ export type PredicateFunc = (envs: PredicateExecutionEnvironment) => boolean;
 
 const parserCache = new CacheStore<
     [
+        Function,
         ParserGenerator,
         Parser<unknown> | (() => Parser<unknown>) | PredicateFunc,
         boolean,
@@ -61,7 +62,12 @@ export class PredicateParser extends Parser<null> {
         this.__negative = negative;
 
         const cachedParser = parserCache.upsertWithTypeGuard(
-            [this.parserGenerator, this.__predicate, negative],
+            [
+                this.constructor,
+                this.parserGenerator,
+                this.__predicate,
+                negative,
+            ],
             undefined,
             () => this,
             (value): value is this => value instanceof this.constructor,

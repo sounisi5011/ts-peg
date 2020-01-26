@@ -9,11 +9,14 @@ import { matchAll } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
 const characterClassParserCache = new CacheStore<
-    [ParserGenerator, string],
+    [Function, ParserGenerator, string],
     CharacterClassParser
 >();
 
-const codePointRangeCache = new CacheStore<[number, number], CodePointRange>();
+const codePointRangeCache = new CacheStore<
+    [Function, number, number],
+    CodePointRange
+>();
 
 class CodePointRange {
     readonly minCodePoint: number;
@@ -49,7 +52,7 @@ class CodePointRange {
         this.maxCodePoint = Math.max(codePoint1, codePoint2);
 
         const cachedCodePointRange = codePointRangeCache.upsert(
-            [this.minCodePoint, this.maxCodePoint],
+            [this.constructor, this.minCodePoint, this.maxCodePoint],
             undefined,
             () => this,
         );
@@ -246,7 +249,7 @@ export class CharacterClassParser extends Parser<string> {
         );
 
         const cachedParser = characterClassParserCache.upsert(
-            [parserGenerator, this.pattern],
+            [this.constructor, parserGenerator, this.pattern],
             undefined,
             () => this,
         );

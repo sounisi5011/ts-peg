@@ -2,7 +2,7 @@ import { ConverterParser, Parser, ParseSuccessResult } from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
 const parserCache = new CacheStore<
-    [Parser<unknown>],
+    [Function, Parser<unknown>],
     OptionalParser<unknown>
 >();
 
@@ -13,7 +13,7 @@ export class OptionalParser<TResult> extends ConverterParser<
         super(prevParser);
 
         const cachedParser = parserCache.upsertWithTypeGuard(
-            [prevParser],
+            [this.constructor, prevParser],
             undefined,
             () => this,
             (value): value is OptionalParser<TResult> =>

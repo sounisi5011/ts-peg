@@ -7,7 +7,7 @@ import {
 import { CacheStore } from '../../../utils/cache-store';
 
 const parserCache = new CacheStore<
-    [Parser<unknown>, unknown],
+    [Function, Parser<unknown>, unknown],
     ValueConverter<unknown, unknown, unknown>
 >();
 
@@ -29,7 +29,7 @@ export abstract class ValueConverter<
         this.__value = value;
 
         const cachedParser = parserCache.upsertWithTypeGuard(
-            [prevParser, value],
+            [this.constructor, prevParser, value],
             undefined,
             () => this,
             (

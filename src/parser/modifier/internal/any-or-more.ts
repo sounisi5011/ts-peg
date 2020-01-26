@@ -7,7 +7,7 @@ import {
 import { CacheStore } from '../../../utils/cache-store';
 
 const parserCache = new CacheStore<
-    [Parser<unknown>, Function, number],
+    [Function, Parser<unknown>, number],
     AnyOrMoreParser<unknown, ParseSuccessResult<unknown>[]>
 >();
 
@@ -32,7 +32,7 @@ export abstract class AnyOrMoreParser<
         this.__resultsLengthLimit = resultsLengthLimit;
 
         const cachedParser = parserCache.upsertWithTypeGuard(
-            [prevParser, this.__resultsValidator, resultsLengthLimit],
+            [this.constructor, prevParser, resultsLengthLimit],
             undefined,
             () => this,
             (

@@ -7,7 +7,7 @@ import {
 import { CacheStore } from '../../utils/cache-store';
 
 const literalStringParserCache = new CacheStore<
-    [ParserGenerator, string],
+    [Function, ParserGenerator, string],
     LiteralStringParser<string>
 >();
 
@@ -23,7 +23,7 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         this.__literalString = literalString;
 
         const cachedParser = literalStringParserCache.upsertWithTypeGuard(
-            [parserGenerator, literalString],
+            [this.constructor, parserGenerator, literalString],
             undefined,
             () => this,
             (value): value is LiteralStringParser<T> =>
