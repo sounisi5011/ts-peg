@@ -48,11 +48,10 @@ export const Factor = p.or(() => [
 
 // Integer    <- ws [0-9]+
 export const Integer = p
-    .label('integer')
     .seq(() => [ws, p.chars('0-9').oneOrMore])
     .action((_, { text }) => parseInt(text, 10));
 
 // ws         <- [ \t\n\r]*
-export const ws = p.label('whitespace').chars(' \t\n\r').zeroOrMore;
+export const ws = p.chars(' \t\n\r').zeroOrMore;
 
 export default Expression;

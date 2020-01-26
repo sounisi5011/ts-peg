@@ -1,18 +1,16 @@
 import {
     AnyCharacterParser,
     CharacterClassParser,
-    CustomizableParser,
     isParserLikeList,
     LiteralStringParser,
     Parser,
     ParserLike,
-    ParserLikeTuple2ResultTuple,
     PredicateFunc,
     PredicateParser,
     PrioritizedChoiceParser,
     SequenceParser,
 } from './internal';
-import { OneOrMoreReadonlyTuple, OneOrMoreTuple } from './types';
+import { OneOrMoreReadonlyTuple } from './types';
 
 export class ParserGenerator {
     get any(): AnyCharacterParser {
@@ -23,88 +21,8 @@ export class ParserGenerator {
         return new LiteralStringParser(str, this);
     }
 
-    range(str1: string, str2: string): Parser<string> {
-        const codePoint1 = str1.codePointAt(0);
-        if (typeof codePoint1 !== 'number') {
-            throw new TypeError(
-                'first argument must be a single character string value',
-            );
-        }
-        const codePoint2 = str2.codePointAt(0);
-        if (typeof codePoint2 !== 'number') {
-            throw new TypeError(
-                'first argument must be a single character string value',
-            );
-        }
-        const minCodePoint = Math.min(codePoint1, codePoint2);
-        const maxCodePoint = Math.max(codePoint1, codePoint2);
-
-        // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser((input, offsetStart) => {
-            const currentCodePoint = input.codePointAt(offsetStart);
-            if (
-                typeof currentCodePoint === 'number' &&
-                minCodePoint <= currentCodePoint &&
-                currentCodePoint <= maxCodePoint
-            ) {
-                const currentChar = String.fromCodePoint(currentCodePoint);
-                return {
-                    offsetEnd: offsetStart + currentChar.length,
-                    valueGetter: () => currentChar,
-                };
-            }
-            return undefined;
-        }, this);
-    }
-
     chars(chars: string): CharacterClassParser {
         return new CharacterClassParser(chars, this);
-    }
-
-    zeroOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): Parser<ParserLikeTuple2ResultTuple<T>[]> {
-        return this.seq(...args).zeroOrMore;
-    }
-
-    oneOrMore<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): Parser<OneOrMoreTuple<ParserLikeTuple2ResultTuple<T>>> {
-        return this.seq(...args).oneOrMore;
-    }
-
-    optional<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): Parser<ParserLikeTuple2ResultTuple<T> | undefined> {
-        return this.seq(...args).optional;
-    }
-
-    followedBy<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): Parser<undefined> {
-        const exp = this.seq(...args);
-        // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser(
-            (input, offsetStart) =>
-                exp.tryParse(input, offsetStart)
-                    ? { offsetEnd: offsetStart, valueGetter: () => undefined }
-                    : undefined,
-            this,
-        );
-    }
-
-    notFollowedBy<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): Parser<undefined> {
-        const exp = this.seq(...args);
-        // TODO: Rewrite to code that does not use CustomizableParser
-        return new CustomizableParser(
-            (input, offsetStart) =>
-                exp.tryParse(input, offsetStart)
-                    ? undefined
-                    : { offsetEnd: offsetStart, valueGetter: () => undefined },
-            this,
-        );
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
@@ -158,11 +76,6 @@ export class ParserGenerator {
             this,
             this.__validateSequenceLikeArgs(args),
         );
-    }
-
-    /** @TODO */
-    label(_label: string): ParserGenerator {
-        return this;
     }
 
     private __validateSequenceLikeArgs<

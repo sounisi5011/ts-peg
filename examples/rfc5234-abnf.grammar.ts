@@ -44,7 +44,7 @@ export const HEXDIG = p.or(
 );
 export const HTAB = p.str('\x09'); // horizontal tab
 export const LF = p.str('\x0A'); // linefeed
-export const LWSP = p.zeroOrMore(() => [p.or(WSP, p.seq(CRLF, WSP))]);
+export const LWSP = p.or(() => [WSP, p.seq(CRLF, WSP)]).zeroOrMore;
 // Use of this linear-white-space rule
 // permits lines containing only white
 // space that are no longer legal in
