@@ -375,7 +375,7 @@ test('if the arguments have the same value, they should return the same Parser o
     // seqP2Shoge
     t.is(seqP2Shoge, p2.seq('hoge'));
     // orP1Shoge
-    t.is(orP1Shoge, p2.or('hoge'));
+    t.is(orP1Shoge, p.or('hoge'));
 
     t.not<Parser<[string]>>(seqP1Sfoo, seqP1Sbar);
     t.not<Parser<[string, string]>>(seqP1SfooSfoo, seqP1SfooSbar);
