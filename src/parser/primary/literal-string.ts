@@ -29,7 +29,7 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
             (value): value is LiteralStringParser<T> =>
                 value instanceof this.constructor,
         );
-        if (cachedParser !== this) return cachedParser;
+        if (cachedParser && cachedParser !== this) return cachedParser;
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {

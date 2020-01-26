@@ -37,7 +37,7 @@ export abstract class AnyOrMoreParser<
             () => this,
             (value): value is this => value instanceof this.constructor,
         );
-        if (cachedParser !== this) return cachedParser;
+        if (cachedParser && cachedParser !== this) return cachedParser;
     }
 
     protected abstract __resultsValidator(

@@ -19,7 +19,7 @@ export class OptionalParser<TResult> extends ConverterParser<
             (value): value is OptionalParser<TResult> =>
                 value instanceof this.constructor,
         );
-        if (cachedParser !== this) return cachedParser;
+        if (cachedParser && cachedParser !== this) return cachedParser;
     }
 
     protected __parse(

@@ -89,14 +89,14 @@ export class CacheStore<K extends OneOrMoreTuple<unknown>, V> {
         updateFn: undefined,
         insertFn: (keys: K, store: this) => IV,
         typeGuard: (value: V | IV) => value is GV,
-    ): GV;
+    ): GV | undefined;
 
     upsertWithTypeGuard<UV extends V, IV extends V, GV extends UV | IV>(
         keys: K,
         updateFn: (old: V, keys: K, store: this) => UV,
         insertFn: (keys: K, store: this) => IV,
         typeGuard: (value: UV | IV) => value is GV,
-    ): GV;
+    ): GV | undefined;
 
     upsertWithTypeGuard<GV extends V>(
         keys: K,
