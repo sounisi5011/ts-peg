@@ -35,13 +35,7 @@ export abstract class AnyOrMoreParser<
             [this.constructor, prevParser, resultsLengthLimit],
             undefined,
             () => this,
-            (
-                value,
-            ): value is AnyOrMoreParser<
-                TResult,
-                TSuccessResultTuple,
-                TResultData
-            > => value instanceof this.constructor,
+            (value): value is this => value instanceof this.constructor,
         );
         if (cachedParser !== this) return cachedParser;
     }

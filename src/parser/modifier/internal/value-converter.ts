@@ -32,10 +32,7 @@ export abstract class ValueConverter<
             [this.constructor, prevParser, value],
             undefined,
             () => this,
-            (
-                value,
-            ): value is ValueConverter<TPrevResult, TValue, TConvertedResult> =>
-                value instanceof this.constructor,
+            (value): value is this => value instanceof this.constructor,
         );
         if (cachedParser !== this) return cachedParser;
     }
