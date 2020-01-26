@@ -15,7 +15,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
-    "useDefineForClassFields": true,
     "newLine": "LF",
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"

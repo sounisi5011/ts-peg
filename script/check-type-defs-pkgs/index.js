@@ -2,6 +2,8 @@
 
 /**
  * @see https://github.com/sounisi5011/metalsmith-html-validator/blob/v1.1.1/script/check-type-defs-pkgs.js
+ *
+ * Updated by b7c9bfb88ac66daca0d1092ecc2f7fc28f3bc1f3 - Fixed a crash problem when there is no "dependencies" field or "devDependencies" field in package.json file.
  */
 
 const fs = require('fs');
@@ -89,7 +91,7 @@ async function main(distDir, buildTask) {
   );
 
   const typePkgNames = {
-    deps: Object.keys(PKG.dependencies)
+    deps: Object.keys(PKG.dependencies || {})
       .filter(pkgName => /^@types\//.test(pkgName))
       .filter(
         typePkgName => !importSet.has(typePkgName.replace(/^@types\//, '')),
@@ -98,7 +100,7 @@ async function main(distDir, buildTask) {
   };
   importSet.forEach(name => {
     const typePkgName = `@types/${name}`;
-    if (typePkgName in PKG.devDependencies) {
+    if (typePkgName in (PKG.devDependencies || {})) {
       typePkgNames.devDeps.push(typePkgName);
     }
   });
