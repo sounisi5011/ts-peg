@@ -55,7 +55,15 @@ export class ParserGenerator {
         );
     }
 
-    seq<T extends readonly [ParserLike, ...ParserLike[]]>(
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        arg: () => T,
+    ): SequenceParser<T>;
+
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        ...args: T
+    ): SequenceParser<T>;
+
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         ...args: T | [() => T]
     ): SequenceParser<T> {
         return new SequenceParser(this, this.__validateSequenceLikeArgs(args));
