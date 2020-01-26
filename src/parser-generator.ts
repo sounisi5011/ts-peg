@@ -7,6 +7,8 @@ import {
     Parser,
     ParserLike,
     ParserLikeTuple2ResultTuple,
+    PredicateFunc,
+    PredicateParser,
     PrioritizedChoiceParser,
     SequenceParser,
 } from './internal';
@@ -103,6 +105,28 @@ export class ParserGenerator {
                     : { offsetEnd: offsetStart, valueGetter: () => undefined },
             this,
         );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    is_a(
+        predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
+    ): PredicateParser {
+        return new PredicateParser({
+            parserGenerator: this,
+            predicate,
+            negative: false,
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    not_a(
+        predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
+    ): PredicateParser {
+        return new PredicateParser({
+            parserGenerator: this,
+            predicate,
+            negative: true,
+        });
     }
 
     seq<T extends readonly [ParserLike, ...ParserLike[]]>(

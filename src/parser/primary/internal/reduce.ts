@@ -24,12 +24,33 @@ export type ParserLikeTuple2ResultTuple<T extends readonly ParserLike[]> = {
         : T[P];
 };
 
+export function isParserLike(value: unknown): value is ParserLike {
+    return typeof value === 'string' || value instanceof Parser;
+}
+
 export function isParserLikeList(
     expressions: readonly unknown[],
 ): expressions is readonly ParserLike[] {
-    return expressions.every(
-        exp => typeof exp === 'string' || exp instanceof Parser,
-    );
+    return expressions.every(isParserLike);
+}
+
+export function parserLike2Parser(
+    parserGenerator: ParserGenerator,
+): (parserLike: ParserLike) => Parser<unknown>;
+export function parserLike2Parser(
+    parserGenerator: ParserGenerator,
+    parserLike: ParserLike,
+): Parser<unknown>;
+export function parserLike2Parser(
+    ...args: [ParserGenerator] | [ParserGenerator, ParserLike]
+): Parser<unknown> | ((parserLike: ParserLike) => Parser<unknown>) {
+    const [parserGenerator] = args;
+    if (args.length === 1)
+        return parserLike => parserLike2Parser(parserGenerator, parserLike);
+
+    const [, parserLike] = args;
+    if (parserLike instanceof Parser) return parserLike;
+    return parserGenerator.str(parserLike);
 }
 
 const parserCache = new CacheStore<
@@ -81,8 +102,8 @@ export abstract class ReduceParser<
     private __parserLikeList2ParserList(
         list: OneOrMoreReadonlyTuple<ParserLike>,
     ): OneOrMoreTuple<Parser<unknown>> {
-        return list.map(item =>
-            item instanceof Parser ? item : this.parserGenerator.str(item),
+        return list.map(
+            parserLike2Parser(this.parserGenerator),
         ) as OneOrMoreTuple<Parser<unknown>>;
     }
 

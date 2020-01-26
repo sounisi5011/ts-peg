@@ -10,6 +10,7 @@ export * from './parser/primary/any-character';
 export * from './parser/primary/character-class';
 export * from './parser/primary/customizable';
 export * from './parser/primary/literal-string';
+export * from './parser/primary/predicate';
 export * from './parser/primary/prioritized-choice';
 export * from './parser/primary/sequence';
 export * from './parser/modifier/internal/converter';

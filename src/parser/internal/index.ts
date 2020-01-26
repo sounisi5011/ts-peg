@@ -19,18 +19,6 @@ export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
     ? U
     : never;
 
-export class PredicateExecutionEnvironment {
-    readonly input: string;
-    readonly offset: number;
-
-    constructor(input: string, options: { offsetStart: number }) {
-        this.input = input;
-        this.offset = options.offsetStart;
-    }
-}
-
-export type Predicate = (envs: PredicateExecutionEnvironment) => boolean;
-
 export abstract class Parser<TResult> {
     private readonly __parserGenerator: ParserGenerator;
     private readonly __memoStore = new CacheStore<

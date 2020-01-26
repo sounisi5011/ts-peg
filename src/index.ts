@@ -22,6 +22,9 @@ export {
     MatchedTextParser,
     SequenceParser,
     PrioritizedChoiceParser,
+    PredicateParser,
+    PredicateFunc,
+    PredicateExecutionEnvironment,
 } from './internal';
 
 export default new ParserGenerator();
