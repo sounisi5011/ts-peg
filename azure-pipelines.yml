@@ -18,7 +18,7 @@ jobs:
       jobName: UnitTest_Linux
       vmImage: ubuntu-latest
       nodeVersions:
-        - 10.0.0
+        - 10.14.2
         - 10.x
         - 12.0.0
         - 12.x
@@ -32,7 +32,7 @@ jobs:
       jobName: UnitTest_Windows
       vmImage: windows-latest
       nodeVersions:
-        - 10.0.0
+        - 10.14.2
         - 10.x
         - 12.0.0
         - 12.x
