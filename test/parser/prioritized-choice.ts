@@ -308,11 +308,15 @@ test('if the arguments have the same value, they should return the same Parser o
     const p2 = new ParserGenerator();
     const orP1Sfoo = p.or(parserSfoo);
     const orP1Sbar = p.or(parserSbar);
+    const orP1SfooSfoo = p.or(parserSfoo, parserSfoo);
+    const orP1SfooSbar = p.or(parserSfoo, parserSbar);
+    const orP1SbarSfoo = p.or(parserSbar, parserSfoo);
     const orP1Fn1 = p.or(expsFn1);
     const orP1Fn2 = p.or(expsFn2);
     const orP1Fn3 = p.or(expsFn3);
     const orP1Shoge = p.or('hoge');
     const orP2Shoge = p2.or('hoge');
+    const seqP1Shoge = p.seq('hoge');
 
     // orP1Sfoo
     t.is(orP1Sfoo, p.or(parserSfoo));
@@ -322,6 +326,36 @@ test('if the arguments have the same value, they should return the same Parser o
     t.is(orP1Sbar, p.or(parserSbar));
     t.is(orP1Sbar, p.or(p.str('bar')));
     t.is<Parser<string>>(orP1Sbar, p.or('bar'));
+    // orP1SfooSfoo
+    t.is(orP1SfooSfoo, p.or(parserSfoo, parserSfoo));
+    t.is(orP1SfooSfoo, p.or(parserSfoo, p.str('foo')));
+    t.is<Parser<string>>(orP1SfooSfoo, p.or(parserSfoo, 'foo'));
+    t.is(orP1SfooSfoo, p.or(p.str('foo'), parserSfoo));
+    t.is(orP1SfooSfoo, p.or(p.str('foo'), p.str('foo')));
+    t.is<Parser<string>>(orP1SfooSfoo, p.or(p.str('foo'), 'foo'));
+    t.is<Parser<string>>(orP1SfooSfoo, p.or('foo', parserSfoo));
+    t.is<Parser<string>>(orP1SfooSfoo, p.or('foo', p.str('foo')));
+    t.is<Parser<string>>(orP1SfooSfoo, p.or('foo', 'foo'));
+    // orP1SfooSbar
+    t.is(orP1SfooSbar, p.or(parserSfoo, parserSbar));
+    t.is(orP1SfooSbar, p.or(parserSfoo, p.str('bar')));
+    t.is<Parser<string>>(orP1SfooSbar, p.or(parserSfoo, 'bar'));
+    t.is(orP1SfooSbar, p.or(p.str('foo'), parserSbar));
+    t.is(orP1SfooSbar, p.or(p.str('foo'), p.str('bar')));
+    t.is<Parser<string>>(orP1SfooSbar, p.or(p.str('foo'), 'bar'));
+    t.is<Parser<string>>(orP1SfooSbar, p.or('foo', parserSbar));
+    t.is<Parser<string>>(orP1SfooSbar, p.or('foo', p.str('bar')));
+    t.is<Parser<string>>(orP1SfooSbar, p.or('foo', 'bar'));
+    // orP1SbarSfoo
+    t.is(orP1SbarSfoo, p.or(parserSbar, parserSfoo));
+    t.is(orP1SbarSfoo, p.or(parserSbar, p.str('foo')));
+    t.is<Parser<string>>(orP1SbarSfoo, p.or(parserSbar, 'foo'));
+    t.is(orP1SbarSfoo, p.or(p.str('bar'), parserSfoo));
+    t.is(orP1SbarSfoo, p.or(p.str('bar'), p.str('foo')));
+    t.is<Parser<string>>(orP1SbarSfoo, p.or(p.str('bar'), 'foo'));
+    t.is<Parser<string>>(orP1SbarSfoo, p.or('bar', parserSfoo));
+    t.is<Parser<string>>(orP1SbarSfoo, p.or('bar', p.str('foo')));
+    t.is<Parser<string>>(orP1SbarSfoo, p.or('bar', 'foo'));
     // orP1Fn1 ~ orP1Fn3
     t.is(orP1Fn1, p.or(expsFn1));
     t.is(orP1Fn2, p.or(expsFn2));
@@ -331,8 +365,12 @@ test('if the arguments have the same value, they should return the same Parser o
     t.is<Parser<string>>(orP1Shoge, p.or(p.str('hoge')));
     // orP2Shoge
     t.is(orP2Shoge, p2.or('hoge'));
+    // seqP1Shoge
+    t.is(seqP1Shoge, p2.seq('hoge'));
 
     t.not<Parser<string>>(orP1Sfoo, orP1Sbar);
+    t.not<Parser<string>>(orP1SfooSfoo, orP1SfooSbar);
+    t.not<Parser<string>>(orP1SfooSbar, orP1SbarSfoo);
     t.not<Parser<string>>(orP1Fn1, orP1Fn2);
     t.not(orP1Fn1, orP1Fn3);
     t.not(
@@ -340,6 +378,7 @@ test('if the arguments have the same value, they should return the same Parser o
         orP2Shoge,
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
+    t.not<Parser<string | [string]>>(orP1Shoge, seqP1Shoge);
 
     assertType<TypeEq<'foo', ParserResultDataType<typeof orP1Sfoo>>>();
     assertType<TypeEq<'bar', ParserResultDataType<typeof orP1Sbar>>>();
