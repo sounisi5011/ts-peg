@@ -92,16 +92,13 @@
     ]
   },
   "ava": {
-    "compileEnhancements": false,
     "extensions": [
       "ts"
     ],
     "files": [
       "./test/**/*.ts",
-      "!./test/type-spec"
-    ],
-    "helpers": [
-      "**/{fixtures,helpers}/**/*"
+      "!./test/type-spec",
+      "!./test/**/helpers"
     ],
     "require": [
       "ts-node/register/transpile-only"
