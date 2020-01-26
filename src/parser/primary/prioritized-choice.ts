@@ -5,9 +5,10 @@ import {
     ParseSuccessResult,
     ReduceParser,
 } from '../../internal';
+import { OneOrMoreReadonlyTuple } from '../../types';
 
 export class PrioritizedChoiceParser<
-    TParserLikeTuple extends readonly [ParserLike, ...ParserLike[]]
+    TParserLikeTuple extends OneOrMoreReadonlyTuple<ParserLike>
 > extends ReduceParser<
     ParserLike2Result<TParserLikeTuple[number]>,
     TParserLikeTuple

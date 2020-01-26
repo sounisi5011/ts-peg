@@ -1,3 +1,4 @@
+import { OneOrMoreTuple } from '../types';
 import { hasProperty } from '../utils';
 
 interface StoreItem<T> {
@@ -6,7 +7,7 @@ interface StoreItem<T> {
     childrenObjectMap: WeakMap<object, StoreItem<T>>;
 }
 
-export class CacheStore<K extends [unknown, ...unknown[]], V> {
+export class CacheStore<K extends OneOrMoreTuple<unknown>, V> {
     private readonly __store: StoreItem<V> = {
         childrenPrimitiveMap: new Map(),
         childrenObjectMap: new WeakMap(),

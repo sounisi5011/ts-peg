@@ -10,7 +10,11 @@ import {
     ValueConverterParser,
     ZeroOrMoreParser,
 } from '../../internal';
-import { RepeatTuple } from '../../types';
+import {
+    OneOrMoreReadonlyTuple,
+    OneOrMoreTuple,
+    RepeatTuple,
+} from '../../types';
 import { CacheStore } from '../../utils/cache-store';
 
 export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
@@ -39,11 +43,11 @@ export abstract class Parser<TResult> {
         return this.__parserGenerator;
     }
 
-    get zeroOrMore(): Parser<[...TResult[]]> {
+    get zeroOrMore(): Parser<TResult[]> {
         return new ZeroOrMoreParser(this);
     }
 
-    get oneOrMore(): Parser<[TResult, ...TResult[]]> {
+    get oneOrMore(): Parser<OneOrMoreTuple<TResult>> {
         return new OneOrMoreParser(this);
     }
 
@@ -75,7 +79,7 @@ export abstract class Parser<TResult> {
     // Note: This line is **required**. DO NOT DELETE IT.
     //       If you do not specify a return type definition for actionFn, tuples are converted to arrays.
     //       However, this overload solves this problem.
-    action<TActionRes extends readonly [unknown, ...unknown[]]>(
+    action<TActionRes extends OneOrMoreReadonlyTuple<unknown>>(
         actionFn: ActionFunc<TResult, TActionRes>,
     ): Parser<TActionRes>;
 
@@ -92,7 +96,7 @@ export abstract class Parser<TResult> {
     value<TValue extends boolean>(value: TValue): Parser<TValue>;
     value<TValue extends number>(value: TValue): Parser<TValue>;
     value<TValue extends string>(value: TValue): Parser<TValue>;
-    value<TValue extends readonly [unknown, ...unknown[]]>(
+    value<TValue extends OneOrMoreReadonlyTuple<unknown>>(
         value: TValue,
     ): Parser<TValue>;
 
