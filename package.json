@@ -92,16 +92,13 @@
     ]
   },
   "ava": {
-    "compileEnhancements": false,
     "extensions": [
       "ts"
     ],
     "files": [
       "./test/**/*.ts",
-      "!./test/type-spec"
-    ],
-    "helpers": [
-      "**/{fixtures,helpers}/**/*"
+      "!./test/type-spec",
+      "!./test/**/helpers"
     ],
     "require": [
       "ts-node/register/transpile-only"
@@ -114,10 +111,9 @@
     "@sounisi5011/check-peer-deps": "github:sounisi5011/check-peer-deps",
     "@sounisi5011/check-type-defs-pkgs": "file:script/check-type-defs-pkgs",
     "@sounisi5011/readme-generator": "file:script/readme-generator",
-    "@types/node": "12.x",
     "@typescript-eslint/eslint-plugin": "2.16.0",
     "@typescript-eslint/parser": "2.16.0",
-    "ava": "2.4.0",
+    "ava": "3.1.0",
     "can-npm-publish": "1.3.2",
     "cross-spawn": "7.0.1",
     "del-cli": "3.0.0",
@@ -145,6 +141,6 @@
     "typescript": "3.7.5"
   },
   "engines": {
-    "node": "10.x || 12.x || 13.x"
+    "node": ">=10.14.2 <11.0.0 || 12.x || 13.x"
   }
 }
