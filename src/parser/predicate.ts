@@ -6,8 +6,8 @@ import {
     ParserLike,
     parserLike2Parser,
     ParseSuccessResult,
-} from '../../internal';
-import { CacheStore } from '../../utils/cache-store';
+} from '../internal';
+import { CacheStore } from '../utils/cache-store';
 
 export class PredicateExecutionEnvironment {
     readonly input: string;

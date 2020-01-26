@@ -1,14 +1,10 @@
-import {
-    Parser,
-    ParserGenerator,
-    ParserResultDataType,
-} from '../../../internal';
+import { Parser, ParserGenerator, ParserResultDataType } from '../../internal';
 import {
     isReadonlyOrWritableArray,
     OneOrMoreReadonlyTuple,
     OneOrMoreTuple,
-} from '../../../types';
-import { CacheStore } from '../../../utils/cache-store';
+} from '../../types';
+import { CacheStore } from '../../utils/cache-store';
 
 export type ParserLike = Parser<unknown> | string;
 

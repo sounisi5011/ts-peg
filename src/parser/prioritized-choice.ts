@@ -4,8 +4,8 @@ import {
     ParserLike2Result,
     ParseSuccessResult,
     ReduceParser,
-} from '../../internal';
-import { OneOrMoreReadonlyTuple } from '../../types';
+} from '../internal';
+import { OneOrMoreReadonlyTuple } from '../types';
 
 export class PrioritizedChoiceParser<
     TParserLikeTuple extends OneOrMoreReadonlyTuple<ParserLike>

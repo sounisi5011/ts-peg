@@ -4,8 +4,8 @@ import {
     ParserLikeTuple2ResultTuple,
     ParseSuccessResult,
     ReduceParser,
-} from '../../internal';
-import { OneOrMoreReadonlyTuple } from '../../types';
+} from '../internal';
+import { OneOrMoreReadonlyTuple } from '../types';
 
 export class SequenceParser<
     TParserLikeTuple extends OneOrMoreReadonlyTuple<ParserLike>
