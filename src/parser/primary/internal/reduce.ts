@@ -54,8 +54,8 @@ export function parserLike2Parser(
 }
 
 const parserCache = new CacheStore<
-    | [ParserGenerator, ...Parser<unknown>[]]
-    | [ParserGenerator, () => readonly ParserLike[]],
+    | [Function, ParserGenerator, ...Parser<unknown>[]]
+    | [Function, ParserGenerator, () => readonly ParserLike[]],
     ReduceParser<unknown, OneOrMoreReadonlyTuple<ParserLike>>
 >();
 
@@ -81,8 +81,8 @@ export abstract class ReduceParser<
 
         const cachedParser = parserCache.upsertWithTypeGuard(
             typeof this.__inputExps === 'function'
-                ? [this.parserGenerator, this.__inputExps]
-                : [this.parserGenerator, ...this.__inputExps],
+                ? [this.constructor, this.parserGenerator, this.__inputExps]
+                : [this.constructor, this.parserGenerator, ...this.__inputExps],
             undefined,
             () => this,
             (value): value is this => value instanceof this.constructor,
