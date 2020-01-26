@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should match', t => {
     t.deepEqual(p.any.oneOrMore.tryParse('abc', 0)?.data, ['a', 'b', 'c']);
@@ -38,10 +38,10 @@ test('getter property "oneOrMore" should return the same Parser object', t => {
     );
     t.not<Parser<string[]>>(oom1β1, oom2α1);
 
-    assertType<TypeEq<typeof oom1α1, Parser<['α', ...'α'[]]>>>();
-    assertType<TypeEq<typeof oom1α2, Parser<['α', ...'α'[]]>>>();
-    assertType<TypeEq<typeof oom1β1, Parser<['β', ...'β'[]]>>>();
-    assertType<TypeEq<typeof oom1β2, Parser<['β', ...'β'[]]>>>();
-    assertType<TypeEq<typeof oom2α1, Parser<['α', ...'α'[]]>>>();
-    assertType<TypeEq<typeof oom2α2, Parser<['α', ...'α'[]]>>>();
+    assertType<TypeEq<['α', ...'α'[]], ParserResultDataType<typeof oom1α1>>>();
+    assertType<TypeEq<['α', ...'α'[]], ParserResultDataType<typeof oom1α2>>>();
+    assertType<TypeEq<['β', ...'β'[]], ParserResultDataType<typeof oom1β1>>>();
+    assertType<TypeEq<['β', ...'β'[]], ParserResultDataType<typeof oom1β2>>>();
+    assertType<TypeEq<['α', ...'α'[]], ParserResultDataType<typeof oom2α1>>>();
+    assertType<TypeEq<['α', ...'α'[]], ParserResultDataType<typeof oom2α2>>>();
 });

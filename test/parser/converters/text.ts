@@ -1,50 +1,53 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
-import { assertExtendType } from '../../helpers/type';
+import p, { ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should convert result value', t => {
     {
         const parser = p.any;
-        assertExtendType<Parser<string>, typeof parser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
         const textParser = parser.text;
-        assertExtendType<Parser<string>, typeof textParser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
         t.is(textParser.tryParse('abc', 0)?.data, 'a');
     }
     {
         const parser = p.any.value('xxx');
-        assertExtendType<Parser<'xxx'>, typeof parser>();
+        assertType<TypeEq<'xxx', ParserResultDataType<typeof parser>>>();
         const textParser = parser.text;
-        assertExtendType<Parser<string>, typeof textParser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
         t.is(textParser.tryParse('abc', 1)?.data, 'b');
     }
     {
         const parser = p.any.zeroOrMore;
-        assertExtendType<Parser<string[]>, typeof parser>();
+        assertType<TypeEq<string[], ParserResultDataType<typeof parser>>>();
         const textParser = parser.text;
-        assertExtendType<Parser<string>, typeof textParser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
         t.is(textParser.tryParse('abc', 0)?.data, 'abc');
     }
     {
         const parser = p.any.value(42).oneOrMore;
-        assertExtendType<Parser<[42, ...42[]]>, typeof parser>();
+        assertType<
+            TypeEq<[42, ...42[]], ParserResultDataType<typeof parser>>
+        >();
         const textParser = parser.text;
-        assertExtendType<Parser<string>, typeof textParser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
         t.is(textParser.tryParse('abc', 0)?.data, 'abc');
     }
     {
         const parser = p.any.oneOrMore.action(value => ({ value }));
-        assertExtendType<
-            Parser<{ value: [string, ...string[]] }>,
-            typeof parser
+        assertType<
+            TypeEq<
+                { value: [string, ...string[]] },
+                ParserResultDataType<typeof parser>
+            >
         >();
         const textParser = parser.text;
-        assertExtendType<Parser<string>, typeof textParser>();
+        assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
         t.is(textParser.tryParse('abc', 0)?.data, 'abc');
     }
@@ -127,10 +130,10 @@ test('getter property "text" should return the same Parser object', t => {
     );
     t.not(opt1β1, opt2α1);
 
-    assertType<TypeEq<typeof opt1α1, Parser<string>>>();
-    assertType<TypeEq<typeof opt1α2, Parser<string>>>();
-    assertType<TypeEq<typeof opt1β1, Parser<string>>>();
-    assertType<TypeEq<typeof opt1β2, Parser<string>>>();
-    assertType<TypeEq<typeof opt2α1, Parser<string>>>();
-    assertType<TypeEq<typeof opt2α2, Parser<string>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt1α1>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt1α2>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt1β1>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt1β2>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt2α1>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof opt2α2>>>();
 });

@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should match', t => {
     t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0)?.data, ['a', 'b', 'c']);
@@ -37,10 +37,10 @@ test('getter property "zeroOrMore" should return the same Parser object', t => {
     );
     t.not<Parser<string[]>>(zom1β1, zom2α1);
 
-    assertType<TypeEq<typeof zom1α1, Parser<[...'α'[]]>>>();
-    assertType<TypeEq<typeof zom1α2, Parser<[...'α'[]]>>>();
-    assertType<TypeEq<typeof zom1β1, Parser<[...'β'[]]>>>();
-    assertType<TypeEq<typeof zom1β2, Parser<[...'β'[]]>>>();
-    assertType<TypeEq<typeof zom2α1, Parser<[...'α'[]]>>>();
-    assertType<TypeEq<typeof zom2α2, Parser<[...'α'[]]>>>();
+    assertType<TypeEq<[...'α'[]], ParserResultDataType<typeof zom1α1>>>();
+    assertType<TypeEq<[...'α'[]], ParserResultDataType<typeof zom1α2>>>();
+    assertType<TypeEq<[...'β'[]], ParserResultDataType<typeof zom1β1>>>();
+    assertType<TypeEq<[...'β'[]], ParserResultDataType<typeof zom1β2>>>();
+    assertType<TypeEq<[...'α'[]], ParserResultDataType<typeof zom2α1>>>();
+    assertType<TypeEq<[...'α'[]], ParserResultDataType<typeof zom2α2>>>();
 });

@@ -1,52 +1,63 @@
 import test from 'ava';
+import { assertType, TypeEq } from 'typepark';
 import util from 'util';
 
-import p, { Parser, ParserGenerator } from '../../src';
-import { assertExtendType } from '../helpers/type';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 
 test('should match', t => {
     {
         const parser = p.seq(p.any);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
-        assertExtendType<Parser<[string]>, typeof parser>();
+        assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq('a');
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
-        assertExtendType<Parser<['a']>, typeof parser>();
+        assertType<TypeEq<['a'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(p.str('a'));
-        assertExtendType<Parser<['a']>, typeof parser>();
+        assertType<TypeEq<['a'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(p.any, p.any);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abc', 1)?.data, ['b', 'c']);
-        assertExtendType<Parser<[string, string]>, typeof parser>();
+        assertType<
+            TypeEq<[string, string], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(p.any, 'b');
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abbc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abbc', 1)?.data, ['b', 'b']);
-        assertExtendType<Parser<[string, 'b']>, typeof parser>();
+        assertType<
+            TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(p.any, p.str('b'));
-        assertExtendType<Parser<[string, 'b']>, typeof parser>();
+        assertType<
+            TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq('a', p.str('b'));
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        assertExtendType<Parser<['a', 'b']>, typeof parser>();
+        assertType<TypeEq<['a', 'b'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq('x', p.str('x').optional, p.str('y'));
         t.deepEqual(parser.tryParse('xyz', 0)?.data, ['x', undefined, 'y']);
         t.deepEqual(parser.tryParse('xxyz', 0)?.data, ['x', 'x', 'y']);
         t.deepEqual(parser.tryParse('xxyz', 1)?.data, ['x', undefined, 'y']);
-        assertExtendType<Parser<['x', 'x' | undefined, 'y']>, typeof parser>();
+        assertType<
+            TypeEq<
+                ['x', 'x' | undefined, 'y'],
+                ParserResultDataType<typeof parser>
+            >
+        >();
     }
 });
 
@@ -54,66 +65,83 @@ test('should match ; callback func', t => {
     {
         const parser = p.seq(() => [p.any]);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
-        assertExtendType<Parser<[string]>, typeof parser>();
+        assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(() => [p.any] as const);
-        assertExtendType<Parser<[string]>, typeof parser>();
+        assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(() => ['a']);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
-        assertExtendType<Parser<[string]>, typeof parser>();
+        assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(() => ['a'] as const);
-        assertExtendType<Parser<['a']>, typeof parser>();
+        assertType<TypeEq<['a'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(() => [p.any, p.any]);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abc', 1)?.data, ['b', 'c']);
-        assertExtendType<Parser<[string, string]>, typeof parser>();
+        assertType<
+            TypeEq<[string, string], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(() => [p.any, p.any] as const);
-        assertExtendType<Parser<[string, string]>, typeof parser>();
+        assertType<
+            TypeEq<[string, string], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(() => [p.any, 'b']);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abbc', 0)?.data, ['a', 'b']);
         t.deepEqual(parser.tryParse('abbc', 1)?.data, ['b', 'b']);
-        assertExtendType<Parser<[string, string]>, typeof parser>();
+        assertType<
+            TypeEq<[string, string], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(() => [p.any, 'b'] as const);
-        assertExtendType<Parser<[string, 'b']>, typeof parser>();
+        assertType<
+            TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(() => ['a', p.str('b')]);
         t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        assertExtendType<Parser<[string, 'b']>, typeof parser>();
+        assertType<
+            TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
+        >();
     }
     {
         const parser = p.seq(() => ['a', p.str('b')] as const);
-        assertExtendType<Parser<['a', 'b']>, typeof parser>();
+        assertType<TypeEq<['a', 'b'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq(() => ['x', p.str('x').optional, p.str('y')]);
         t.deepEqual(parser.tryParse('xyz', 0)?.data, ['x', undefined, 'y']);
         t.deepEqual(parser.tryParse('xxyz', 0)?.data, ['x', 'x', 'y']);
         t.deepEqual(parser.tryParse('xxyz', 1)?.data, ['x', undefined, 'y']);
-        assertExtendType<
-            Parser<[string, 'x' | undefined, 'y']>,
-            typeof parser
+        assertType<
+            TypeEq<
+                [string, 'x' | undefined, 'y'],
+                ParserResultDataType<typeof parser>
+            >
         >();
     }
     {
         const parser = p.seq(
             () => ['x', p.str('x').optional, p.str('y')] as const,
         );
-        assertExtendType<Parser<['x', 'x' | undefined, 'y']>, typeof parser>();
+        assertType<
+            TypeEq<
+                ['x', 'x' | undefined, 'y'],
+                ParserResultDataType<typeof parser>
+            >
+        >();
     }
 });
 
@@ -322,11 +350,23 @@ test('if the arguments have the same value, they should return the same Parser o
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
 
-    assertExtendType<Parser<['foo']>, typeof seqP1Sfoo>();
-    assertExtendType<Parser<['bar']>, typeof seqP1Sbar>();
-    assertExtendType<Parser<['x-', 'foo', '-', string]>, typeof seqP1Fn1>();
-    assertExtendType<Parser<['foo', '-', 'bar']>, typeof seqP1Fn2>();
-    assertExtendType<Parser<['x-', 'foo', '-', string]>, typeof seqP1Fn3>();
-    assertExtendType<Parser<['hoge']>, typeof seqP1Shoge>();
-    assertExtendType<Parser<['hoge']>, typeof seqP2Shoge>();
+    assertType<TypeEq<['foo'], ParserResultDataType<typeof seqP1Sfoo>>>();
+    assertType<TypeEq<['bar'], ParserResultDataType<typeof seqP1Sbar>>>();
+    assertType<
+        TypeEq<
+            ['x-', 'foo', '-', string],
+            ParserResultDataType<typeof seqP1Fn1>
+        >
+    >();
+    assertType<
+        TypeEq<['foo', '-', 'bar'], ParserResultDataType<typeof seqP1Fn2>>
+    >();
+    assertType<
+        TypeEq<
+            ['x-', 'foo', '-', string],
+            ParserResultDataType<typeof seqP1Fn3>
+        >
+    >();
+    assertType<TypeEq<['hoge'], ParserResultDataType<typeof seqP1Shoge>>>();
+    assertType<TypeEq<['hoge'], ParserResultDataType<typeof seqP2Shoge>>>();
 });

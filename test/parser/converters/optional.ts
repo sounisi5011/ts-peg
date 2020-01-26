@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should match', t => {
     t.is(p.any.optional.tryParse('abc', 0)?.data, 'a');
@@ -46,10 +46,10 @@ test('getter property "optional" should return the same Parser object', t => {
     );
     t.not<Parser<string | undefined>>(opt1β1, opt2α1);
 
-    assertType<TypeEq<typeof opt1α1, Parser<'α' | undefined>>>();
-    assertType<TypeEq<typeof opt1α2, Parser<'α' | undefined>>>();
-    assertType<TypeEq<typeof opt1β1, Parser<'β' | undefined>>>();
-    assertType<TypeEq<typeof opt1β2, Parser<'β' | undefined>>>();
-    assertType<TypeEq<typeof opt2α1, Parser<'α' | undefined>>>();
-    assertType<TypeEq<typeof opt2α2, Parser<'α' | undefined>>>();
+    assertType<TypeEq<'α' | undefined, ParserResultDataType<typeof opt1α1>>>();
+    assertType<TypeEq<'α' | undefined, ParserResultDataType<typeof opt1α2>>>();
+    assertType<TypeEq<'β' | undefined, ParserResultDataType<typeof opt1β1>>>();
+    assertType<TypeEq<'β' | undefined, ParserResultDataType<typeof opt1β2>>>();
+    assertType<TypeEq<'α' | undefined, ParserResultDataType<typeof opt2α1>>>();
+    assertType<TypeEq<'α' | undefined, ParserResultDataType<typeof opt2α2>>>();
 });

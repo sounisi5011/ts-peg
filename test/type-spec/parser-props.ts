@@ -1,118 +1,131 @@
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser } from '../../src';
+import p, { ParserResultDataType } from '../../src';
 
 // exp.zeroOrMore
 {
     const parser = p.str('1').zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[...'1'[]]>>>();
+    assertType<TypeEq<[...'1'[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.seq('x', 'y', p.any).zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[...['x', 'y', string][]]>>>();
+    assertType<
+        TypeEq<[...['x', 'y', string][]], ParserResultDataType<typeof parser>>
+    >();
 }
 {
     const parser = p.chars('0-9').zeroOrMore;
-    assertType<TypeEq<typeof parser, Parser<[...string[]]>>>();
+    assertType<TypeEq<[...string[]], ParserResultDataType<typeof parser>>>();
 }
 
 // exp.oneOrMore
 {
     const parser = p.str('1').oneOrMore;
-    assertType<TypeEq<typeof parser, Parser<['1', ...'1'[]]>>>();
+    assertType<TypeEq<['1', ...'1'[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.seq('x', 'y', p.any).oneOrMore;
     assertType<
         TypeEq<
-            typeof parser,
-            Parser<[['x', 'y', string], ...['x', 'y', string][]]>
+            [['x', 'y', string], ...['x', 'y', string][]],
+            ParserResultDataType<typeof parser>
         >
     >();
 }
 {
     const parser = p.chars('0-9').oneOrMore;
-    assertType<TypeEq<typeof parser, Parser<[string, ...string[]]>>>();
+    assertType<
+        TypeEq<[string, ...string[]], ParserResultDataType<typeof parser>>
+    >();
 }
 
 // exp.optional
 {
     const parser = p.str('1').optional;
-    assertType<TypeEq<typeof parser, Parser<'1' | undefined>>>();
+    assertType<TypeEq<'1' | undefined, ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.seq('x', 'y', p.any).optional;
-    assertType<TypeEq<typeof parser, Parser<['x', 'y', string] | undefined>>>();
+    assertType<
+        TypeEq<
+            ['x', 'y', string] | undefined,
+            ParserResultDataType<typeof parser>
+        >
+    >();
 }
 {
     const parser = p.chars('0-9').optional;
-    assertType<TypeEq<typeof parser, Parser<string | undefined>>>();
+    assertType<
+        TypeEq<string | undefined, ParserResultDataType<typeof parser>>
+    >();
 }
 
 // exp.times()
 {
     const parser = p.any.times(0);
-    assertType<TypeEq<typeof parser, Parser<[]>>>();
+    assertType<TypeEq<[], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.any.times(1);
-    assertType<TypeEq<typeof parser, Parser<[string]>>>();
+    assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.any.times([].length);
-    assertType<TypeEq<typeof parser, Parser<[...string[]]>>>();
+    assertType<TypeEq<[...string[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.any.times(NaN);
-    assertType<TypeEq<typeof parser, Parser<[...string[]]>>>();
+    assertType<TypeEq<[...string[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.any.times(Infinity);
-    assertType<TypeEq<typeof parser, Parser<[...string[]]>>>();
+    assertType<TypeEq<[...string[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.str('x').times(2);
-    assertType<TypeEq<typeof parser, Parser<['x', 'x']>>>();
+    assertType<TypeEq<['x', 'x'], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.str('x').times(Math.PI);
-    assertType<TypeEq<typeof parser, Parser<[...'x'[]]>>>();
+    assertType<TypeEq<[...'x'[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.str('x').times(NaN);
-    assertType<TypeEq<typeof parser, Parser<[...'x'[]]>>>();
+    assertType<TypeEq<[...'x'[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.str('x').times(Infinity);
-    assertType<TypeEq<typeof parser, Parser<[...'x'[]]>>>();
+    assertType<TypeEq<[...'x'[]], ParserResultDataType<typeof parser>>>();
 }
 {
     const parser = p.str('8').times(4);
-    assertType<TypeEq<typeof parser, Parser<['8', '8', '8', '8']>>>();
+    assertType<
+        TypeEq<['8', '8', '8', '8'], ParserResultDataType<typeof parser>>
+    >();
 }
 {
     const parser = p.seq('0', '1').times(8);
     assertType<
         TypeEq<
-            typeof parser,
-            Parser<
-                [
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                    ['0', '1'],
-                ]
-            >
+            [
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+                ['0', '1'],
+            ],
+            ParserResultDataType<typeof parser>
         >
     >();
 }
 {
     const parser = p.seq('0', '1').times(process.pid);
-    assertType<TypeEq<typeof parser, Parser<[...['0', '1'][]]>>>();
+    assertType<
+        TypeEq<[...['0', '1'][]], ParserResultDataType<typeof parser>>
+    >();
 }
 {
     function random(): 0 | 1 | 2 {

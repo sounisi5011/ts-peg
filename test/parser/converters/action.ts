@@ -6,6 +6,7 @@ import p, {
     Parser,
     ParseResult,
     ParserGenerator,
+    ParserResultDataType,
 } from '../../../src';
 
 test('should convert result value', t => {
@@ -24,12 +25,14 @@ test('should convert result value', t => {
         { char: '🏡', code: 0x1f3e1 },
     ]);
 
-    assertType<TypeEq<typeof exp1, Parser<number>>>();
-    assertType<TypeEq<typeof exp2, Parser<[number, ...number[]]>>>();
+    assertType<TypeEq<number, ParserResultDataType<typeof exp1>>>();
+    assertType<
+        TypeEq<[number, ...number[]], ParserResultDataType<typeof exp2>>
+    >();
     assertType<
         TypeEq<
-            typeof exp3,
-            Parser<{ char: string; code: number | undefined }[]>
+            { char: string; code: number | undefined }[],
+            ParserResultDataType<typeof exp3>
         >
     >();
 });
@@ -151,10 +154,10 @@ test('if the arguments have the same value, they should return the same Parser o
     );
     t.not<Parser<boolean | number>>(action1N1, action2B1);
 
-    assertType<TypeEq<typeof action1B1, Parser<boolean>>>();
-    assertType<TypeEq<typeof action1B2, Parser<boolean>>>();
-    assertType<TypeEq<typeof action1N1, Parser<number>>>();
-    assertType<TypeEq<typeof action1N2, Parser<number>>>();
-    assertType<TypeEq<typeof action2B1, Parser<boolean>>>();
-    assertType<TypeEq<typeof action2B2, Parser<boolean>>>();
+    assertType<TypeEq<boolean, ParserResultDataType<typeof action1B1>>>();
+    assertType<TypeEq<boolean, ParserResultDataType<typeof action1B2>>>();
+    assertType<TypeEq<number, ParserResultDataType<typeof action1N1>>>();
+    assertType<TypeEq<number, ParserResultDataType<typeof action1N2>>>();
+    assertType<TypeEq<boolean, ParserResultDataType<typeof action2B1>>>();
+    assertType<TypeEq<boolean, ParserResultDataType<typeof action2B2>>>();
 });

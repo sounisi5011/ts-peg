@@ -11,23 +11,28 @@ assertType<TypeEq<ParserResultDataType<LiteralStringParser<string>>, string>>();
 assertType<TypeEq<ParserResultDataType<LiteralStringParser<'bar'>>, 'bar'>>();
 
 test('should match string', t => {
-    t.is(p.str('hoge').tryParse('hoge fuga', 0)?.data, 'hoge');
-    t.is(p.str('hoge').tryParse('foo bar hoge fuga', 8)?.data, 'hoge');
+    const parser = p.str('hoge');
+    t.is(parser.tryParse('hoge fuga', 0)?.data, 'hoge');
+    t.is(parser.tryParse('foo bar hoge fuga', 8)?.data, 'hoge');
+    assertType<TypeEq<'hoge', ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match string', t => {
-    t.is(p.str('hoge').tryParse('hoge fuga', 1), undefined);
-    t.is(p.str('hoge').tryParse('foo bar hoge fuga', 7), undefined);
-    t.is(p.str('hoge').tryParse('hog', 0), undefined);
-    t.is(p.str('hoge').tryParse('oge', 0), undefined);
+    const parser = p.str('hoge');
+    t.is(parser.tryParse('hoge fuga', 1), undefined);
+    t.is(parser.tryParse('foo bar hoge fuga', 7), undefined);
+    t.is(parser.tryParse('hog', 0), undefined);
+    t.is(parser.tryParse('oge', 0), undefined);
 });
 
 test('should not match empty string', t => {
-    t.is(p.str('hoge').tryParse('', 0), undefined);
+    const parser = p.str('hoge');
+    t.is(parser.tryParse('', 0), undefined);
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.str('hoge').tryParse('hoge', 99), undefined);
+    const parser = p.str('hoge');
+    t.is(parser.tryParse('hoge', 99), undefined);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {
@@ -60,12 +65,12 @@ test('if the arguments have the same value, they should return the same Parser o
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
 
-    assertType<TypeEq<typeof str1H1, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str1F1, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str1H2, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str1F2, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str2H1, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str2F1, LiteralStringParser<'fuga'>>>();
-    assertType<TypeEq<typeof str2H2, LiteralStringParser<'hoge'>>>();
-    assertType<TypeEq<typeof str2F2, LiteralStringParser<'fuga'>>>();
+    assertType<TypeEq<'hoge', ParserResultDataType<typeof str1H1>>>();
+    assertType<TypeEq<'fuga', ParserResultDataType<typeof str1F1>>>();
+    assertType<TypeEq<'hoge', ParserResultDataType<typeof str1H2>>>();
+    assertType<TypeEq<'fuga', ParserResultDataType<typeof str1F2>>>();
+    assertType<TypeEq<'hoge', ParserResultDataType<typeof str2H1>>>();
+    assertType<TypeEq<'fuga', ParserResultDataType<typeof str2F1>>>();
+    assertType<TypeEq<'hoge', ParserResultDataType<typeof str2H2>>>();
+    assertType<TypeEq<'fuga', ParserResultDataType<typeof str2F2>>>();
 });

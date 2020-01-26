@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should match', t => {
     t.deepEqual(p.any.times(0).tryParse('abc', 0)?.data, []);
@@ -131,12 +131,12 @@ test('if the arguments have the same value, they should return the same Parser o
     );
     t.not<Parser<[string]>>(times1β1A, times2α1A);
 
-    assertType<TypeEq<typeof times1α1A, Parser<['α']>>>();
-    assertType<TypeEq<typeof times1α1B, Parser<['α']>>>();
-    assertType<TypeEq<typeof times1α2A, Parser<['α', 'α']>>>();
-    assertType<TypeEq<typeof times1α2B, Parser<['α', 'α']>>>();
-    assertType<TypeEq<typeof times1β1A, Parser<['β']>>>();
-    assertType<TypeEq<typeof times1β1B, Parser<['β']>>>();
-    assertType<TypeEq<typeof times2α1A, Parser<['α']>>>();
-    assertType<TypeEq<typeof times2α1B, Parser<['α']>>>();
+    assertType<TypeEq<['α'], ParserResultDataType<typeof times1α1A>>>();
+    assertType<TypeEq<['α'], ParserResultDataType<typeof times1α1B>>>();
+    assertType<TypeEq<['α', 'α'], ParserResultDataType<typeof times1α2A>>>();
+    assertType<TypeEq<['α', 'α'], ParserResultDataType<typeof times1α2B>>>();
+    assertType<TypeEq<['β'], ParserResultDataType<typeof times1β1A>>>();
+    assertType<TypeEq<['β'], ParserResultDataType<typeof times1β1B>>>();
+    assertType<TypeEq<['α'], ParserResultDataType<typeof times2α1A>>>();
+    assertType<TypeEq<['α'], ParserResultDataType<typeof times2α1B>>>();
 });

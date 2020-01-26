@@ -14,7 +14,7 @@ assertType<TypeEq<ParserResultDataType<CharacterClassParser>, string>>();
 
 test('should match characters: "abc123"', t => {
     const parser = p.chars('abc123');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('a', 0)?.data, 'a');
     t.is(parser.tryParse('bca', 0)?.data, 'b');
@@ -27,7 +27,7 @@ test('should match characters: "abc123"', t => {
 
 test('should match inverted characters: "^abc123"', t => {
     const parser = p.chars('^abc123');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('h', 0)?.data, 'h');
     t.is(parser.tryParse('893', 0)?.data, '8');
@@ -44,7 +44,7 @@ test('should match inverted characters: "^abc123"', t => {
 
 test('should match character range: "a-f"', t => {
     const parser = p.chars('a-f');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('a', 0)?.data, 'a');
     t.is(parser.tryParse('baka', 0)?.data, 'b');
@@ -57,7 +57,7 @@ test('should match character range: "a-f"', t => {
 
 test('should match character range: "f-a"', t => {
     const parser = p.chars('f-a');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('f', 0)?.data, 'f');
     t.is(parser.tryParse('affine', 0)?.data, 'a');
@@ -70,7 +70,7 @@ test('should match character range: "f-a"', t => {
 
 test('should match characters and character range: "0-9abc"', t => {
     const parser = p.chars('0-9abc');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('0', 0)?.data, '0');
     t.is(parser.tryParse('42', 0)?.data, '4');
@@ -86,7 +86,7 @@ test('should match characters and character range: "0-9abc"', t => {
 
 test('should match inverted character range: "^a-f"', t => {
     const parser = p.chars('^a-f');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('2', 0)?.data, '2');
     t.is(parser.tryParse('APL', 0)?.data, 'A');
@@ -99,7 +99,7 @@ test('should match inverted character range: "^a-f"', t => {
 
 test('should match characters and "-": "abc-"', t => {
     const parser = p.chars('abc-');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('a', 0)?.data, 'a');
     t.is(parser.tryParse('bca', 0)?.data, 'b');
@@ -113,7 +113,7 @@ test('should match characters and "-": "abc-"', t => {
 
 test('should match character range and "-": "-0-9"', t => {
     const parser = p.chars('-0-9');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('0', 0)?.data, '0');
     t.is(parser.tryParse('456', 0)?.data, '4');
@@ -132,7 +132,7 @@ test('should match all ASCII characters, including control characters', t => {
         .join('');
 
     const parser = p.chars(allAsciiChars.replace(/-/g, '') + '-');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     for (const controlChar of allAsciiChars) {
         const message = util.inspect(
@@ -147,7 +147,7 @@ test('should match all ASCII characters, including control characters', t => {
 
 test('should match emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('\uD83C\uDF47-\uD83C\uDF53'); // U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('\u{1F347}', 0)?.data, '🍇');
     t.is(parser.tryParse('\u{1F348}\u{1F34C}', 0)?.data, '🍈');
@@ -185,7 +185,7 @@ test('should match emoji (Unicode surrogate pair char) range', t => {
 
 test('should match inverted emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('^\uD83C\uDF47-\uD83C\uDF53'); // ! U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('x', 0)?.data, 'x');
     t.is(parser.tryParse('\u{1F4A9}', 0)?.data, '💩');
@@ -239,7 +239,7 @@ test('should match inverted emoji (Unicode surrogate pair char) range', t => {
 
 test('should match Unicode surrogate char range', t => {
     const parser = p.chars('\uDC00-\uDFFF\uD800-\uDBFF');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('\uD800', 0)?.data, '\uD800');
     t.is(parser.tryParse('\uD83Cx', 0)?.data, '\uD83C');
@@ -262,7 +262,7 @@ test('should match Unicode surrogate char range', t => {
 
 test('should match inverted Unicode surrogate char range', t => {
     const parser = p.chars('^\uD800-\uDFFF');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('x', 0)?.data, 'x');
     t.is(
@@ -281,7 +281,7 @@ test('should match inverted Unicode surrogate char range', t => {
 
 test('should match emoji and Unicode surrogate char range', t => {
     const parser = p.chars('\uD800-\uDFFF\uD83C\uDF47-\uD83C\uDF53'); // U+D800 - U+DFFF and U+1F347 - U+1F353
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('\uD800', 0)?.data, '\uD800');
     t.is(parser.tryParse('\uDBFF', 0)?.data, '\uDBFF');
@@ -312,7 +312,7 @@ test('should not match empty string', t => {
 
 test('should not match "^"', t => {
     const parser = p.chars('^^');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('^', 0), undefined);
     t.is(parser.tryParse('abc', 0)?.data, 'a');
@@ -320,7 +320,7 @@ test('should not match "^"', t => {
 
 test('should not match "-"', t => {
     const parser = p.chars('^-a');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('-', 0), undefined);
     t.is(parser.tryParse('a', 0), undefined);
@@ -329,7 +329,7 @@ test('should not match "-"', t => {
 
 test('should always match', t => {
     const parser = p.chars('^');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('a', 0)?.data, 'a');
     t.is(parser.tryParse('123', 0)?.data, '1');
@@ -342,7 +342,7 @@ test('should always match', t => {
 
 test('should not always match', t => {
     const parser = p.chars('');
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('', 0), undefined);
     t.is(parser.tryParse('a', 0), undefined);
@@ -354,7 +354,7 @@ test('should not always match', t => {
 
 test(String.raw`"\" is not an escape character`, t => {
     const parser = p.chars(String.raw`\-a`);
-    assertType<TypeEq<typeof parser, CharacterClassParser>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
     t.is(parser.tryParse('\\', 0)?.data, '\\');
     t.is(parser.tryParse('a', 0)?.data, 'a');

@@ -1,7 +1,7 @@
 import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { Parser, ParserGenerator } from '../../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should convert result value', t => {
     const num = Math.random();
@@ -31,24 +31,28 @@ test('should convert result value', t => {
     t.is(exp6.tryParse('abc', 1)?.data, true);
     t.is(exp7.tryParse('abc', 2)?.data, false);
 
-    assertType<TypeEq<typeof exp1, Parser<42>>>();
-    assertType<TypeEq<typeof exp2, Parser<['foo', ...'foo'[]]>>>();
-    assertType<TypeEq<typeof exp3, Parser<number>>>();
-    assertType<TypeEq<typeof exp4, Parser<[null, ...null[]]>>>();
-    assertType<TypeEq<typeof exp5, Parser<[undefined, undefined]>>>();
-    assertType<TypeEq<typeof exp6, Parser<true>>>();
-    assertType<TypeEq<typeof exp7, Parser<false>>>();
-    assertType<TypeEq<typeof exp8, Parser<1 | '2' | true>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof exp1>>>();
+    assertType<
+        TypeEq<['foo', ...'foo'[]], ParserResultDataType<typeof exp2>>
+    >();
+    assertType<TypeEq<number, ParserResultDataType<typeof exp3>>>();
+    assertType<TypeEq<[null, ...null[]], ParserResultDataType<typeof exp4>>>();
+    assertType<
+        TypeEq<[undefined, undefined], ParserResultDataType<typeof exp5>>
+    >();
+    assertType<TypeEq<true, ParserResultDataType<typeof exp6>>>();
+    assertType<TypeEq<false, ParserResultDataType<typeof exp7>>>();
+    assertType<TypeEq<1 | '2' | true, ParserResultDataType<typeof exp8>>>();
     assertType<
         TypeEq<
-            typeof exp9,
-            Parser<[boolean, null, undefined, number, string, number]>
+            [boolean, null, undefined, number, string, number],
+            ParserResultDataType<typeof exp9>
         >
     >();
     assertType<
         TypeEq<
-            typeof exp10,
-            Parser<readonly [false, null, undefined, 42, 'hoge', number]>
+            readonly [false, null, undefined, 42, 'hoge', number],
+            ParserResultDataType<typeof exp10>
         >
     >();
 });
@@ -92,16 +96,16 @@ test('if the arguments have the same value, they should return the same Parser o
     );
     t.not<Parser<unknown>>(action1Fn1, action2Num1);
 
-    assertType<TypeEq<typeof action1Num1, Parser<42>>>();
-    assertType<TypeEq<typeof action1Num2, Parser<42>>>();
-    assertType<TypeEq<typeof action2Num1, Parser<42>>>();
-    assertType<TypeEq<typeof action2Num2, Parser<42>>>();
-    assertType<TypeEq<typeof action3Num1, Parser<42>>>();
-    assertType<TypeEq<typeof action3Num2, Parser<42>>>();
-    assertType<TypeEq<typeof action1Undef1, Parser<undefined>>>();
-    assertType<TypeEq<typeof action1Undef2, Parser<undefined>>>();
-    assertType<TypeEq<typeof action1Fn1, Parser<typeof fn>>>();
-    assertType<TypeEq<typeof action1Fn2, Parser<typeof fn>>>();
-    assertType<TypeEq<typeof action1Obj1, Parser<{}>>>();
-    assertType<TypeEq<typeof action1Obj2, Parser<{}>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action1Num1>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action1Num2>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action2Num1>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action2Num2>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action3Num1>>>();
+    assertType<TypeEq<42, ParserResultDataType<typeof action3Num2>>>();
+    assertType<TypeEq<undefined, ParserResultDataType<typeof action1Undef1>>>();
+    assertType<TypeEq<undefined, ParserResultDataType<typeof action1Undef2>>>();
+    assertType<TypeEq<typeof fn, ParserResultDataType<typeof action1Fn1>>>();
+    assertType<TypeEq<typeof fn, ParserResultDataType<typeof action1Fn2>>>();
+    assertType<TypeEq<{}, ParserResultDataType<typeof action1Obj1>>>();
+    assertType<TypeEq<{}, ParserResultDataType<typeof action1Obj2>>>();
 });
