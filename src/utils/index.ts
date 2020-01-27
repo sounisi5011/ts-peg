@@ -17,3 +17,10 @@ export function* matchAll(
         yield match;
     }
 }
+
+/**
+ * @see https://github.com/benjamingr/RegExp.escape
+ */
+export function escapeRegExp(str: string): string {
+    return str.replace(/[$^\\.*+?()[\]{}|]/g, '\\$&');
+}

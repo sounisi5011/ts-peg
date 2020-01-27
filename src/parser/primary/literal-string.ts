@@ -4,6 +4,7 @@ import {
     ParserGenerator,
     ParseSuccessResult,
 } from '../../internal';
+import { escapeRegExp } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
 const caseInsensitiveLiteralStringParser = new CacheStore<
@@ -17,7 +18,7 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
     constructor(literalString: string, parserGenerator: ParserGenerator) {
         super(parserGenerator);
         this.__literalStringRegExp = new RegExp(
-            literalString.replace(/[$(-+.?[-^{-}]/g, '\\$&'),
+            escapeRegExp(literalString),
             'iuy',
         );
 
