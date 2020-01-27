@@ -17,7 +17,7 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
     constructor(literalString: string, parserGenerator: ParserGenerator) {
         super(parserGenerator);
         this.__literalStringRegExp = new RegExp(
-            literalString.replace(/[$(-+?[-^{-}]/g, '\\$&'),
+            literalString.replace(/[$(-+.?[-^{-}]/g, '\\$&'),
             'iuy',
         );
 
