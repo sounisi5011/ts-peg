@@ -8,7 +8,7 @@
 import test, { Macro } from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
-import p, { ParserGenerator, ParserResultDataType } from '../../src';
+import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 
 function str2codePoints(str: string): string {
     return [...str]
@@ -17,7 +17,7 @@ function str2codePoints(str: string): string {
                 .codePointAt(0)
                 ?.toString(16)
                 .toUpperCase()
-                .padStart(4, 0),
+                .padStart(4, '0'),
         )
         .filter((code): code is string => typeof code === 'string')
         .map(code => `U+${code}`)
@@ -279,7 +279,7 @@ test.skip('if the arguments have the same value, they should return the same Par
 
     t.not(str1Shoge, p.str('hge').i);
     t.not(str1Shoge, p.str('H0GE').i);
-    t.not(str1Shoge, p.str('hoge'));
+    t.not<Parser<string>>(str1Shoge, p.str('hoge'));
     t.not(
         str1Shoge,
         str2Shoge,

@@ -17,7 +17,7 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
         );
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<T> {
+    protected __parse(input: string, offsetStart: number): ParseResult<string> {
         this.__literalStringRegExp.lastIndex = offsetStart;
         const match = this.__literalStringRegExp.exec(input);
         if (match) {
