@@ -6,6 +6,11 @@ import {
 } from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
+const caseInsensitiveLiteralStringParser = new CacheStore<
+    [Function, ParserGenerator, number],
+    Map<RegExp, CaseInsensitiveLiteralStringParser>
+>();
+
 export class CaseInsensitiveLiteralStringParser extends Parser<string> {
     private readonly __literalStringRegExp: RegExp;
 
@@ -15,6 +20,18 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
             literalString.replace(/[$(-+?[-^{-}]/g, '\\$&'),
             'iuy',
         );
+
+        const cacheMap = caseInsensitiveLiteralStringParser.upsert(
+            [this.constructor, parserGenerator, literalString.length],
+            undefined,
+            () => new Map<RegExp, CaseInsensitiveLiteralStringParser>(),
+        );
+        for (const [regexp, cachedParser] of cacheMap) {
+            regexp.lastIndex = 0;
+            const match = regexp.exec(literalString);
+            if (match && match[0] === literalString) return cachedParser;
+        }
+        cacheMap.set(this.__literalStringRegExp, this);
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<string> {
