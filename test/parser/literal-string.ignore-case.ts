@@ -27,7 +27,7 @@ function str2codePoints(str: string): string {
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
     t.is(parser.tryParse(expected, 0)?.data, expected, 'should match input');
-    t.is.skip(parser, p.str(expected).i, 'should return same Parser objects');
+    t.is(parser, p.str(expected).i, 'should return same Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
 shouldMatch.title = (providedTitle, input, expected) =>
@@ -41,11 +41,7 @@ const shouldNotMatch: Macro<[string, string]> = (t, input, expected) => {
         undefined,
         'should not match input',
     );
-    t.not.skip(
-        parser,
-        p.str(expected).i,
-        'should return different Parser objects',
-    );
+    t.not(parser, p.str(expected).i, 'should return different Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
 shouldNotMatch.title = (providedTitle, input, expected) =>
@@ -262,7 +258,7 @@ for (const asciiChar of [...Array(0x80).keys()].map(c =>
     test(title, shouldMatch, 'びよういん', 'びよういん');
 }
 
-test.skip('if the arguments have the same value, they should return the same Parser object', t => {
+test('if the arguments have the same value, they should return the same Parser object', t => {
     const p2 = new ParserGenerator();
     const str1Shoge = p.str('hoge').i;
     const str2Shoge = p2.str('hoge').i;
