@@ -6,6 +6,31 @@ import {
 } from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
+export class CaseInsensitiveLiteralStringParser extends Parser<string> {
+    private readonly __literalStringRegExp: RegExp;
+
+    constructor(literalString: string, parserGenerator: ParserGenerator) {
+        super(parserGenerator);
+        this.__literalStringRegExp = new RegExp(
+            literalString.replace(/[$(-+?[-^{-}]/g, '\\$&'),
+            'iuy',
+        );
+    }
+
+    protected __parse(input: string, offsetStart: number): ParseResult<T> {
+        this.__literalStringRegExp.lastIndex = offsetStart;
+        const match = this.__literalStringRegExp.exec(input);
+        if (match) {
+            const matchdText = match[0];
+            return new ParseSuccessResult(
+                offsetStart + matchdText.length,
+                () => matchdText,
+            );
+        }
+        return undefined;
+    }
+}
+
 const literalStringParserCache = new CacheStore<
     [Function, ParserGenerator, string],
     LiteralStringParser<string>
@@ -30,6 +55,13 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
                 value instanceof this.constructor,
         );
         if (cachedParser && cachedParser !== this) return cachedParser;
+    }
+
+    get i(): CaseInsensitiveLiteralStringParser {
+        return new CaseInsensitiveLiteralStringParser(
+            this.__literalString,
+            this.parserGenerator,
+        );
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<T> {
