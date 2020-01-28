@@ -472,8 +472,8 @@ test('if the arguments have the same value, they should return the same Parser o
     t.is(p.chars('0-9').i, p.chars('9-0').i);
     t.is(p.chars('0-9').i, p.chars('0-9'));
     t.is(p.chars('a-z').i, p.chars('A-Z').i);
-    t.is(p.chars('a-z').i, p.chars('a-zA-Z'));
-    t.is(p.chars('a-z').i, p.chars('A-Za-z'));
+    t.is(p.chars('a-z').i, p.chars('a-zA-Z\u{017F}\u{212A}'));
+    t.is(p.chars('a-z').i, p.chars('A-Za-z\u{212A}\u{017F}'));
     t.is(p.chars('z{-~').i, p.chars('Z{-~').i);
     t.is(p.chars('z{-~').i, p.chars('z-~').i);
 
