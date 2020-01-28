@@ -138,7 +138,8 @@
     "simple-statistics": "7.0.7",
     "sort-package-json": "1.39.0",
     "ts-node": "8.6.2",
-    "typescript": "3.7.5"
+    "typescript": "3.7.5",
+    "unicode-12.1.0": "0.8.0"
   },
   "engines": {
     "node": ">=10.14.2 <11.0.0 || 12.x || 13.x"
