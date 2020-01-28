@@ -6,7 +6,7 @@ import {
     ParseSuccessResult,
 } from '../../internal';
 import { isOneOrMoreTuple } from '../../types';
-import { matchAll } from '../../utils';
+import { filterList, matchAll } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
 const characterClassParserCache = new CacheStore<
@@ -195,7 +195,9 @@ class CodePointRangeSet implements Iterable<CodePointRange> {
             codePointRanges.push(appendAfterRangeOrEnd);
         }
 
-        const pattern = (isInverse ? '^' : '') + codePointRanges.join('');
+        const pattern =
+            (isInverse ? '^' : '') +
+            this.__moveSurrogateCharCodes(codePointRanges).join('');
         this.__patternCache.set(isInverse, pattern);
 
         return pattern;
@@ -239,6 +241,43 @@ class CodePointRangeSet implements Iterable<CodePointRange> {
                     : [...codePointRangesList, codePointRange],
             [],
         );
+    }
+
+    /**
+     * [ CodePointRange<U+D800 - U+DBFF>, CodePointRange<U+DC00 - U+DFFF> ] -> [ CodePointRange<U+DC00 - U+DFFF>, CodePointRange<U+D800 - U+DBFF> ]
+     */
+    private __moveSurrogateCharCodes(
+        codePointRanges: CodePointRange[],
+    ): CodePointRange[] {
+        const {
+            filtered: lowSurrogateCodePointRanges,
+            excludeFiltered: newCodePointRanges,
+        } = filterList(codePointRanges, codePointRange =>
+            this.__isLowSurrogate(codePointRange.minCodePoint),
+        );
+
+        if (lowSurrogateCodePointRanges.length < 1) return codePointRanges;
+
+        const highSurrogateStartPos = newCodePointRanges.findIndex(
+            codePointRange =>
+                this.__isHighSurrogate(codePointRange.maxCodePoint),
+        );
+        if (highSurrogateStartPos < 0) return codePointRanges;
+
+        newCodePointRanges.splice(
+            highSurrogateStartPos,
+            0,
+            ...lowSurrogateCodePointRanges,
+        );
+        return newCodePointRanges;
+    }
+
+    private __isHighSurrogate(codePoint: number): boolean {
+        return codePoint >= 0xd800 && codePoint <= 0xdbff;
+    }
+
+    private __isLowSurrogate(codePoint: number): boolean {
+        return codePoint >= 0xdc00 && codePoint <= 0xdfff;
     }
 }
 
