@@ -9,20 +9,8 @@ import test, { Macro } from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
-
-function str2codePoints(str: string): string {
-    return [...str]
-        .map(c =>
-            c
-                .codePointAt(0)
-                ?.toString(16)
-                .toUpperCase()
-                .padStart(4, '0'),
-        )
-        .filter((code): code is string => typeof code === 'string')
-        .map(code => `U+${code}`)
-        .join(' ');
-}
+import { str2codePoints } from '../helpers';
+import { asciiCharList } from '../helpers/chars';
 
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
@@ -80,9 +68,7 @@ test('should not match if starting offset is out of range', t => {
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
-for (const asciiChar of [...Array(0x80).keys()].map(c =>
-    String.fromCodePoint(c),
-)) {
+for (const asciiChar of asciiCharList) {
     test(
         'should match all ASCII characters',
         shouldMatch,
