@@ -717,10 +717,10 @@ test('validate "pattern" property value: low surrogate char cannot be placed aft
     }
     {
         const parser = p.chars('\uDF09\uDF01\uDC01-\uDBFE\uD805\uD801');
-        t.is(e(parser.pattern), e('\uDF01\uDF09\uDBFE-\uDC01\uD801\uD805'));
+        t.is(e(parser.pattern), e('\uDF01\uDF09\uD801\uD805\uDBFE-\uDC01'));
         t.is(
             e(p2.chars(parser.pattern).pattern),
-            e('\uDF01\uDF09\uDBFE-\uDC01\uD801\uD805'),
+            e('\uDF01\uDF09\uD801\uD805\uDBFE-\uDC01'),
         );
     }
     {
