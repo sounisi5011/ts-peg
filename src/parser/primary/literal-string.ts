@@ -1,51 +1,53 @@
+import caseFoldingMap from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
 } from '../../internal';
-import { escapeRegExp } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
 const caseInsensitiveLiteralStringParser = new CacheStore<
-    [Function, ParserGenerator, number],
-    Map<RegExp, CaseInsensitiveLiteralStringParser>
+    [Function, ParserGenerator, string],
+    CaseInsensitiveLiteralStringParser
 >();
 
 export class CaseInsensitiveLiteralStringParser extends Parser<string> {
-    private readonly __literalStringRegExp: RegExp;
+    private readonly __literalString: string;
 
     constructor(literalString: string, parserGenerator: ParserGenerator) {
         super(parserGenerator);
-        this.__literalStringRegExp = new RegExp(
-            escapeRegExp(literalString),
-            'iuy',
-        );
+        this.__literalString = this.__canonicalize(literalString);
 
-        const cacheMap = caseInsensitiveLiteralStringParser.upsert(
-            [this.constructor, parserGenerator, literalString.length],
+        const cachedParser = caseInsensitiveLiteralStringParser.upsert(
+            [this.constructor, parserGenerator, this.__literalString],
             undefined,
-            () => new Map<RegExp, CaseInsensitiveLiteralStringParser>(),
+            () => this,
         );
-        for (const [regexp, cachedParser] of cacheMap) {
-            regexp.lastIndex = 0;
-            const match = regexp.exec(literalString);
-            if (match && match[0] === literalString) return cachedParser;
-        }
-        cacheMap.set(this.__literalStringRegExp, this);
+        if (cachedParser !== this) return cachedParser;
     }
 
     protected __parse(input: string, offsetStart: number): ParseResult<string> {
-        this.__literalStringRegExp.lastIndex = offsetStart;
-        const match = this.__literalStringRegExp.exec(input);
-        if (match) {
-            const matchdText = match[0];
-            return new ParseSuccessResult(
-                offsetStart + matchdText.length,
-                () => matchdText,
-            );
-        }
-        return undefined;
+        const offsetEnd = offsetStart + this.__literalString.length;
+        const substr = input.substring(offsetStart, offsetEnd);
+        return this.__literalString === this.__canonicalize(substr)
+            ? new ParseSuccessResult(offsetEnd, () => substr)
+            : undefined;
+    }
+
+    /**
+     * @see https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
+     */
+    private __canonicalize(str: string): string {
+        return str.replace(/./gu, char => {
+            const codePoint = char.codePointAt(0);
+            if (typeof codePoint !== 'number') return char;
+
+            const mapping = caseFoldingMap.get(codePoint)?.mapping;
+            if (typeof mapping !== 'number') return char;
+
+            return String.fromCodePoint(mapping);
+        });
     }
 }
 
