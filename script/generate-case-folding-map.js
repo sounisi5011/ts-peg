@@ -23,7 +23,6 @@ function int2hex(num) {
 }
 
 async function formatCode(code, filename) {
-  const { languages } = prettier.getSupportInfo();
   const prettierOptions = await prettier.resolveConfig(filename);
   return prettier.format(code, { filepath: filename, ...prettierOptions });
 }
@@ -34,58 +33,60 @@ async function main(args) {
   const [outFileName] = args;
   const outFilepath = path.resolve(cwd, outFileName);
 
-  const codeMappingMap = new Map();
-  const codeMappingInverseMap = new Map();
-
-  for (const codePoints of [codePointsC, codePointsS]) {
-    for (const [code, mapping] of codePoints) {
-      codeMappingMap.set(code, mapping);
-      if (codeMappingInverseMap.has(mapping)) {
-        codeMappingInverseMap.get(mapping).add(code);
-      } else {
-        codeMappingInverseMap.set(mapping, new Set([code]));
+  const codeMappingMap = new Map(
+    [...codePointsC, ...codePointsS].sort(([a], [b]) => a - b),
+  );
+  const targetCharClass = [...codeMappingMap.keys()]
+    .reduce((list, code) => {
+      const codeRange = list.pop() || [code, code];
+      if ([code, code - 1].includes(codeRange[1])) {
+        codeRange[1] = code;
+        return [...list, codeRange];
       }
-    }
-  }
-  const codePointSet = new Set([
-    ...codeMappingMap.keys(),
-    ...codeMappingInverseMap.keys(),
-  ]);
+      return [...list, codeRange, [code, code]];
+    }, [])
+    .map(([codeMin, codeMax]) =>
+      codeMin === codeMax
+        ? String.fromCodePoint(codeMin)
+        : codeMin + 1 === codeMax
+        ? String.fromCodePoint(codeMin) + String.fromCodePoint(codeMax)
+        : String.fromCodePoint(codeMin) + '-' + String.fromCodePoint(codeMax),
+    )
+    .join('');
 
   const filedata = [
-    'export = new Map<number, { mapping?:number; codes:number[] }>([',
-    [...codePointSet]
-      .sort((a, b) => a - b)
-      .map(code => {
-        const itemList = [];
-        const mapping = codeMappingMap.get(code);
-        const codes = new Set([code]);
-
-        if (typeof mapping === 'number') {
-          itemList.push(`mapping:${int2hex(mapping)}`);
-
-          codes.add(mapping);
-          for (const mappingCode of codeMappingInverseMap.get(mapping)) {
-            codes.add(mappingCode);
-          }
-        } else {
-          for (const mappingCode of codeMappingInverseMap.get(code) || []) {
-            codes.add(mappingCode);
-          }
-        }
-        itemList.push(
-          `codes:[${[...codes]
-            .sort((a, b) => a - b)
-            .map(int2hex)
-            .join()}]`,
-        );
-
-        const record = [int2hex(code), `{${itemList.reverse().join()}}`];
-
-        return `[${record.join()}]`;
-      })
-      .join(),
+    '// eslint-disable-next-line no-misleading-character-class\n',
+    `export const replaceRegExp = /[${targetCharClass}]/gu;`,
+    '',
+    'export const mappingMap = new Map<string, string>([',
+    [...codeMappingMap.entries()]
+      .map(
+        ([code, mapping]) =>
+          `['${String.fromCodePoint(code)}','${String.fromCodePoint(
+            mapping,
+          )}']`,
+      )
+      .join(','),
     ']);',
+    '',
+    'export function canonicalize(str: string): string {',
+    'return str.replace(replaceRegExp, char => mappingMap.get(char) ?? char);',
+    '};',
+    '',
+    'export const mappingCharsMap = new Map<number, [number,number,...number[]]>();',
+    'for (const [codeChar, mappingChar] of mappingMap) {',
+    '  const code = codeChar.codePointAt(0);',
+    '  const mapping = mappingChar.codePointAt(0);',
+    '  if (typeof code !== "number" || typeof mapping !== "number") continue;',
+    '  let chars = mappingCharsMap.get(mapping);',
+    '  if (chars) {',
+    '    chars.push(code);',
+    '  } else {',
+    '    chars = [code, mapping];',
+    '    mappingCharsMap.set(mapping, chars);',
+    '  }',
+    '  mappingCharsMap.set(code, chars);',
+    '}',
   ];
 
   const code = await formatCode(filedata.join(''), outFilepath);

@@ -1,4 +1,4 @@
-import caseFoldingMap from '../../case-folding-map';
+import { canonicalize } from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
@@ -17,7 +17,7 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
 
     constructor(literalString: string, parserGenerator: ParserGenerator) {
         super(parserGenerator);
-        this.__literalString = this.__canonicalize(literalString);
+        this.__literalString = canonicalize(literalString);
 
         const cachedParser = caseInsensitiveLiteralStringParser.upsert(
             [this.constructor, parserGenerator, this.__literalString],
@@ -30,24 +30,9 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
     protected __parse(input: string, offsetStart: number): ParseResult<string> {
         const offsetEnd = offsetStart + this.__literalString.length;
         const substr = input.substring(offsetStart, offsetEnd);
-        return this.__literalString === this.__canonicalize(substr)
+        return this.__literalString === canonicalize(substr)
             ? new ParseSuccessResult(offsetEnd, () => substr)
             : undefined;
-    }
-
-    /**
-     * @see https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
-     */
-    private __canonicalize(str: string): string {
-        return str.replace(/./gu, char => {
-            const codePoint = char.codePointAt(0);
-            if (typeof codePoint !== 'number') return char;
-
-            const mapping = caseFoldingMap.get(codePoint)?.mapping;
-            if (typeof mapping !== 'number') return char;
-
-            return String.fromCodePoint(mapping);
-        });
     }
 }
 

@@ -1,4 +1,4 @@
-import caseFoldingMap from '../../case-folding-map';
+import { mappingCharsMap } from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
@@ -305,7 +305,7 @@ export class CharacterClassParser extends Parser<string> {
         const newCodePointRanges = new CodePointRangeSet();
         for (const codePointRange of this.__codePointRanges) {
             newCodePointRanges.add(codePointRange);
-            for (const [caseFoldingTargetCode, { codes }] of caseFoldingMap) {
+            for (const [caseFoldingTargetCode, codes] of mappingCharsMap) {
                 if (codePointRange.has(caseFoldingTargetCode)) {
                     newCodePointRanges.add(
                         ...codes.map(
