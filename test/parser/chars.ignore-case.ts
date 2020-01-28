@@ -38,7 +38,7 @@ function testAsciiChars(
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.chars(input).i;
     t.is(parser.tryParse(expected, 0)?.data, expected, 'should match input');
-    t.is.skip(parser, p.chars(expected).i, 'should return same Parser objects');
+    t.is(parser, p.chars(expected).i, 'should return same Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
 shouldMatch.title = (providedTitle, input, expected) =>
@@ -52,7 +52,7 @@ const shouldNotMatch: Macro<[string, string]> = (t, input, expected) => {
         expected,
         'should not match input',
     );
-    t.not.skip(
+    t.not(
         parser,
         p.chars(expected).i,
         'should return different Parser objects',
@@ -461,7 +461,7 @@ test(String.raw`"\" is not an escape character`, t => {
     test(title, shouldMatch, '🍺', '🍺');
 }
 
-test.skip('if the arguments have the same value, they should return the same Parser object', t => {
+test('if the arguments have the same value, they should return the same Parser object', t => {
     t.is(p.chars('abc').i, p.chars('abc').i);
     t.is(p.chars('abc').i, p.chars('bac').i);
     t.is(p.chars('abc').i, p.chars('ABC').i);
