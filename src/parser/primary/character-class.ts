@@ -1,3 +1,4 @@
+import caseFoldingMap from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
@@ -92,7 +93,7 @@ class CodePointRange {
     }
 }
 
-class CodePointRangeSet {
+class CodePointRangeSet implements Iterable<CodePointRange> {
     private __codePointRanges: CodePointRange[] = [];
     private __normalized: boolean = true;
     private __patternCache = new Map<boolean, string>();
@@ -127,7 +128,7 @@ class CodePointRangeSet {
         return new Set(this.__codePointRanges);
     }
 
-    add(...codePointRanges: OneOrMoreTuple<CodePointRange>): this {
+    add(...codePointRanges: CodePointRange[]): this {
         this.__normalized = false;
         this.__codePointRanges.push(...codePointRanges);
         return this;
@@ -200,6 +201,11 @@ class CodePointRangeSet {
         return pattern;
     }
 
+    [Symbol.iterator](): Iterator<CodePointRange> {
+        this.__normalizeRanges();
+        return this.__codePointRanges[Symbol.iterator]();
+    }
+
     private __normalizeRanges(): void {
         if (!this.__normalized) {
             this.__codePointRanges = this.__codePointRanges
@@ -254,6 +260,26 @@ export class CharacterClassParser extends Parser<string> {
             () => this,
         );
         if (cachedParser !== this) return cachedParser;
+    }
+
+    get i(): CharacterClassParser {
+        const newCodePointRanges = new CodePointRangeSet();
+        for (const codePointRange of this.__codePointRanges) {
+            newCodePointRanges.add(codePointRange);
+            for (const [caseFoldingTargetCode, { codes }] of caseFoldingMap) {
+                if (codePointRange.has(caseFoldingTargetCode)) {
+                    newCodePointRanges.add(
+                        ...codes.map(
+                            mappingCode => new CodePointRange(mappingCode),
+                        ),
+                    );
+                }
+            }
+        }
+        return new CharacterClassParser(
+            newCodePointRanges.toPattern(this.isInverse),
+            this.parserGenerator,
+        );
     }
 
     get pattern(): string {
