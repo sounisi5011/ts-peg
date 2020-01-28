@@ -644,6 +644,110 @@ test('validate "pattern" property value: "-" should be a pattern or character ra
     );
 });
 
+test('validate "pattern" property value: low surrogate char cannot be placed after high surrogate char', t => {
+    function e(str: string): string {
+        return [...str]
+            .map(char => {
+                if (/^[!-~]$/.test(char)) return char;
+                const code = char
+                    .codePointAt(0)
+                    ?.toString(16)
+                    .toUpperCase()
+                    .padStart(4, '0');
+                if (typeof code !== 'string') return code;
+                return `U+${code}`;
+            })
+            .filter((code): code is string => typeof code === 'string')
+            .join(' ');
+    }
+
+    const p2 = new ParserGenerator();
+    {
+        const parser = p.chars('\uDC00-\uDFFF\uD800-\uDBFF');
+        t.is(e(parser.pattern), e('\uD800-\uDFFF'));
+        t.is(e(p2.chars(parser.pattern).pattern), e('\uD800-\uDFFF'));
+    }
+    {
+        const parser = p.chars('\uDC01-\uDFFF\uD800-\uDBFF');
+        t.is(e(parser.pattern), e('\uDC01-\uDFFF\uD800-\uDBFF'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('\uDC01-\uDFFF\uD800-\uDBFF'),
+        );
+    }
+    {
+        const parser = p.chars('\uDC01\uDE89\uD807\uD800');
+        t.is(e(parser.pattern), e('\uDC01\uDE89\uD800\uD807'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('\uDC01\uDE89\uD800\uD807'),
+        );
+    }
+    {
+        const parser = p.chars('\uD807\uD800x\uDC01\uDE89');
+        t.is(e(parser.pattern), e('x\uDC01\uDE89\uD800\uD807'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('x\uDC01\uDE89\uD800\uD807'),
+        );
+    }
+    {
+        const parser = p.chars('\uD807\uD800\u{1F351}\uDC01\uDE89');
+        t.is(e(parser.pattern), e('\uDC01\uDE89\uD800\uD807\u{1F351}'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('\uDC01\uDE89\uD800\uD807\u{1F351}'),
+        );
+    }
+    {
+        const parser = p.chars('\uD807\uD800x\u{1F351}\uDC01\uDE89');
+        t.is(e(parser.pattern), e('x\uDC01\uDE89\uD800\uD807\u{1F351}'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('x\uDC01\uDE89\uD800\uD807\u{1F351}'),
+        );
+    }
+    {
+        const parser = p.chars('\uDE0E-\u{1F000}h-\uDA98');
+        t.is(e(parser.pattern), e('\uDE0E-\u{1F000}h-\uDA98'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('\uDE0E-\u{1F000}h-\uDA98'),
+        );
+    }
+    {
+        const parser = p.chars('\uDF09\uDF01\uDC01-\uDBFE\uD805\uD801');
+        t.is(e(parser.pattern), e('\uDF01\uDF09\uDBFE-\uDC01\uD801\uD805'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('\uDF01\uDF09\uDBFE-\uDC01\uD801\uD805'),
+        );
+    }
+    {
+        const parser = p.chars(
+            'a-z\uDC00-\uDFFF\uD800-\uDBFF\u{1F000}-\u{1F02F}',
+        );
+        t.is(e(parser.pattern), e('a-z\uD800-\uDFFF\u{1F000}-\u{1F02F}'));
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('a-z\uD800-\uDFFF\u{1F000}-\u{1F02F}'),
+        );
+    }
+    {
+        const parser = p.chars(
+            'a-zZ-E\uDC00-\uDFFF\uD800-\uDBFE\u{1F02F}-\u{1F000}',
+        );
+        t.is(
+            e(parser.pattern),
+            e('E-Za-z\uDC00-\uDFFF\uD800-\uDBFE\u{1F000}-\u{1F02F}'),
+        );
+        t.is(
+            e(p2.chars(parser.pattern).pattern),
+            e('E-Za-z\uDC00-\uDFFF\uD800-\uDBFE\u{1F000}-\u{1F02F}'),
+        );
+    }
+});
+
 test('if the arguments have the same value, they should return the same Parser object', t => {
     const p2 = new ParserGenerator();
 
