@@ -5,7 +5,7 @@ import {
     ParserGenerator,
     ParseSuccessResult,
 } from '../../internal';
-import { isOneOrMoreTuple, OneOrMoreTuple } from '../../types';
+import { isOneOrMoreTuple } from '../../types';
 import { matchAll } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
