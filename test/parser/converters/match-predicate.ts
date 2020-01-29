@@ -2,7 +2,12 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 import util from 'util';
 
-import p, { ActionExecutionEnvironment, Parser } from '../../../src';
+import p, {
+    ActionExecutionEnvironment,
+    Parser,
+    ParserGenerator,
+    ParserResultDataType,
+} from '../../../src';
 
 test('should match', t => {
     t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0)?.data, 'a');
@@ -175,4 +180,61 @@ test('should not invoke the callback function until start parsing', t => {
             return true;
         })
         .tryParse('abc', 0);
+});
+
+test('if the arguments have the same value, they should return the same Parser object', t => {
+    const p1 = p;
+    const p2 = new ParserGenerator();
+    const fn1 = (): boolean => true;
+    const fn2 = (): boolean => true;
+    const p1Sfoo = p1.str('foo');
+    const p2Sfoo = p2.str('foo');
+    const matchP1Sfoo = p1.any.match(p1Sfoo);
+    const matchP1Fn1 = p1.any.match(fn1);
+    const matchP1Fn2 = p1.any.match(fn2);
+    const matchP2Fn2 = p2.any.match(fn2);
+
+    t.is(matchP1Sfoo, p1.any.match(p1Sfoo));
+    t.is(matchP1Sfoo, p1.any.match(p1.str('foo')));
+    t.is(matchP1Fn1, p1.any.match(fn1));
+    t.is(matchP1Fn2, p1.any.match(fn2));
+    t.is(matchP2Fn2, p2.any.match(fn2));
+
+    t.not(matchP1Sfoo, p1.str('x').match(p1Sfoo));
+    t.not(matchP1Sfoo, p1.any.match(p1.str('bar')));
+    t.not(matchP1Sfoo, p1.any.match(p2Sfoo));
+    t.not(matchP1Fn1, matchP1Sfoo);
+    t.not(matchP1Fn1, matchP1Fn2);
+    t.not(
+        matchP1Fn2,
+        matchP2Fn2,
+        'If the ParserGenerator instance is different, the Parser object will also be different',
+    );
+
+    assertType<TypeEq<string, ParserResultDataType<typeof matchP1Sfoo>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof matchP1Fn1>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof matchP1Fn2>>>();
+    assertType<TypeEq<string, ParserResultDataType<typeof matchP2Fn2>>>();
+
+    const matchP1SfooSx = p1Sfoo.match(p1.str('x'));
+    const matchP1SfooOptSx = p1Sfoo.optional.match(p1.str('x'));
+    const matchP1SfooMoreSx = p1Sfoo.oneOrMore.match(p1.str('x'));
+    assertType<
+        TypeEq<
+            ParserResultDataType<typeof p1Sfoo>,
+            ParserResultDataType<typeof matchP1SfooSx>
+        >
+    >();
+    assertType<
+        TypeEq<
+            ParserResultDataType<typeof p1Sfoo['optional']>,
+            ParserResultDataType<typeof matchP1SfooOptSx>
+        >
+    >();
+    assertType<
+        TypeEq<
+            ParserResultDataType<typeof p1Sfoo['oneOrMore']>,
+            ParserResultDataType<typeof matchP1SfooMoreSx>
+        >
+    >();
 });
