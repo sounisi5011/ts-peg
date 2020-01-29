@@ -6,11 +6,12 @@
  */
 
 import test, { Macro } from 'ava';
-import { assertType, TypeEq } from 'typepark';
+import { assertNotType, assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 import { str2codePoints } from '../helpers';
 import { asciiCharList } from '../helpers/chars';
+import { assertExtendType } from '../helpers/type';
 
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
@@ -273,4 +274,11 @@ test('if the arguments have the same value, they should return the same Parser o
     assertType<TypeEq<string, ParserResultDataType<typeof str2Shoge>>>();
     assertType<TypeEq<string, ParserResultDataType<typeof str1Sfuss>>>();
     assertType<TypeEq<string, ParserResultDataType<typeof str1Sfuß>>>();
+});
+
+test('should exists unicodeVersion property', t => {
+    const parser = p.str('hoge').i;
+    t.regex(parser.unicodeVersion, /^[0-9]+(?:\.[0-9]+){2}$/);
+    assertExtendType<string, typeof p.unicodeVersion>();
+    assertNotType<TypeEq<string, typeof p.unicodeVersion>>();
 });

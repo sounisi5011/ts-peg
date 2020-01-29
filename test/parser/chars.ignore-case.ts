@@ -1,10 +1,11 @@
 import test, { ExecutionContext, Macro } from 'ava';
-import { assertType, TypeEq } from 'typepark';
+import { assertNotType, assertType, TypeEq } from 'typepark';
 import util from 'util';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 import { str2codePoints } from '../helpers';
 import { asciiCharList } from '../helpers/chars';
+import { assertExtendType } from '../helpers/type';
 
 function testAsciiChars(
     t: ExecutionContext,
@@ -492,4 +493,11 @@ test('if the arguments have the same value, they should return the same Parser o
         p2.chars('ABC').i,
         'If the ParserGenerator instance is different, the Parser object will also be different',
     );
+});
+
+test('should exists unicodeVersion property', t => {
+    const parser = p.chars('abc').i;
+    t.regex(parser.unicodeVersion, /^[0-9]+(?:\.[0-9]+){2}$/);
+    assertExtendType<string, typeof p.unicodeVersion>();
+    assertNotType<TypeEq<string, typeof p.unicodeVersion>>();
 });
