@@ -6,6 +6,12 @@ import {
     ParseResult,
     ParseSuccessResult,
 } from '../../internal';
+import { CacheStore } from '../../utils/cache-store';
+
+const parserCache = new CacheStore<
+    [Function, Parser<unknown>, boolean],
+    WeakMap<object, unknown>
+>();
 
 export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
     private readonly __negative: boolean;
@@ -41,6 +47,21 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
         }
         this.__predicate = predicate;
         this.__negative = negative;
+
+        const cacheMap = parserCache.upsert(
+            [this.constructor, prevParser, negative],
+            undefined,
+            () => new WeakMap<object, unknown>(),
+        );
+        const cachedParser = cacheMap.get(predicate);
+        if (
+            cachedParser !== this &&
+            ((value: unknown): value is this =>
+                value instanceof this.constructor)(cachedParser)
+        ) {
+            return cachedParser;
+        }
+        cacheMap.set(predicate, this);
     }
 
     protected __parse(
