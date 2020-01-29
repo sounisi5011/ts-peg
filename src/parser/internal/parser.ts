@@ -2,6 +2,7 @@ import {
     ActionFunc,
     ActionParser,
     MatchedTextParser,
+    MatchPredicateParser,
     OneOrMoreParser,
     OptionalParser,
     ParseResult,
@@ -103,6 +104,19 @@ export abstract class Parser<TResult> {
     value<TValue extends unknown>(value: TValue): Parser<TValue>;
     value<TValue>(value: TValue): Parser<TValue> {
         return new ValueConverterParser(this, value);
+    }
+
+    match(
+        predicate: Parser<unknown> | ActionFunc<TResult, boolean>,
+    ): Parser<TResult> {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new MatchPredicateParser(this, predicate, {
+            negative: false,
+            errorMessage: {
+                predicateType:
+                    'only the Parser object or function can be specified as argument',
+            },
+        });
     }
 
     parse(input: string, offsetStart: number = 0): TResult {

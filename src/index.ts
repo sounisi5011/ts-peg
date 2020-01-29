@@ -11,6 +11,7 @@ export {
     CustomizableParserParseFunc,
     LiteralStringParser,
     MatchedTextParser,
+    MatchPredicateParser,
     OneOrMoreParser,
     OptionalParser,
     Parser,

@@ -17,6 +17,7 @@ export * from './parser/modifier/internal/converter';
 export * from './parser/modifier/internal/any-or-more';
 export * from './parser/modifier/internal/value-converter';
 export * from './parser/modifier/action';
+export * from './parser/modifier/match-predicate';
 export * from './parser/modifier/matched-text';
 export * from './parser/modifier/one-or-more';
 export * from './parser/modifier/optional';
