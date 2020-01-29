@@ -8,7 +8,7 @@ import p, { Parser } from '../src';
 const indentStack: string[] = [];
 let currentIndent = '';
 
-export type Line = Record<string, Line[] | undefined> | string;
+export type Line = string | Line[];
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -18,25 +18,24 @@ const _init = p.str('').action(() => {
 });
 
 export const start = p
-    .seq(() => [_init, INDENT.optional, line])
+    .seq(() => [_init, INDENT.optional, line.zeroOrMore])
     .action(([, , l]) => l);
 
 export const line: Parser<Line> = p
     .seq(() => [
-        SAMEDENT,
-        p.seq(p.not_a(EOL), p.any).action(([, c]) => c).oneOrMore.text,
+        p.or(
+            p.seq(INDENT, line.zeroOrMore, DEDENT).action(([, lines]) => lines),
+            p
+                .seq(SAMEDENT, p.seq(p.not_a(EOL), p.any).oneOrMore.text)
+                .action(([, label]) => label),
+        ),
         EOL.optional,
-        p.seq(INDENT, line.zeroOrMore, DEDENT).action(([, c]) => c).optional,
     ])
-    .action(([, line, , children]) => {
-        const o: Extract<Line, object> = {};
-        o[line] = children;
-        return children ? o : line;
-    });
+    .action(([list]) => list);
 
 export const EOL = p.or('\r\n', '\n', '\r');
 
-export const SAMEDENT: Parser<string> = p
+export const SAMEDENT = p
     .chars(' \t')
     .zeroOrMore.text.match(indent => indent === currentIndent);
 
