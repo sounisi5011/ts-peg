@@ -24,7 +24,7 @@ export const start = p
 export const line: Parser<Line> = p
     .seq(() => [
         SAMEDENT,
-        p.seq(p.not_a(EOL), p.any).action(([, c]) => c).oneOrMore.text,
+        p.seq(p.not_a(EOL), p.any).oneOrMore.text,
         EOL.optional,
         p.seq(INDENT, line.zeroOrMore, DEDENT).action(([, c]) => c).optional,
     ])
@@ -48,9 +48,13 @@ export const INDENT = p.is_a(
                 indent.startsWith(currentIndent) &&
                 indent.length > currentIndent.length,
         )
-        .action(indent => {
+        // Note: No action is taken unless the matching result data is read.
+        //       Therefore, the action at this position is never invoked.
+        //       To work around this problem, use the exp.match() method instead of the exp.action() method.
+        .match(indent => {
             indentStack.push(currentIndent);
             currentIndent = indent;
+            return true;
         }),
 );
 
