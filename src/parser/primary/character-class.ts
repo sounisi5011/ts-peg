@@ -1,11 +1,12 @@
+import { mappingCharsMap, unicodeVersion } from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
     ParserGenerator,
     ParseSuccessResult,
 } from '../../internal';
-import { isOneOrMoreTuple, OneOrMoreTuple } from '../../types';
-import { matchAll } from '../../utils';
+import { isOneOrMoreTuple } from '../../types';
+import { filterList, matchAll } from '../../utils';
 import { CacheStore } from '../../utils/cache-store';
 
 const characterClassParserCache = new CacheStore<
@@ -92,7 +93,7 @@ class CodePointRange {
     }
 }
 
-class CodePointRangeSet {
+class CodePointRangeSet implements Iterable<CodePointRange> {
     private __codePointRanges: CodePointRange[] = [];
     private __normalized: boolean = true;
     private __patternCache = new Map<boolean, string>();
@@ -127,7 +128,7 @@ class CodePointRangeSet {
         return new Set(this.__codePointRanges);
     }
 
-    add(...codePointRanges: OneOrMoreTuple<CodePointRange>): this {
+    add(...codePointRanges: CodePointRange[]): this {
         this.__normalized = false;
         this.__codePointRanges.push(...codePointRanges);
         return this;
@@ -194,10 +195,17 @@ class CodePointRangeSet {
             codePointRanges.push(appendAfterRangeOrEnd);
         }
 
-        const pattern = (isInverse ? '^' : '') + codePointRanges.join('');
+        const pattern =
+            (isInverse ? '^' : '') +
+            this.__moveSurrogateCharCodes(codePointRanges).join('');
         this.__patternCache.set(isInverse, pattern);
 
         return pattern;
+    }
+
+    [Symbol.iterator](): Iterator<CodePointRange> {
+        this.__normalizeRanges();
+        return this.__codePointRanges[Symbol.iterator]();
     }
 
     private __normalizeRanges(): void {
@@ -234,19 +242,70 @@ class CodePointRangeSet {
             [],
         );
     }
+
+    /**
+     * [ CodePointRange<U+D800 - U+DBFF>, CodePointRange<U+DC00 - U+DFFF> ] -> [ CodePointRange<U+DC00 - U+DFFF>, CodePointRange<U+D800 - U+DBFF> ]
+     */
+    private __moveSurrogateCharCodes(
+        codePointRanges: CodePointRange[],
+    ): CodePointRange[] {
+        const {
+            filtered: lowSurrogateCodePointRanges,
+            excludeFiltered: newCodePointRanges,
+        } = filterList(codePointRanges, codePointRange =>
+            this.__isLowSurrogate(codePointRange.minCodePoint),
+        );
+
+        if (lowSurrogateCodePointRanges.length < 1) return codePointRanges;
+
+        const highSurrogateStartPos = newCodePointRanges.findIndex(
+            codePointRange =>
+                this.__isHighSurrogate(codePointRange.maxCodePoint),
+        );
+        if (highSurrogateStartPos < 0) return codePointRanges;
+
+        newCodePointRanges.splice(
+            highSurrogateStartPos,
+            0,
+            ...lowSurrogateCodePointRanges,
+        );
+        return newCodePointRanges;
+    }
+
+    private __isHighSurrogate(codePoint: number): boolean {
+        return codePoint >= 0xd800 && codePoint <= 0xdbff;
+    }
+
+    private __isLowSurrogate(codePoint: number): boolean {
+        return codePoint >= 0xdc00 && codePoint <= 0xdfff;
+    }
 }
 
 export class CharacterClassParser extends Parser<string> {
+    readonly unicodeVersion = unicodeVersion;
     readonly isInverse: boolean;
     private readonly __codePointRanges: CodePointRangeSet;
 
-    constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
+    static fromPattern(
+        parserGenerator: ParserGenerator,
+        charactersPattern: string,
+    ): CharacterClassParser {
+        const isInverse = charactersPattern.startsWith('^');
+        const codePointRanges = CodePointRangeSet.fromPattern(
+            isInverse ? charactersPattern.substring(1) : charactersPattern,
+        );
+        return new this(parserGenerator, codePointRanges, isInverse);
+    }
+
+    private constructor(
+        parserGenerator: ParserGenerator,
+        codePointRanges: CodePointRangeSet,
+        isInverse: boolean,
+    ) {
         super(parserGenerator);
 
-        this.isInverse = charactersPattern.startsWith('^');
-        this.__codePointRanges = CodePointRangeSet.fromPattern(
-            this.isInverse ? charactersPattern.substring(1) : charactersPattern,
-        );
+        this.isInverse = isInverse;
+        this.__codePointRanges = codePointRanges;
 
         const cachedParser = characterClassParserCache.upsert(
             [this.constructor, parserGenerator, this.pattern],
@@ -254,6 +313,28 @@ export class CharacterClassParser extends Parser<string> {
             () => this,
         );
         if (cachedParser !== this) return cachedParser;
+    }
+
+    get i(): CharacterClassParser {
+        const newCodePointRanges = new CodePointRangeSet(
+            ...this.__codePointRanges,
+        );
+        for (const codePointRange of this.__codePointRanges) {
+            for (const [caseFoldingTargetCode, codes] of mappingCharsMap) {
+                if (codePointRange.has(caseFoldingTargetCode)) {
+                    newCodePointRanges.add(
+                        ...codes.map(
+                            mappingCode => new CodePointRange(mappingCode),
+                        ),
+                    );
+                }
+            }
+        }
+        return new CharacterClassParser(
+            this.parserGenerator,
+            newCodePointRanges,
+            this.isInverse,
+        );
     }
 
     get pattern(): string {

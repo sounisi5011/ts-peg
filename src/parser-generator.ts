@@ -1,3 +1,4 @@
+import { unicodeVersion } from './case-folding-map';
 import {
     AnyCharacterParser,
     CharacterClassParser,
@@ -13,6 +14,8 @@ import {
 import { OneOrMoreReadonlyTuple } from './types';
 
 export class ParserGenerator {
+    public readonly unicodeVersion = unicodeVersion;
+
     get any(): AnyCharacterParser {
         return new AnyCharacterParser(this);
     }
@@ -22,7 +25,7 @@ export class ParserGenerator {
     }
 
     chars(chars: string): CharacterClassParser {
-        return new CharacterClassParser(chars, this);
+        return CharacterClassParser.fromPattern(this, chars);
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase

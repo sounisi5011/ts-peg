@@ -5,6 +5,7 @@ export {
     ActionFunc,
     ActionParser,
     AnyCharacterParser,
+    CaseInsensitiveLiteralStringParser,
     CharacterClassParser,
     CustomizableParser,
     CustomizableParserParseFunc,
