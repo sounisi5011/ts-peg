@@ -498,6 +498,6 @@ test('if the arguments have the same value, they should return the same Parser o
 test('should exists unicodeVersion property', t => {
     const parser = p.chars('abc').i;
     t.regex(parser.unicodeVersion, /^[0-9]+(?:\.[0-9]+){2}$/);
-    assertExtendType<string, typeof p.unicodeVersion>();
-    assertNotType<TypeEq<string, typeof p.unicodeVersion>>();
+    assertExtendType<string, typeof parser.unicodeVersion>();
+    assertNotType<TypeEq<string, typeof parser.unicodeVersion>>();
 });
