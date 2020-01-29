@@ -7,20 +7,8 @@ const path = require('path');
 const util = require('util');
 
 const prettier = require('prettier');
-const codePointsC = require('unicode-12.1.0/Case_Folding/C/code-points');
-const codePointsS = require('unicode-12.1.0/Case_Folding/S/code-points');
 
 const writeFileAsync = util.promisify(fs.writeFile);
-
-function int2hex(num) {
-  return (
-    '0x' +
-    num
-      .toString(16)
-      .toUpperCase()
-      .padStart(4, '0')
-  );
-}
 
 async function formatCode(code, filename) {
   const prettierOptions = await prettier.resolveConfig(filename);
@@ -30,9 +18,11 @@ async function formatCode(code, filename) {
 async function main(args) {
   const cwd = process.cwd();
 
-  const [outFileName] = args;
+  const [outFileName, unicodeVersion] = args;
   const outFilepath = path.resolve(cwd, outFileName);
 
+  const codePointsC = require(`unicode-${unicodeVersion}/Case_Folding/C/code-points`);
+  const codePointsS = require(`unicode-${unicodeVersion}/Case_Folding/S/code-points`);
   const codeMappingMap = new Map(
     [...codePointsC, ...codePointsS].sort(([a], [b]) => a - b),
   );
@@ -55,6 +45,8 @@ async function main(args) {
     .join('');
 
   const filedata = [
+    `export const unicodeVersion = '${unicodeVersion}' as const;\n`,
+    '',
     '// eslint-disable-next-line no-misleading-character-class\n',
     `export const replaceRegExp = /[${targetCharClass}]/gu;`,
     '',

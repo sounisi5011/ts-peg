@@ -34,7 +34,7 @@
   "scripts": {
     "ava": "ava",
     "build": "run-s tsc",
-    "build:case-folding-map": "node ./script/generate-case-folding-map.js ./src/case-folding-map.ts",
+    "build:case-folding-map": "node ./script/generate-case-folding-map.js ./src/case-folding-map.ts 12.1.0",
     "build:readme": "readme-generator --template ./.template/README.mustache",
     "clean": "del './dist/' './test/fixtures/*/build'",
     "fmt-pkg": "run-s fmt-pkg:prettier fmt-pkg:sort",
