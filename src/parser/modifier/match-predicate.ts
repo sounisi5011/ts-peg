@@ -77,9 +77,7 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
         );
         const isMatch = result instanceof ParseSuccessResult || result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
-        return isSuccess
-            ? new ParseSuccessResult(offsetStart, () => prevResult.data)
-            : undefined;
+        return isSuccess ? prevResult : undefined;
     }
 
     private __getPredicateResult(
