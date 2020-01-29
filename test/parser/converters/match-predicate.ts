@@ -11,7 +11,12 @@ import p, {
 
 test('should match', t => {
     t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0)?.data, 'a');
+    t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0)?.offsetEnd, 1);
     t.is(p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0)?.data, 'a');
+    t.is(
+        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0)?.offsetEnd,
+        1,
+    );
 });
 
 test('should not match', t => {
