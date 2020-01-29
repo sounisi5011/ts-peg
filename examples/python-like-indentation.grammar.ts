@@ -50,7 +50,7 @@ export const INDENT = p.is_a(
         )
         .action(indent => {
             indentStack.push(currentIndent);
-            currentIndent = indent.join('');
+            currentIndent = indent;
         }),
 );
 
