@@ -1,4 +1,4 @@
-import { mappingCharsMap } from '../../case-folding-map';
+import { mappingCharsMap, unicodeVersion } from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
@@ -282,6 +282,7 @@ class CodePointRangeSet implements Iterable<CodePointRange> {
 }
 
 export class CharacterClassParser extends Parser<string> {
+    readonly unicodeVersion = unicodeVersion;
     readonly isInverse: boolean;
     private readonly __codePointRanges: CodePointRangeSet;
 

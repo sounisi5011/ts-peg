@@ -1,4 +1,4 @@
-import { canonicalize } from '../../case-folding-map';
+import { canonicalize, unicodeVersion } from '../../case-folding-map';
 import {
     Parser,
     ParseResult,
@@ -13,6 +13,7 @@ const caseInsensitiveLiteralStringParser = new CacheStore<
 >();
 
 export class CaseInsensitiveLiteralStringParser extends Parser<string> {
+    public readonly unicodeVersion = unicodeVersion;
     private readonly __literalString: string;
 
     constructor(literalString: string, parserGenerator: ParserGenerator) {
