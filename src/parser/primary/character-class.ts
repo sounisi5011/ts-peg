@@ -285,13 +285,26 @@ export class CharacterClassParser extends Parser<string> {
     readonly isInverse: boolean;
     private readonly __codePointRanges: CodePointRangeSet;
 
-    constructor(charactersPattern: string, parserGenerator: ParserGenerator) {
+    static fromPattern(
+        parserGenerator: ParserGenerator,
+        charactersPattern: string,
+    ): CharacterClassParser {
+        const isInverse = charactersPattern.startsWith('^');
+        const codePointRanges = CodePointRangeSet.fromPattern(
+            isInverse ? charactersPattern.substring(1) : charactersPattern,
+        );
+        return new this(parserGenerator, codePointRanges, isInverse);
+    }
+
+    private constructor(
+        parserGenerator: ParserGenerator,
+        codePointRanges: CodePointRangeSet,
+        isInverse: boolean,
+    ) {
         super(parserGenerator);
 
-        this.isInverse = charactersPattern.startsWith('^');
-        this.__codePointRanges = CodePointRangeSet.fromPattern(
-            this.isInverse ? charactersPattern.substring(1) : charactersPattern,
-        );
+        this.isInverse = isInverse;
+        this.__codePointRanges = codePointRanges;
 
         const cachedParser = characterClassParserCache.upsert(
             [this.constructor, parserGenerator, this.pattern],
@@ -302,9 +315,10 @@ export class CharacterClassParser extends Parser<string> {
     }
 
     get i(): CharacterClassParser {
-        const newCodePointRanges = new CodePointRangeSet();
+        const newCodePointRanges = new CodePointRangeSet(
+            ...this.__codePointRanges,
+        );
         for (const codePointRange of this.__codePointRanges) {
-            newCodePointRanges.add(codePointRange);
             for (const [caseFoldingTargetCode, codes] of mappingCharsMap) {
                 if (codePointRange.has(caseFoldingTargetCode)) {
                     newCodePointRanges.add(
@@ -316,8 +330,9 @@ export class CharacterClassParser extends Parser<string> {
             }
         }
         return new CharacterClassParser(
-            newCodePointRanges.toPattern(this.isInverse),
             this.parserGenerator,
+            newCodePointRanges,
+            this.isInverse,
         );
     }
 

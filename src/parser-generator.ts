@@ -22,7 +22,7 @@ export class ParserGenerator {
     }
 
     chars(chars: string): CharacterClassParser {
-        return new CharacterClassParser(chars, this);
+        return CharacterClassParser.fromPattern(this, chars);
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
