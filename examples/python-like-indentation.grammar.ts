@@ -58,8 +58,9 @@ export const INDENT = p.is_a(
         }),
 );
 
-export const DEDENT = p.str('').action(() => {
+export const DEDENT = p.str('').match(() => {
     currentIndent = indentStack.pop() ?? '';
+    return true;
 });
 
 export default start;
