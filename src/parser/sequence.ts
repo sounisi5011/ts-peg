@@ -24,7 +24,7 @@ export class SequenceParser<
         let allowCache = true;
         for (const expression of this.__exps()) {
             const result = expression.tryParse(input, nextOffset, stopOffset);
-            if (!result.allowCache) allowCache = result.allowCache;
+            allowCache = allowCache && result.allowCache;
             if (result instanceof ParseFailureResult)
                 return new ParseFailureResult({ allowCache });
             results.push(result);

@@ -22,13 +22,12 @@ export class PrioritizedChoiceParser<
         let allowCache = true;
         for (const expression of this.__exps()) {
             const result = expression.tryParse(input, offsetStart, stopOffset);
-            if (!result.allowCache) allowCache = false;
+            allowCache = allowCache && result.allowCache;
             if (
                 result instanceof ParseSuccessResult &&
                 result.offsetEnd <= stopOffset
-            ) {
+            )
                 return result.clone({ allowCache });
-            }
         }
         return new ParseFailureResult({ allowCache });
     }

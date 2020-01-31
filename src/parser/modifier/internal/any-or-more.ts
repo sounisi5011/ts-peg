@@ -60,7 +60,7 @@ export abstract class AnyOrMoreParser<
                 offsetNext,
                 stopOffset,
             );
-            if (!result.allowCache) allowCache = false;
+            allowCache = allowCache && result.allowCache;
             if (result instanceof ParseFailureResult) break;
             results.push(result);
             offsetNext = result.offsetEnd;
