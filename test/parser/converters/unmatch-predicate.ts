@@ -225,6 +225,24 @@ test('should not invoke the callback function until start parsing', t => {
         .tryParse('abc', 0, Infinity);
 });
 
+test('should always invoke the callback function', t => {
+    t.plan(3);
+    const tFn = (): boolean => {
+        t.pass();
+        return true;
+    };
+    const fFn = (): boolean => {
+        t.pass();
+        return false;
+    };
+    const parser = p.seq(
+        p.is_a(p.any.unmatch(fFn)),
+        p.not_a(p.any.unmatch(tFn)),
+        p.any.unmatch(fFn),
+    );
+    parser.tryParse('a', 0, Infinity);
+});
+
 test('if the arguments have the same value, they should return the same Parser object', t => {
     const p1 = p;
     const p2 = new ParserGenerator();
