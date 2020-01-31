@@ -25,7 +25,6 @@ export class SequenceParser<
             if (!result) return undefined;
             results.push(result);
             nextOffset = result.offsetEnd;
-            if (stopOffset < nextOffset) return undefined;
         }
         return new ParseSuccessResult(
             nextOffset,

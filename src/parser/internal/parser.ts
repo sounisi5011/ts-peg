@@ -27,7 +27,7 @@ export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
 export abstract class Parser<TResult> {
     private readonly __parserGenerator: ParserGenerator;
     private readonly __memoStore = new CacheStore<
-        [string, number],
+        [string, number, number],
         ParseResult<TResult>
     >();
 
@@ -138,8 +138,10 @@ export abstract class Parser<TResult> {
     ): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
-        return this.__memoStore.upsert([input, offsetStart], undefined, () =>
-            this.__parse(input, offsetStart, stopOffset),
+        return this.__memoStore.upsert(
+            [input, offsetStart, stopOffset],
+            undefined,
+            () => this.__parse(input, offsetStart, stopOffset),
         );
     }
 }
