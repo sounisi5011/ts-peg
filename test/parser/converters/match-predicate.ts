@@ -17,12 +17,63 @@ test('should match', t => {
         p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0)?.offsetEnd,
         1,
     );
+
+    t.deepEqual(
+        p.any
+            .times(2)
+            .match(p.str('ab'))
+            .tryParse('abc', 0)?.data,
+        ['a', 'b'],
+    );
+    t.deepEqual(
+        p.any
+            .times(2)
+            .match(p.or('xy', 'ab'))
+            .tryParse('abc', 0)?.data,
+        ['a', 'b'],
+    );
+    t.deepEqual(
+        p.any
+            .times(2)
+            .match(p.or('abc', 'ab'))
+            .tryParse('abc', 0)?.data,
+        ['a', 'b'],
+    );
 });
 
 test('should not match', t => {
     t.is(p.any.match(p.chars('a-z')).tryParse('ABC', 0)?.data, undefined);
     t.is(
         p.any.match(char => /[a-z]/.test(char)).tryParse('ABC', 0)?.data,
+        undefined,
+    );
+
+    t.is(
+        p.any
+            .times(2)
+            .match(p.str('x'))
+            .tryParse('abc', 0)?.data,
+        undefined,
+    );
+    t.is(
+        p.any
+            .times(2)
+            .match(p.str('abcd'))
+            .tryParse('abc', 0)?.data,
+        undefined,
+    );
+    t.is(
+        p.any
+            .times(2)
+            .match(p.str('a'))
+            .tryParse('abc', 0)?.data,
+        undefined,
+    );
+    t.is(
+        p.any
+            .times(2)
+            .match(p.str('abc'))
+            .tryParse('abc', 0)?.data,
         undefined,
     );
 });
@@ -48,14 +99,13 @@ test('should fail by invalid arguments', t => {
         'x',
         ['y'],
         [p.any],
-        () => 'z',
+        () => true,
         /regex/,
         Symbol(''),
         p.any,
     ]) {
         const message = util.inspect({ arg }, { breakLength: Infinity });
         if (typeof arg === 'function' || arg instanceof Parser) {
-            // @ts-ignore
             t.notThrows(() => p.any.match(arg), message);
         } else {
             t.throws(
@@ -70,7 +120,6 @@ test('should fail by invalid arguments', t => {
             );
         }
         if (typeof arg === 'boolean') {
-            // @ts-ignore
             t.notThrows(
                 () => p.any.match(() => arg).tryParse('foo', 0),
                 message,
