@@ -52,10 +52,8 @@ export class PredicateParser extends Parser<null> {
 
         if (isParserLike(predicate)) {
             this.__predicate = parserLike2Parser(parserGenerator, predicate);
-            this.allowMemoization = this.__predicate.allowMemoization;
         } else if (typeof predicate === 'function') {
             this.__predicate = predicate;
-            this.allowMemoization = false;
         } else {
             throw new TypeError(
                 'only the Parser object, string or function can be specified for the predicate option',

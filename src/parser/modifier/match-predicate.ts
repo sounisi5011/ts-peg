@@ -49,8 +49,6 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
         }
         this.__predicate = predicate;
         this.__negative = negative;
-        this.allowMemoization =
-            predicate instanceof Parser ? predicate.allowMemoization : false;
 
         const cacheMap = parserCache.upsert(
             [this.constructor, prevParser, negative],

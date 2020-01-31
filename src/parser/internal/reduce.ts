@@ -74,12 +74,6 @@ export abstract class ReduceParser<
             typeof expressions === 'function'
                 ? expressions
                 : this.__parserLikeList2ParserList(expressions);
-        if (
-            typeof this.__inputExps === 'function' ||
-            !this.__inputExps.every(exp => exp.allowMemoization)
-        ) {
-            this.allowMemoization = false;
-        }
 
         const cachedParser = parserCache.upsertWithTypeGuard(
             typeof this.__inputExps === 'function'

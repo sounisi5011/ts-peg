@@ -23,7 +23,6 @@ export class CustomizableParser<TResult> extends Parser<TResult> {
     ) {
         super(parserGenerator);
         this.__parseFunc = parseFunc;
-        this.allowMemoization = false;
     }
 
     protected __parse(
