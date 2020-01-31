@@ -13,6 +13,7 @@ export * from './parser/primary/any-character';
 export * from './parser/primary/character-class';
 export * from './parser/primary/customizable';
 export * from './parser/primary/literal-string';
+export * from './parser/primary/regexp';
 export * from './parser/modifier/internal/converter';
 export * from './parser/modifier/internal/any-or-more';
 export * from './parser/modifier/internal/value-converter';

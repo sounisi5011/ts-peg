@@ -24,6 +24,7 @@ export {
     PredicateFunc,
     PredicateParser,
     PrioritizedChoiceParser,
+    RegExpParser,
     SequenceParser,
     TimesParser,
     ValueConverterParser,

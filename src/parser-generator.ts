@@ -9,6 +9,7 @@ import {
     PredicateFunc,
     PredicateParser,
     PrioritizedChoiceParser,
+    RegExpParser,
     SequenceParser,
 } from './internal';
 import { OneOrMoreReadonlyTuple } from './types';
@@ -26,6 +27,16 @@ export class ParserGenerator {
 
     chars(chars: string): CharacterClassParser {
         return CharacterClassParser.fromPattern(this, chars);
+    }
+
+    re(pattern: RegExp): RegExpParser {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new RegExpParser(this, pattern, {
+            errorMessage: {
+                patternType:
+                    'only the RegExp object can be specified as argument',
+            },
+        });
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
