@@ -8,32 +8,40 @@ test('should parse', t => {
         '  bar',
         '    hoge',
         '    fuga',
-        '    zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-        '  hoge',
-        '      fuga',
-        '       piyo',
-        '      Fuga',
-        '      toto',
-        '         blablablablabla',
+        '     piyo',
+        '    Fuga',
         '  xyzzy',
+        'lv1',
+        ' lv2',
+        '              lv3',
+        '',
+        '',
+        'THE END',
     ].join('\n');
-    t.deepEqual(offSideRule.parse(text), {
-        foo: [
-            {
-                bar: [
-                    'hoge',
-                    'fuga',
-                    'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-                ],
-            },
-            {
-                hoge: [
-                    { fuga: ['piyo'] },
-                    'Fuga',
-                    { toto: ['blablablablabla'] },
-                ],
-            },
-            'xyzzy',
-        ],
-    });
+    t.deepEqual(offSideRule.parse(text), [
+        {
+            name: 'foo',
+            children: [
+                {
+                    name: 'bar',
+                    children: [
+                        { name: 'hoge', children: [] },
+                        {
+                            name: 'fuga',
+                            children: [{ name: 'piyo', children: [] }],
+                        },
+                        { name: 'Fuga', children: [] },
+                    ],
+                },
+                { name: 'xyzzy', children: [] },
+            ],
+        },
+        {
+            name: 'lv1',
+            children: [
+                { name: 'lv2', children: [{ name: 'lv3', children: [] }] },
+            ],
+        },
+        { name: 'THE END', children: [] },
+    ]);
 });
