@@ -2,17 +2,21 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should match', t => {
-    t.deepEqual(p.any.oneOrMore.tryParse('abc', 0)?.data, ['a', 'b', 'c']);
-    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 0)?.data, ['x', 'x']);
-    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 1)?.data, ['x']);
+    t.deepEqual(parse(p.any.oneOrMore, 'abc')?.data, ['a', 'b', 'c']);
+    t.deepEqual(parse(p.any.oneOrMore, 'abc', 0, 2)?.data, ['a', 'b']);
+    t.deepEqual(parse(p.str('x').oneOrMore, 'xxyyzz')?.data, ['x', 'x']);
+    t.deepEqual(parse(p.str('x').oneOrMore, 'xxyyzz', 1)?.data, ['x']);
+    t.deepEqual(parse(p.str('x').oneOrMore, 'xxyyzz', 0, 1)?.data, ['x']);
 });
 
 test('should not match', t => {
-    t.is(p.any.oneOrMore.tryParse('', 0), undefined);
-    t.is(p.str('x').oneOrMore.tryParse('abc', 0), undefined);
-    t.is(p.any.oneOrMore.tryParse('abc', 99), undefined);
+    t.is(parse(p.any.oneOrMore, ''), undefined);
+    t.is(parse(p.str('x').oneOrMore, 'abc'), undefined);
+    t.is(parse(p.any.oneOrMore, 'abc', 99), undefined);
+    t.is(parse(p.any.oneOrMore, 'abc', 0, 0), undefined);
 });
 
 test('getter property "oneOrMore" should return the same Parser object', t => {

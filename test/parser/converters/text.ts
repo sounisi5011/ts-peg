@@ -2,6 +2,7 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should convert result value', t => {
     {
@@ -10,7 +11,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'a');
+        t.is(parse(textParser, 'abc')?.data, 'a');
     }
     {
         const parser = p.any.value('xxx');
@@ -18,7 +19,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 1)?.data, 'b');
+        t.is(parse(textParser, 'abc', 1)?.data, 'b');
     }
     {
         const parser = p.any.zeroOrMore;
@@ -26,7 +27,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(parse(textParser, 'abc')?.data, 'abc');
     }
     {
         const parser = p.any.value(42).oneOrMore;
@@ -36,7 +37,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(parse(textParser, 'abc')?.data, 'abc');
     }
     {
         const parser = p.any.oneOrMore.action(value => ({ value }));
@@ -49,12 +50,12 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(parse(textParser, 'abc')?.data, 'abc');
     }
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.text.tryParse('abc', 99), undefined);
+    t.is(parse(p.any.text, 'abc', 99), undefined);
 });
 
 test('should not invoke action callback', t => {
@@ -71,12 +72,12 @@ test('should not invoke action callback', t => {
             'should not invoke action callback if only matched text is needed',
         );
     assertCount++;
-    t.is(parser.text.tryParse('abc', 0)?.data, 'abc');
+    t.is(parse(parser.text, 'abc')?.data, 'abc');
 
     assertCallAction = () =>
         t.pass('should invoke action callback if not yet invoked the action');
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parse(parser, 'abc')?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -87,7 +88,7 @@ test('should not invoke action callback', t => {
             'should invoke action callback if the action has already been invoked',
         );
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parse(parser, 'abc')?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -95,14 +96,15 @@ test('should not invoke action callback', t => {
 
     t.plan(assertCount + 2);
     t.deepEqual(
-        p.any.zeroOrMore.text
-            .action(text => {
+        parse(
+            p.any.zeroOrMore.text.action(text => {
                 t.pass(
                     'should invoke action callback if the result of action is needed',
                 );
                 return { text };
-            })
-            .tryParse('abc', 0)?.data,
+            }),
+            'abc',
+        )?.data,
         { text: 'abc' },
     );
 });

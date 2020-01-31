@@ -1,4 +1,5 @@
 import {
+    ParseFailureResult,
     ParseResult,
     ParserLike,
     ParserLikeTuple2ResultTuple,
@@ -16,18 +17,23 @@ export class SequenceParser<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
         const results: ParseSuccessResult<unknown>[] = [];
         let nextOffset = offsetStart;
+        let allowCache = true;
         for (const expression of this.__exps()) {
-            const result = expression.tryParse(input, nextOffset);
-            if (!result) return undefined;
+            const result = expression.tryParse(input, nextOffset, stopOffset);
+            allowCache = allowCache && result.allowCache;
+            if (result instanceof ParseFailureResult)
+                return new ParseFailureResult({ allowCache });
             results.push(result);
             nextOffset = result.offsetEnd;
         }
-        return new ParseSuccessResult(
-            nextOffset,
-            () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        );
+        return new ParseSuccessResult({
+            offsetEnd: nextOffset,
+            dataGenerator: () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+            allowCache,
+        });
     }
 }

@@ -2,8 +2,11 @@ import {
     ActionFunc,
     ActionParser,
     MatchedTextParser,
+    MatchPredicateParser,
+    MatchPredicateType,
     OneOrMoreParser,
     OptionalParser,
+    ParseFailureResult,
     ParseResult,
     ParserGenerator,
     TimesParser,
@@ -26,7 +29,7 @@ export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
 export abstract class Parser<TResult> {
     private readonly __parserGenerator: ParserGenerator;
     private readonly __memoStore = new CacheStore<
-        [string, number],
+        [string, number, number],
         ParseResult<TResult>
     >();
 
@@ -37,6 +40,7 @@ export abstract class Parser<TResult> {
     protected abstract __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TResult>;
 
     get parserGenerator(): ParserGenerator {
@@ -105,9 +109,31 @@ export abstract class Parser<TResult> {
         return new ValueConverterParser(this, value);
     }
 
+    match(predicate: MatchPredicateType<TResult>): Parser<TResult> {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new MatchPredicateParser(this, predicate, {
+            negative: false,
+            errorMessage: {
+                predicateType:
+                    'only the Parser object or function can be specified as argument',
+            },
+        });
+    }
+
+    unmatch(predicate: MatchPredicateType<TResult>): Parser<TResult> {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new MatchPredicateParser(this, predicate, {
+            negative: true,
+            errorMessage: {
+                predicateType:
+                    'only the Parser object or function can be specified as argument',
+            },
+        });
+    }
+
     parse(input: string, offsetStart: number = 0): TResult {
-        const result = this.tryParse(input, offsetStart);
-        if (!result) {
+        const result = this.tryParse(input, offsetStart, Infinity);
+        if (result instanceof ParseFailureResult) {
             throw new Error('Parse fail!');
         }
         if (result.offsetEnd < input.length) {
@@ -116,11 +142,21 @@ export abstract class Parser<TResult> {
         return result.data;
     }
 
-    tryParse(input: string, offsetStart: number): ParseResult<TResult> {
-        if (input.length < offsetStart) return undefined;
+    tryParse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<TResult> {
+        if (input.length < offsetStart)
+            return new ParseFailureResult({ allowCache: true });
 
-        return this.__memoStore.upsert([input, offsetStart], undefined, () =>
-            this.__parse(input, offsetStart),
+        return this.__memoStore.upsert(
+            [input, offsetStart, stopOffset],
+            cachedResult => {
+                if (cachedResult.allowCache) return cachedResult;
+                return this.__parse(input, offsetStart, stopOffset);
+            },
+            () => this.__parse(input, offsetStart, stopOffset),
         );
     }
 }

@@ -1,5 +1,6 @@
 import { mappingCharsMap, unicodeVersion } from '../../case-folding-map';
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -362,13 +363,22 @@ export class CharacterClassParser extends Parser<string> {
         return !this.isInverse ? null : String.fromCodePoint(codePoint);
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<string> {
+    protected __parse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<string> {
         const matchChar = this.isMatch(input, offsetStart);
-        return matchChar
-            ? new ParseSuccessResult(
-                  offsetStart + matchChar.length,
-                  () => matchChar,
-              )
-            : undefined;
+        if (matchChar) {
+            const offsetEnd = offsetStart + matchChar.length;
+            if (offsetEnd <= stopOffset) {
+                return new ParseSuccessResult({
+                    offsetEnd,
+                    dataGenerator: () => matchChar,
+                    allowCache: true,
+                });
+            }
+        }
+        return new ParseFailureResult({ allowCache: true });
     }
 }

@@ -1,4 +1,5 @@
 import {
+    ParseFailureResult,
     ParseResult,
     ParserLike,
     ParserLike2Result,
@@ -16,16 +17,18 @@ export class PrioritizedChoiceParser<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<ParserLike2Result<TParserLikeTuple[number]>> {
+        let allowCache = true;
         for (const expression of this.__exps()) {
-            const result = expression.tryParse(input, offsetStart);
-            if (result) {
-                return new ParseSuccessResult(
-                    result.offsetEnd,
-                    () => result.data as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                );
-            }
+            const result = expression.tryParse(input, offsetStart, stopOffset);
+            allowCache = allowCache && result.allowCache;
+            if (
+                result instanceof ParseSuccessResult &&
+                result.offsetEnd <= stopOffset
+            )
+                return result.clone({ allowCache });
         }
-        return undefined;
+        return new ParseFailureResult({ allowCache });
     }
 }

@@ -1,5 +1,6 @@
 import { canonicalize, unicodeVersion } from '../../case-folding-map';
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -28,12 +29,23 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
         if (cachedParser !== this) return cachedParser;
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<string> {
+    protected __parse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<string> {
         const offsetEnd = offsetStart + this.__literalString.length;
-        const substr = input.substring(offsetStart, offsetEnd);
-        return this.__literalString === canonicalize(substr)
-            ? new ParseSuccessResult(offsetEnd, () => substr)
-            : undefined;
+        if (offsetEnd <= stopOffset) {
+            const substr = input.substring(offsetStart, offsetEnd);
+            if (this.__literalString === canonicalize(substr)) {
+                return new ParseSuccessResult({
+                    offsetEnd,
+                    dataGenerator: () => substr,
+                    allowCache: true,
+                });
+            }
+        }
+        return new ParseFailureResult({ allowCache: true });
     }
 }
 
@@ -70,12 +82,19 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         );
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<T> {
-        return input.startsWith(this.__literalString, offsetStart)
-            ? new ParseSuccessResult(
-                  offsetStart + this.__literalString.length,
-                  () => this.__literalString,
-              )
-            : undefined;
+    protected __parse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<T> {
+        const offsetEnd = offsetStart + this.__literalString.length;
+        return offsetEnd <= stopOffset &&
+            input.startsWith(this.__literalString, offsetStart)
+            ? new ParseSuccessResult({
+                  offsetEnd,
+                  dataGenerator: () => this.__literalString,
+                  allowCache: true,
+              })
+            : new ParseFailureResult({ allowCache: true });
     }
 }

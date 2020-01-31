@@ -3,6 +3,7 @@ import { assertType, TypeEq } from 'typepark';
 import util from 'util';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
+import { parse } from '../helpers/parser';
 
 test('should match', t => {
     {
@@ -10,8 +11,8 @@ test('should match', t => {
         const parser2 = p.or(() => [p.any] as const);
         const parser3 = p.or(() => [p.any]);
 
-        t.deepEqual(parser1.tryParse('abc', 0)?.data, 'a');
-        t.deepEqual(parser2.tryParse('abc', 0)?.data, 'a');
+        t.deepEqual(parse(parser1, 'abc')?.data, 'a');
+        t.deepEqual(parse(parser2, 'abc')?.data, 'a');
 
         assertType<TypeEq<string, ParserResultDataType<typeof parser1>>>();
         assertType<TypeEq<string, ParserResultDataType<typeof parser2>>>();
@@ -22,20 +23,20 @@ test('should match', t => {
         const parser2 = p.or(() => ['ba', 'a', 'b', 'D'] as const);
         const parser3 = p.or(() => ['ba', 'a', 'b', 'D']);
 
-        t.deepEqual(parser1.tryParse('acid', 0)?.data, 'a');
-        t.deepEqual(parser2.tryParse('acid', 0)?.data, 'a');
+        t.deepEqual(parse(parser1, 'acid')?.data, 'a');
+        t.deepEqual(parse(parser2, 'acid')?.data, 'a');
 
-        t.deepEqual(parser1.tryParse('blood', 0)?.data, 'b');
-        t.deepEqual(parser2.tryParse('blood', 0)?.data, 'b');
+        t.deepEqual(parse(parser1, 'blood')?.data, 'b');
+        t.deepEqual(parse(parser2, 'blood')?.data, 'b');
 
-        t.deepEqual(parser1.tryParse('Digestion', 0)?.data, 'D');
-        t.deepEqual(parser2.tryParse('Digestion', 0)?.data, 'D');
+        t.deepEqual(parse(parser1, 'Digestion')?.data, 'D');
+        t.deepEqual(parse(parser2, 'Digestion')?.data, 'D');
 
-        t.deepEqual(parser1.tryParse('ababababa', 0)?.data, 'a');
-        t.deepEqual(parser2.tryParse('ababababa', 0)?.data, 'a');
+        t.deepEqual(parse(parser1, 'ababababa')?.data, 'a');
+        t.deepEqual(parse(parser2, 'ababababa')?.data, 'a');
 
-        t.deepEqual(parser1.tryParse('ababababa', 1)?.data, 'ba');
-        t.deepEqual(parser2.tryParse('ababababa', 1)?.data, 'ba');
+        t.deepEqual(parse(parser1, 'ababababa', 1)?.data, 'ba');
+        t.deepEqual(parse(parser2, 'ababababa', 1)?.data, 'ba');
 
         assertType<
             TypeEq<'ba' | 'a' | 'b' | 'D', ParserResultDataType<typeof parser1>>
@@ -50,15 +51,15 @@ test('should match', t => {
         const parser2 = p.or(() => ['swallow', 'vore'] as const);
         const parser3 = p.or(() => ['swallow', 'vore']);
 
-        t.is(parser1.tryParse('vore - vorarephilia', 0)?.data, 'vore');
-        t.is(parser2.tryParse('vore - vorarephilia', 0)?.data, 'vore');
+        t.is(parse(parser1, 'vore - vorarephilia')?.data, 'vore');
+        t.is(parse(parser2, 'vore - vorarephilia')?.data, 'vore');
 
         t.is(
-            parser1.tryParse('bad dragon swallowed the princess', 11)?.data,
+            parse(parser1, 'bad dragon swallowed the princess', 11)?.data,
             'swallow',
         );
         t.is(
-            parser2.tryParse('bad dragon swallowed the princess', 11)?.data,
+            parse(parser2, 'bad dragon swallowed the princess', 11)?.data,
             'swallow',
         );
 
@@ -88,15 +89,15 @@ test('should match', t => {
             p.seq(p.chars('0-9'), '+', p.chars('0-9')),
         ]);
 
-        t.deepEqual(parser1A.tryParse('1+2', 0)?.data, ['1', '+', '2']);
-        t.deepEqual(parser2A.tryParse('1+2', 0)?.data, ['1', '+', '2']);
-        t.deepEqual(parser1B.tryParse('1+2', 0)?.data, ['1']);
-        t.deepEqual(parser2B.tryParse('1+2', 0)?.data, ['1']);
+        t.deepEqual(parse(parser1A, '1+2')?.data, ['1', '+', '2']);
+        t.deepEqual(parse(parser2A, '1+2')?.data, ['1', '+', '2']);
+        t.deepEqual(parse(parser1B, '1+2')?.data, ['1']);
+        t.deepEqual(parse(parser2B, '1+2')?.data, ['1']);
 
-        t.deepEqual(parser1A.tryParse('42', 0)?.data, ['4']);
-        t.deepEqual(parser2A.tryParse('42', 0)?.data, ['4']);
-        t.deepEqual(parser1B.tryParse('42', 0)?.data, ['4']);
-        t.deepEqual(parser2B.tryParse('42', 0)?.data, ['4']);
+        t.deepEqual(parse(parser1A, '42')?.data, ['4']);
+        t.deepEqual(parse(parser2A, '42')?.data, ['4']);
+        t.deepEqual(parse(parser1B, '42')?.data, ['4']);
+        t.deepEqual(parse(parser2B, '42')?.data, ['4']);
 
         assertType<
             TypeEq<
@@ -133,14 +134,14 @@ test('should match', t => {
             p.seq(p.chars('0-9')),
         ]);
 
-        t.deepEqual(parser1.tryParse('1+2', 0)?.data, ['1', '+', '2']);
-        t.deepEqual(parser2.tryParse('1+2', 0)?.data, ['1', '+', '2']);
+        t.deepEqual(parse(parser1, '1+2')?.data, ['1', '+', '2']);
+        t.deepEqual(parse(parser2, '1+2')?.data, ['1', '+', '2']);
 
-        t.deepEqual(parser1.tryParse('1-2', 0)?.data, ['1', '-', '2']);
-        t.deepEqual(parser2.tryParse('1-2', 0)?.data, ['1', '-', '2']);
+        t.deepEqual(parse(parser1, '1-2')?.data, ['1', '-', '2']);
+        t.deepEqual(parse(parser2, '1-2')?.data, ['1', '-', '2']);
 
-        t.deepEqual(parser1.tryParse('42', 0)?.data, ['4']);
-        t.deepEqual(parser2.tryParse('42', 0)?.data, ['4']);
+        t.deepEqual(parse(parser1, '42')?.data, ['4']);
+        t.deepEqual(parse(parser2, '42')?.data, ['4']);
 
         assertType<
             TypeEq<
@@ -155,6 +156,26 @@ test('should match', t => {
             >
         >();
     }
+    t.is(parse(p.or('abc', 'ab'), 'abc', 0, 3)?.data, 'abc');
+    t.is(
+        parse(
+            p.or(() => ['abc', 'ab']),
+            'abc',
+            0,
+            3,
+        )?.data,
+        'abc',
+    );
+    t.is(parse(p.or('abc', 'ab'), 'abc', 0, 2)?.data, 'ab');
+    t.is(
+        parse(
+            p.or(() => ['abc', 'ab']),
+            'abc',
+            0,
+            2,
+        )?.data,
+        'ab',
+    );
 });
 
 test('should not match', t => {
@@ -162,44 +183,64 @@ test('should not match', t => {
         const parser1 = p.or(p.any);
         const parser2 = p.or(() => [p.any]);
 
-        t.is(parser1.tryParse('', 0), undefined);
-        t.is(parser2.tryParse('', 0), undefined);
+        t.is(parse(parser1, ''), undefined);
+        t.is(parse(parser2, ''), undefined);
     }
     {
         const parser1 = p.or('a', 'b', 'c');
         const parser2 = p.or(() => ['a', 'b', 'c'] as const);
 
-        t.is(parser1.tryParse('stomach', 0), undefined);
-        t.is(parser2.tryParse('stomach', 0), undefined);
+        t.is(parse(parser1, 'stomach'), undefined);
+        t.is(parse(parser2, 'stomach'), undefined);
     }
     {
         const parser1 = p.or('swallow', 'vore');
         const parser2 = p.or(() => ['swallow', 'vore'] as const);
 
-        t.is(parser1.tryParse('vore - vorarephilia', 1), undefined);
-        t.is(parser2.tryParse('vore - vorarephilia', 1), undefined);
+        t.is(parse(parser1, 'vore - vorarephilia', 1), undefined);
+        t.is(parse(parser2, 'vore - vorarephilia', 1), undefined);
 
-        t.is(parser1.tryParse('vote - typo!', 0), undefined);
-        t.is(parser2.tryParse('vote - typo!', 0), undefined);
+        t.is(parse(parser1, 'vote - typo!'), undefined);
+        t.is(parse(parser2, 'vote - typo!'), undefined);
 
         t.is(
-            parser1.tryParse('bad dragon swallowed the princess', 10),
+            parse(parser1, 'bad dragon swallowed the princess', 10),
             undefined,
         );
         t.is(
-            parser2.tryParse('bad dragon swallowed the princess', 10),
+            parse(parser2, 'bad dragon swallowed the princess', 10),
             undefined,
         );
 
         t.is(
-            parser1.tryParse('bad dragon swallowed the princess', 12),
+            parse(parser1, 'bad dragon swallowed the princess', 12),
             undefined,
         );
         t.is(
-            parser2.tryParse('bad dragon swallowed the princess', 12),
+            parse(parser2, 'bad dragon swallowed the princess', 12),
             undefined,
         );
     }
+    t.is(parse(p.or('abc', 'ab'), 'abc', 0, 1), undefined);
+    t.is(
+        parse(
+            p.or(() => ['abc', 'ab']),
+            'abc',
+            0,
+            1,
+        ),
+        undefined,
+    );
+    t.is(parse(p.or('abc', 'ab'), 'abc', 0, 0), undefined);
+    t.is(
+        parse(
+            p.or(() => ['abc', 'ab']),
+            'abc',
+            0,
+            0,
+        ),
+        undefined,
+    );
 });
 
 test('should fail by invalid arguments', t => {
@@ -215,7 +256,7 @@ test('should fail by invalid arguments', t => {
     );
     t.throws(
         // @ts-ignore
-        () => p.or(() => []).tryParse('foo', 0),
+        () => p.or(() => []).tryParse('foo', 0, Infinity),
         {
             instanceOf: Error,
             message:
@@ -259,7 +300,7 @@ test('should fail by invalid arguments', t => {
         );
         t.throws(
             // @ts-ignore
-            () => p.or(() => [arg]).tryParse('foo', 0),
+            () => p.or(() => [arg]).tryParse('foo', 0, Infinity),
             {
                 instanceOf: TypeError,
                 message:
@@ -270,7 +311,7 @@ test('should fail by invalid arguments', t => {
         if (!Array.isArray(arg)) {
             t.throws(
                 // @ts-ignore
-                () => p.or(() => arg).tryParse('foo', 0),
+                () => p.or(() => arg).tryParse('foo', 0, Infinity),
                 {
                     instanceOf: TypeError,
                     message:
@@ -295,7 +336,7 @@ test('should not invoke the callback function until start parsing', t => {
     p.or(() => {
         t.pass();
         return ['fuga'];
-    }).tryParse('', 0);
+    }).tryParse('', 0, Infinity);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {

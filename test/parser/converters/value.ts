@@ -2,6 +2,7 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should convert result value', t => {
     const num = Math.random();
@@ -23,13 +24,13 @@ test('should convert result value', t => {
         num,
     ] as const);
 
-    t.is(exp1.tryParse('abc', 0)?.data, 42);
-    t.deepEqual(exp2.tryParse('abc', 0)?.data, ['foo', 'foo', 'foo']);
-    t.is(exp3.tryParse('🐉💭😋🏡', 0)?.data, num);
-    t.deepEqual(exp4.tryParse('bar', 0)?.data, [null, null, null]);
-    t.deepEqual(exp5.tryParse('hoge', 0)?.data, [undefined, undefined]);
-    t.is(exp6.tryParse('abc', 1)?.data, true);
-    t.is(exp7.tryParse('abc', 2)?.data, false);
+    t.is(parse(exp1, 'abc')?.data, 42);
+    t.deepEqual(parse(exp2, 'abc')?.data, ['foo', 'foo', 'foo']);
+    t.is(parse(exp3, '🐉💭😋🏡')?.data, num);
+    t.deepEqual(parse(exp4, 'bar')?.data, [null, null, null]);
+    t.deepEqual(parse(exp5, 'hoge')?.data, [undefined, undefined]);
+    t.is(parse(exp6, 'abc', 1)?.data, true);
+    t.is(parse(exp7, 'abc', 2)?.data, false);
 
     assertType<TypeEq<42, ParserResultDataType<typeof exp1>>>();
     assertType<
@@ -71,12 +72,12 @@ test('should not invoke action callback', t => {
             'should not invoke action callback if only converted value is needed',
         );
     assertCount++;
-    t.is(parser.value(42).tryParse('abc', 0)?.data, 42);
+    t.is(parse(parser.value(42), 'abc')?.data, 42);
 
     assertCallAction = () =>
         t.pass('should invoke action callback if not yet invoked the action');
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parse(parser, 'abc')?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -87,7 +88,7 @@ test('should not invoke action callback', t => {
             'should invoke action callback if the action has already been invoked',
         );
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parse(parser, 'abc')?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -95,15 +96,15 @@ test('should not invoke action callback', t => {
 
     t.plan(assertCount + 2);
     t.deepEqual(
-        p.any.zeroOrMore
-            .value(42)
-            .action(val => {
+        parse(
+            p.any.zeroOrMore.value(42).action(val => {
                 t.pass(
                     'should invoke action callback if the result of action is needed',
                 );
                 return { val };
-            })
-            .tryParse('abc', 0)?.data,
+            }),
+            'abc',
+        )?.data,
         { val: 42 },
     );
 });

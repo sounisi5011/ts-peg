@@ -1,5 +1,6 @@
 import {
     isParserLike,
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -75,28 +76,43 @@ export class PredicateParser extends Parser<null> {
         if (cachedParser && cachedParser !== this) return cachedParser;
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<null> {
-        const result = this.__getPredicateResult(input, offsetStart);
+    protected __parse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<null> {
+        const result = this.__getPredicateResult(
+            input,
+            offsetStart,
+            stopOffset,
+        );
         const isMatch = result instanceof ParseSuccessResult || result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
+        const allowCache =
+            typeof result === 'boolean' ? false : result.allowCache;
         return isSuccess
-            ? new ParseSuccessResult(offsetStart, () => null)
-            : undefined;
+            ? new ParseSuccessResult({
+                  offsetEnd: offsetStart,
+                  dataGenerator: () => null,
+                  allowCache,
+              })
+            : new ParseFailureResult({ allowCache });
     }
 
     private __getPredicateResult(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<unknown> | boolean {
         if (this.__predicate instanceof Parser) {
-            return this.__predicate.tryParse(input, offsetStart);
+            return this.__predicate.tryParse(input, offsetStart, stopOffset);
         }
 
         const ret = this.__predicate(
             new PredicateExecutionEnvironment(input, { offsetStart }),
         );
         if (ret instanceof Parser) {
-            return ret.tryParse(input, offsetStart);
+            return ret.tryParse(input, offsetStart, stopOffset);
         } else if (typeof ret === 'boolean') {
             return ret;
         } else {
