@@ -9,6 +9,13 @@ test('should parse', t => {
         '    hoge',
         '    fuga',
         '    zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+        '  hoge',
+        '      fuga',
+        '       piyo',
+        '      Fuga',
+        '      toto',
+        '         blablablablabla',
+        '  xyzzy',
     ].join('\n');
     t.deepEqual(offSideRule.parse(text), {
         foo: [
@@ -19,6 +26,14 @@ test('should parse', t => {
                     'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
                 ],
             },
+            {
+                hoge: [
+                    { fuga: ['piyo'] },
+                    'Fuga',
+                    { toto: ['blablablablabla'] },
+                ],
+            },
+            'xyzzy',
         ],
     });
 });
