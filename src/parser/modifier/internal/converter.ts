@@ -9,5 +9,6 @@ export abstract class ConverterParser<
     constructor(prevParser: Parser<TPrevResult>) {
         super(prevParser.parserGenerator);
         this.__prevParser = prevParser;
+        this.allowMemoization = prevParser.allowMemoization;
     }
 }

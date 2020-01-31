@@ -26,6 +26,7 @@ export type ParserResultDataType<T extends Parser<unknown>> = T extends Parser<
     : never;
 
 export abstract class Parser<TResult> {
+    private __allowMemoization: boolean = true;
     private readonly __parserGenerator: ParserGenerator;
     private readonly __memoStore = new CacheStore<
         [string, number, number],
@@ -44,6 +45,14 @@ export abstract class Parser<TResult> {
 
     get parserGenerator(): ParserGenerator {
         return this.__parserGenerator;
+    }
+
+    get allowMemoization(): boolean {
+        return this.__allowMemoization;
+    }
+
+    set allowMemoization(value) {
+        if (!value) this.__allowMemoization = Boolean(value);
     }
 
     get zeroOrMore(): Parser<TResult[]> {
@@ -148,10 +157,14 @@ export abstract class Parser<TResult> {
     ): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
-        return this.__memoStore.upsert(
-            [input, offsetStart, stopOffset],
-            undefined,
-            () => this.__parse(input, offsetStart, stopOffset),
-        );
+        if (this.__allowMemoization) {
+            return this.__memoStore.upsert(
+                [input, offsetStart, stopOffset],
+                undefined,
+                () => this.__parse(input, offsetStart, stopOffset),
+            );
+        } else {
+            return this.__parse(input, offsetStart, stopOffset);
+        }
     }
 }
