@@ -187,6 +187,10 @@ test('should match', t => {
             >
         >();
     }
+    t.is(p.or('abc', 'ab').tryParse('abc', 0, 3)?.data, 'abc');
+    t.is(p.or(() => ['abc', 'ab']).tryParse('abc', 0, 3)?.data, 'abc');
+    t.is(p.or('abc', 'ab').tryParse('abc', 0, 2)?.data, 'ab');
+    t.is(p.or(() => ['abc', 'ab']).tryParse('abc', 0, 2)?.data, 'ab');
 });
 
 test('should not match', t => {
@@ -232,6 +236,10 @@ test('should not match', t => {
             undefined,
         );
     }
+    t.is(p.or('abc', 'ab').tryParse('abc', 0, 1), undefined);
+    t.is(p.or(() => ['abc', 'ab']).tryParse('abc', 0, 1), undefined);
+    t.is(p.or('abc', 'ab').tryParse('abc', 0, 0), undefined);
+    t.is(p.or(() => ['abc', 'ab']).tryParse('abc', 0, 0), undefined);
 });
 
 test('should fail by invalid arguments', t => {

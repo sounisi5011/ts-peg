@@ -62,6 +62,7 @@ test('should not match', t => {
         p.any.times(Number.MAX_SAFE_INTEGER).tryParse('abc', 0, Infinity),
         undefined,
     );
+    t.is(p.any.times(3).tryParse('abc', 0, 2), undefined);
 });
 
 test('should fail call method', t => {

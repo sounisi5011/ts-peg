@@ -23,6 +23,10 @@ test('should not match string', t => {
     t.is(parser.tryParse('foo bar hoge fuga', 7, Infinity), undefined);
     t.is(parser.tryParse('hog', 0, Infinity), undefined);
     t.is(parser.tryParse('oge', 0, Infinity), undefined);
+    t.is(parser.tryParse('hoge fuga', 0, 3), undefined);
+    t.is(parser.tryParse('hoge fuga', 0, 2), undefined);
+    t.is(parser.tryParse('hoge fuga', 0, 1), undefined);
+    t.is(parser.tryParse('hoge fuga', 0, 0), undefined);
 });
 
 test('should not match empty string', t => {

@@ -395,6 +395,11 @@ test(String.raw`"\" is not an escape character`, t => {
     testAsciiChars(t, parser, char => /^[\\-a]$/i.test(char));
 });
 
+test('should not match one character', t => {
+    t.is(p.chars('a-z').i.tryParse('ABC', 0, 1)?.data, 'A');
+    t.is(p.chars('a-z').i.tryParse('ABC', 0, 0)?.data, undefined);
+});
+
 /**
  * @see https://engineering.linecorp.com/ja/blog/tolowercase-pitfalls-and-case-folding/
  * @see http://www.unicode.org/Public/12.1.0/ucd/CaseFolding.txt

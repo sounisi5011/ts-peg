@@ -58,6 +58,10 @@ test('should not match string', t => {
     t.is(parser.tryParse('hOGe fuga', 1, Infinity), undefined);
     t.is(parser.tryParse('Hog', 0, Infinity), undefined);
     t.is(parser.tryParse('h0ge', 0, Infinity), undefined);
+    t.is(parser.tryParse('hoge fuga', 0, 3), undefined);
+    t.is(parser.tryParse('Hoge fuga', 0, 2), undefined);
+    t.is(parser.tryParse('HOGE fuga', 0, 1), undefined);
+    t.is(parser.tryParse('hoGe fuga', 0, 0), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 

@@ -9,6 +9,7 @@ test('should match', t => {
         'b',
         'c',
     ]);
+    t.deepEqual(p.any.oneOrMore.tryParse('abc', 0, 2)?.data, ['a', 'b']);
     t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 0, Infinity)?.data, [
         'x',
         'x',
@@ -16,12 +17,14 @@ test('should match', t => {
     t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 1, Infinity)?.data, [
         'x',
     ]);
+    t.deepEqual(p.str('x').oneOrMore.tryParse('xxyyzz', 0, 1)?.data, ['x']);
 });
 
 test('should not match', t => {
     t.is(p.any.oneOrMore.tryParse('', 0, Infinity), undefined);
     t.is(p.str('x').oneOrMore.tryParse('abc', 0, Infinity), undefined);
     t.is(p.any.oneOrMore.tryParse('abc', 99, Infinity), undefined);
+    t.is(p.any.oneOrMore.tryParse('abc', 0, 0), undefined);
 });
 
 test('getter property "oneOrMore" should return the same Parser object', t => {

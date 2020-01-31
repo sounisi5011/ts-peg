@@ -16,6 +16,11 @@ test('should match one character', t => {
     t.is(p.any.tryParse('abc', 2, Infinity)?.data, 'c');
 });
 
+test('should not match one character', t => {
+    t.is(p.any.tryParse('abc', 0, 1)?.data, 'a');
+    t.is(p.any.tryParse('abc', 0, 0), undefined);
+});
+
 test('should not match empty string', t => {
     t.is(p.any.tryParse('', 0, Infinity), undefined);
 });

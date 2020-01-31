@@ -10,10 +10,21 @@ test('should match', t => {
         t.not(parseResult, undefined);
         t.is(parseResult?.data, undefined);
     }
+    {
+        const parseResult = p.any.optional.tryParse('abc', 0, 0);
+        t.not(parseResult, undefined);
+        t.is(parseResult?.data, undefined);
+    }
+    t.is(p.any.optional.tryParse('abc', 0, 1)?.data, 'a');
 
     t.is(p.str('x').optional.tryParse('xxyyzz', 0, Infinity)?.data, 'x');
     {
         const parseResult = p.str('x').optional.tryParse('xxyyzz', 3, Infinity);
+        t.not(parseResult, undefined);
+        t.is(parseResult?.data, undefined);
+    }
+    {
+        const parseResult = p.str('x').optional.tryParse('xxyyzz', 0, 0);
         t.not(parseResult, undefined);
         t.is(parseResult?.data, undefined);
     }

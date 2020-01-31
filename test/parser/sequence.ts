@@ -200,6 +200,8 @@ test('should not match', t => {
         t.is(parser.tryParse('x yz', 0, Infinity), undefined);
         t.is(parser.tryParse('xxxyz', 0, Infinity), undefined);
     }
+    t.is(p.seq(p.any, p.any).tryParse('abc', 0, 1), undefined);
+    t.is(p.seq(p.any, p.any).tryParse('abc', 0, 0), undefined);
 });
 
 test('should not match ; callback func', t => {
@@ -233,6 +235,8 @@ test('should not match ; callback func', t => {
         t.is(parser.tryParse('x yz', 0, Infinity), undefined);
         t.is(parser.tryParse('xxxyz', 0, Infinity), undefined);
     }
+    t.is(p.seq(() => [p.any, p.any]).tryParse('abc', 0, 1), undefined);
+    t.is(p.seq(() => [p.any, p.any]).tryParse('abc', 0, 0), undefined);
 });
 
 test('should fail by invalid arguments', t => {

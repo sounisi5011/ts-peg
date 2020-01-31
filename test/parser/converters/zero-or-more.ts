@@ -9,7 +9,9 @@ test('should match', t => {
         'b',
         'c',
     ]);
+    t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0, 2)?.data, ['a', 'b']);
     t.deepEqual(p.any.zeroOrMore.tryParse('', 0, Infinity)?.data, []);
+    t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0, 0)?.data, []);
     t.deepEqual(p.str('x').zeroOrMore.tryParse('xxyyzz', 0, Infinity)?.data, [
         'x',
         'x',

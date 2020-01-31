@@ -102,6 +102,7 @@ test('should not match', t => {
     {
         const parser = p.is_a(p.any);
         t.is(parser.tryParse('abc', 3, Infinity), undefined);
+        t.is(parser.tryParse('abc', 0, 0), undefined);
     }
     {
         const parser = p.is_a(() => p.any);

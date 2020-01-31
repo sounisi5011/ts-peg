@@ -378,6 +378,11 @@ test(String.raw`"\" is not an escape character`, t => {
     );
 });
 
+test('should not match one character', t => {
+    t.is(p.chars('a-z').tryParse('abc', 0, 1)?.data, 'a');
+    t.is(p.chars('a-z').tryParse('abc', 0, 0), undefined);
+});
+
 function patternCombinations(...patterns: OneOrMoreArray<string>): string[] {
     return [
         ...new Set(
