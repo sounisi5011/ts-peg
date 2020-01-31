@@ -73,7 +73,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'only the Parser object or function can be specified as argument',
+                        'only the RegExp object can be specified as argument',
                 },
                 message,
             );
