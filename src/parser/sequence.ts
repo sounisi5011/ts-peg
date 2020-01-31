@@ -1,4 +1,5 @@
 import {
+    ParseFailureResult,
     ParseResult,
     ParserLike,
     ParserLikeTuple2ResultTuple,
@@ -22,13 +23,15 @@ export class SequenceParser<
         let nextOffset = offsetStart;
         for (const expression of this.__exps()) {
             const result = expression.tryParse(input, nextOffset, stopOffset);
-            if (!result) return undefined;
+            if (result instanceof ParseFailureResult)
+                return new ParseFailureResult({ allowCache: true });
             results.push(result);
             nextOffset = result.offsetEnd;
         }
-        return new ParseSuccessResult(
-            nextOffset,
-            () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        );
+        return new ParseSuccessResult({
+            offsetEnd: nextOffset,
+            dataGenerator: () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+            allowCache: true,
+        });
     }
 }

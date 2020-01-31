@@ -2,36 +2,33 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should match', t => {
-    t.is(p.any.optional.tryParse('abc', 0, Infinity)?.data, 'a');
-    {
-        const parseResult = p.any.optional.tryParse('', 0, Infinity);
-        t.not(parseResult, undefined);
-        t.is(parseResult?.data, undefined);
-    }
-    {
-        const parseResult = p.any.optional.tryParse('abc', 0, 0);
-        t.not(parseResult, undefined);
-        t.is(parseResult?.data, undefined);
-    }
-    t.is(p.any.optional.tryParse('abc', 0, 1)?.data, 'a');
+    t.is(parse(p.any.optional, 'abc')?.data, 'a');
+    t.deepEqual(parse(p.any.optional, ''), {
+        data: undefined,
+        offsetEnd: 0,
+    });
+    t.deepEqual(parse(p.any.optional, 'abc', 0, 0), {
+        data: undefined,
+        offsetEnd: 0,
+    });
+    t.is(parse(p.any.optional, 'abc', 0, 1)?.data, 'a');
 
-    t.is(p.str('x').optional.tryParse('xxyyzz', 0, Infinity)?.data, 'x');
-    {
-        const parseResult = p.str('x').optional.tryParse('xxyyzz', 3, Infinity);
-        t.not(parseResult, undefined);
-        t.is(parseResult?.data, undefined);
-    }
-    {
-        const parseResult = p.str('x').optional.tryParse('xxyyzz', 0, 0);
-        t.not(parseResult, undefined);
-        t.is(parseResult?.data, undefined);
-    }
+    t.is(parse(p.str('x').optional, 'xxyyzz')?.data, 'x');
+    t.deepEqual(parse(p.str('x').optional, 'xxyyzz', 3), {
+        data: undefined,
+        offsetEnd: 3,
+    });
+    t.deepEqual(parse(p.str('x').optional, 'xxyyzz', 0, 0), {
+        data: undefined,
+        offsetEnd: 0,
+    });
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.optional.tryParse('abc', 99, Infinity), undefined);
+    t.is(parse(p.any.optional, 'abc', 99), undefined);
 });
 
 test('getter property "optional" should return the same Parser object', t => {

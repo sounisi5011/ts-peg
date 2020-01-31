@@ -8,86 +8,52 @@ import p, {
     ParserGenerator,
     ParserResultDataType,
 } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should match', t => {
-    t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0, Infinity)?.data, 'a');
-    t.is(
-        p.any.match(p.chars('a-z')).tryParse('abc', 0, Infinity)?.offsetEnd,
-        1,
-    );
-    t.is(
-        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0, Infinity)
-            ?.data,
-        'a',
-    );
-    t.is(
-        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0, Infinity)
-            ?.offsetEnd,
-        1,
+    t.deepEqual(parse(p.any.match(p.chars('a-z')), 'abc'), {
+        data: 'a',
+        offsetEnd: 1,
+    });
+    t.deepEqual(
+        parse(
+            p.any.match(char => /[a-z]/.test(char)),
+            'abc',
+        ),
+        {
+            data: 'a',
+            offsetEnd: 1,
+        },
     );
 
-    t.deepEqual(
-        p.any
-            .times(2)
-            .match(p.str('ab'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .match(p.or('xy', 'ab'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .match(p.or('abc', 'ab'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
+    t.deepEqual(parse(p.any.times(2).match(p.str('ab')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
+    t.deepEqual(parse(p.any.times(2).match(p.or('xy', 'ab')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
+    t.deepEqual(parse(p.any.times(2).match(p.or('abc', 'ab')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
 });
 
 test('should not match', t => {
+    t.is(parse(p.any.match(p.chars('a-z')), 'ABC')?.data, undefined);
     t.is(
-        p.any.match(p.chars('a-z')).tryParse('ABC', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any.match(char => /[a-z]/.test(char)).tryParse('ABC', 0, Infinity)
-            ?.data,
+        parse(
+            p.any.match(char => /[a-z]/.test(char)),
+            'ABC',
+        )?.data,
         undefined,
     );
 
-    t.is(
-        p.any
-            .times(2)
-            .match(p.str('x'))
-            .tryParse('abc', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any
-            .times(2)
-            .match(p.str('abcd'))
-            .tryParse('abc', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any
-            .times(2)
-            .match(p.str('a'))
-            .tryParse('abc', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any
-            .times(2)
-            .match(p.str('abc'))
-            .tryParse('abc', 0, Infinity)?.data,
-        undefined,
-    );
+    t.is(parse(p.any.times(2).match(p.str('x')), 'abc')?.data, undefined);
+    t.is(parse(p.any.times(2).match(p.str('abcd')), 'abc')?.data, undefined);
+    t.is(parse(p.any.times(2).match(p.str('a')), 'abc')?.data, undefined);
+    t.is(parse(p.any.times(2).match(p.str('abc')), 'abc')?.data, undefined);
 });
 
 test('should fail by invalid arguments', t => {

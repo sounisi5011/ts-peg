@@ -3,74 +3,75 @@ import { assertType, TypeEq } from 'typepark';
 import util from 'util';
 
 import p, { Parser, ParserResultDataType } from '../../src';
+import { parse } from '../helpers/parser';
 
 test('should match', t => {
     {
         const parser = p.not_a(p.any);
-        const result = parser.tryParse('abc', 3, Infinity);
+        const result = parse(parser, 'abc', 3);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 3);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(() => p.any);
-        const result = parser.tryParse('abc', 3, Infinity);
+        const result = parse(parser, 'abc', 3);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 3);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a('a');
-        const result = parser.tryParse('abc', 1, Infinity);
+        const result = parse(parser, 'abc', 1);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 1);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(p.str('a'));
-        const result = parser.tryParse('abc', 1, Infinity);
+        const result = parse(parser, 'abc', 1);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 1);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(() => p.str('a'));
-        const result = parser.tryParse('abc', 1, Infinity);
+        const result = parse(parser, 'abc', 1);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 1);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a('bc');
-        const result = parser.tryParse('abc', 0, Infinity);
+        const result = parse(parser, 'abc');
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 0);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(p.str('bc'));
-        const result = parser.tryParse('abc', 0, Infinity);
+        const result = parse(parser, 'abc');
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 0);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(() => p.str('bc'));
-        const result = parser.tryParse('abc', 0, Infinity);
+        const result = parse(parser, 'abc');
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 0);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(() => false);
-        const result = parser.tryParse('abc', 0, Infinity);
+        const result = parse(parser, 'abc');
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 0);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.not_a(env => env.offset < env.input.length);
-        const result = parser.tryParse('abc', 3, Infinity);
+        const result = parse(parser, 'abc', 3);
         t.is(result?.data, null);
         t.is(result?.offsetEnd, 3);
         assertType<TypeEq<null, ParserResultDataType<typeof parser>>>();
@@ -80,52 +81,52 @@ test('should match', t => {
 test('should not match', t => {
     {
         const parser = p.not_a(p.any);
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
-        t.is(parser.tryParse('abc', 2, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
+        t.is(parse(parser, 'abc', 2), undefined);
     }
     {
         const parser = p.not_a(() => p.any);
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
-        t.is(parser.tryParse('abc', 2, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
+        t.is(parse(parser, 'abc', 2), undefined);
     }
     {
         const parser = p.not_a('a');
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
     }
     {
         const parser = p.not_a(p.str('a'));
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
     }
     {
         const parser = p.not_a(() => p.str('a'));
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
     }
     {
         const parser = p.not_a('bc');
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
     }
     {
         const parser = p.not_a(p.str('bc'));
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
     }
     {
         const parser = p.not_a(() => p.str('bc'));
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
     }
     {
         const parser = p.not_a(() => true);
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
-        t.is(parser.tryParse('abc', 2, Infinity), undefined);
-        t.is(parser.tryParse('abc', 3, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
+        t.is(parse(parser, 'abc', 2), undefined);
+        t.is(parse(parser, 'abc', 3), undefined);
     }
     {
         const parser = p.not_a(env => env.offset < env.input.length);
-        t.is(parser.tryParse('abc', 0, Infinity), undefined);
-        t.is(parser.tryParse('abc', 1, Infinity), undefined);
-        t.is(parser.tryParse('abc', 2, Infinity), undefined);
+        t.is(parse(parser, 'abc'), undefined);
+        t.is(parse(parser, 'abc', 1), undefined);
+        t.is(parse(parser, 'abc', 2), undefined);
     }
 });
 

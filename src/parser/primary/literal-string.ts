@@ -1,5 +1,6 @@
 import { canonicalize, unicodeVersion } from '../../case-folding-map';
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -37,10 +38,14 @@ export class CaseInsensitiveLiteralStringParser extends Parser<string> {
         if (offsetEnd <= stopOffset) {
             const substr = input.substring(offsetStart, offsetEnd);
             if (this.__literalString === canonicalize(substr)) {
-                return new ParseSuccessResult(offsetEnd, () => substr);
+                return new ParseSuccessResult({
+                    offsetEnd,
+                    dataGenerator: () => substr,
+                    allowCache: true,
+                });
             }
         }
-        return undefined;
+        return new ParseFailureResult({ allowCache: true });
     }
 }
 
@@ -85,7 +90,11 @@ export class LiteralStringParser<T extends string> extends Parser<T> {
         const offsetEnd = offsetStart + this.__literalString.length;
         return offsetEnd <= stopOffset &&
             input.startsWith(this.__literalString, offsetStart)
-            ? new ParseSuccessResult(offsetEnd, () => this.__literalString)
-            : undefined;
+            ? new ParseSuccessResult({
+                  offsetEnd,
+                  dataGenerator: () => this.__literalString,
+                  allowCache: true,
+              })
+            : new ParseFailureResult({ allowCache: true });
     }
 }

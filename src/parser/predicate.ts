@@ -1,5 +1,6 @@
 import {
     isParserLike,
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -88,8 +89,12 @@ export class PredicateParser extends Parser<null> {
         const isMatch = result instanceof ParseSuccessResult || result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
         return isSuccess
-            ? new ParseSuccessResult(offsetStart, () => null)
-            : undefined;
+            ? new ParseSuccessResult({
+                  offsetEnd: offsetStart,
+                  dataGenerator: () => null,
+                  allowCache: true,
+              })
+            : new ParseFailureResult({ allowCache: true });
     }
 
     private __getPredicateResult(

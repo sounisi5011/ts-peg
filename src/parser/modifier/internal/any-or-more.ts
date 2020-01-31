@@ -1,5 +1,6 @@
 import {
     ConverterParser,
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParseSuccessResult,
@@ -58,16 +59,18 @@ export abstract class AnyOrMoreParser<
                 offsetNext,
                 stopOffset,
             );
-            if (!result) break;
+            if (result instanceof ParseFailureResult) break;
             results.push(result);
             offsetNext = result.offsetEnd;
         }
 
         return this.__resultsValidator(results)
-            ? new ParseSuccessResult(
-                  offsetNext,
-                  () => results.map(result => result.data) as TResultData,
-              )
-            : undefined;
+            ? new ParseSuccessResult({
+                  offsetEnd: offsetNext,
+                  dataGenerator: () =>
+                      results.map(result => result.data) as TResultData,
+                  allowCache: true,
+              })
+            : new ParseFailureResult({ allowCache: true });
     }
 }

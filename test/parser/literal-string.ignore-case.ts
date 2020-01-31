@@ -11,15 +11,12 @@ import { assertNotType, assertType, TypeEq } from 'typepark';
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 import { str2codePoints } from '../helpers';
 import { asciiCharList } from '../helpers/chars';
+import { parse } from '../helpers/parser';
 import { assertExtendType } from '../helpers/type';
 
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
-    t.is(
-        parser.tryParse(expected, 0, Infinity)?.data,
-        expected,
-        'should match input',
-    );
+    t.is(parse(parser, expected)?.data, expected, 'should match input');
     t.is(parser, p.str(expected).i, 'should return same Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
@@ -29,11 +26,7 @@ shouldMatch.title = (providedTitle, input, expected) =>
 
 const shouldNotMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
-    t.is(
-        parser.tryParse(expected, 0, Infinity)?.data,
-        undefined,
-        'should not match input',
-    );
+    t.is(parse(parser, expected)?.data, undefined, 'should not match input');
     t.not(parser, p.str(expected).i, 'should return different Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
@@ -45,35 +38,35 @@ shouldNotMatch.title = (providedTitle, input, expected) =>
 
 test('should match string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hoge', 0, Infinity)?.data, 'hoge');
-    t.is(parser.tryParse('foo Hoge', 4, Infinity)?.data, 'Hoge');
-    t.is(parser.tryParse('hOGe fuga', 0, Infinity)?.data, 'hOGe');
+    t.is(parse(parser, 'hoge')?.data, 'hoge');
+    t.is(parse(parser, 'foo Hoge', 4)?.data, 'Hoge');
+    t.is(parse(parser, 'hOGe fuga')?.data, 'hOGe');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hooge', 0, Infinity), undefined);
-    t.is(parser.tryParse('foo Hoge', 0, Infinity), undefined);
-    t.is(parser.tryParse('hOGe fuga', 1, Infinity), undefined);
-    t.is(parser.tryParse('Hog', 0, Infinity), undefined);
-    t.is(parser.tryParse('h0ge', 0, Infinity), undefined);
-    t.is(parser.tryParse('hoge fuga', 0, 3), undefined);
-    t.is(parser.tryParse('Hoge fuga', 0, 2), undefined);
-    t.is(parser.tryParse('HOGE fuga', 0, 1), undefined);
-    t.is(parser.tryParse('hoGe fuga', 0, 0), undefined);
+    t.is(parse(parser, 'hooge'), undefined);
+    t.is(parse(parser, 'foo Hoge'), undefined);
+    t.is(parse(parser, 'hOGe fuga', 1), undefined);
+    t.is(parse(parser, 'Hog'), undefined);
+    t.is(parse(parser, 'h0ge'), undefined);
+    t.is(parse(parser, 'hoge fuga', 0, 3), undefined);
+    t.is(parse(parser, 'Hoge fuga', 0, 2), undefined);
+    t.is(parse(parser, 'HOGE fuga', 0, 1), undefined);
+    t.is(parse(parser, 'hoGe fuga', 0, 0), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match empty string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('', 0, Infinity), undefined);
+    t.is(parse(parser, ''), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match if starting offset is out of range', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hoge', 99, Infinity), undefined);
+    t.is(parse(parser, 'hoge', 99), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 

@@ -6,6 +6,7 @@ import {
     MatchPredicateType,
     OneOrMoreParser,
     OptionalParser,
+    ParseFailureResult,
     ParseResult,
     ParserGenerator,
     TimesParser,
@@ -132,7 +133,7 @@ export abstract class Parser<TResult> {
 
     parse(input: string, offsetStart: number = 0): TResult {
         const result = this.tryParse(input, offsetStart, Infinity);
-        if (!result) {
+        if (result instanceof ParseFailureResult) {
             throw new Error('Parse fail!');
         }
         if (result.offsetEnd < input.length) {
@@ -146,7 +147,8 @@ export abstract class Parser<TResult> {
         offsetStart: number,
         stopOffset: number,
     ): ParseResult<TResult> {
-        if (input.length < offsetStart) return undefined;
+        if (input.length < offsetStart)
+            return new ParseFailureResult({ allowCache: true });
 
         return this.__memoStore.upsert(
             [input, offsetStart, stopOffset],

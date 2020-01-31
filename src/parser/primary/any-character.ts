@@ -1,4 +1,5 @@
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -28,9 +29,13 @@ export class AnyCharacterParser extends Parser<string> {
             const data = String.fromCodePoint(codePoint);
             const offsetEnd = offsetStart + data.length;
             if (offsetEnd <= stopOffset) {
-                return new ParseSuccessResult(offsetEnd, () => data);
+                return new ParseSuccessResult({
+                    offsetEnd,
+                    dataGenerator: () => data,
+                    allowCache: true,
+                });
             }
         }
-        return undefined;
+        return new ParseFailureResult({ allowCache: true });
     }
 }

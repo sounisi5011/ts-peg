@@ -2,27 +2,19 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should match', t => {
-    t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0, Infinity)?.data, [
-        'a',
-        'b',
-        'c',
-    ]);
-    t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0, 2)?.data, ['a', 'b']);
-    t.deepEqual(p.any.zeroOrMore.tryParse('', 0, Infinity)?.data, []);
-    t.deepEqual(p.any.zeroOrMore.tryParse('abc', 0, 0)?.data, []);
-    t.deepEqual(p.str('x').zeroOrMore.tryParse('xxyyzz', 0, Infinity)?.data, [
-        'x',
-        'x',
-    ]);
-    t.deepEqual(p.str('x').zeroOrMore.tryParse('xxyyzz', 1, Infinity)?.data, [
-        'x',
-    ]);
+    t.deepEqual(parse(p.any.zeroOrMore, 'abc')?.data, ['a', 'b', 'c']);
+    t.deepEqual(parse(p.any.zeroOrMore, 'abc', 0, 2)?.data, ['a', 'b']);
+    t.deepEqual(parse(p.any.zeroOrMore, '')?.data, []);
+    t.deepEqual(parse(p.any.zeroOrMore, 'abc', 0, 0)?.data, []);
+    t.deepEqual(parse(p.str('x').zeroOrMore, 'xxyyzz')?.data, ['x', 'x']);
+    t.deepEqual(parse(p.str('x').zeroOrMore, 'xxyyzz', 1)?.data, ['x']);
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.zeroOrMore.tryParse('abc', 99, Infinity), undefined);
+    t.is(parse(p.any.zeroOrMore, 'abc', 99), undefined);
 });
 
 test('getter property "zeroOrMore" should return the same Parser object', t => {

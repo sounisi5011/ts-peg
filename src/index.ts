@@ -18,6 +18,7 @@ export {
     ParseResult,
     ParserGenerator,
     ParserResultDataType,
+    ParseFailureResult,
     ParseSuccessResult,
     PredicateExecutionEnvironment,
     PredicateFunc,

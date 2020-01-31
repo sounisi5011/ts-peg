@@ -2,6 +2,7 @@ import {
     ActionExecutionEnvironment,
     ActionFunc,
     ConverterParser,
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParseSuccessResult,
@@ -76,7 +77,7 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
             offsetStart,
             stopOffset,
         );
-        if (!prevResult) return undefined;
+        if (prevResult instanceof ParseFailureResult) return prevResult;
         const result = this.__getPredicateResult(
             input,
             offsetStart,
@@ -88,7 +89,9 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
                 ? result.offsetEnd === prevResult.offsetEnd
                 : result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
-        return isSuccess ? prevResult : undefined;
+        return isSuccess
+            ? prevResult
+            : new ParseFailureResult({ allowCache: true });
     }
 
     private __getPredicateResult(

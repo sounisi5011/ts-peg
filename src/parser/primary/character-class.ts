@@ -1,5 +1,6 @@
 import { mappingCharsMap, unicodeVersion } from '../../case-folding-map';
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -371,9 +372,13 @@ export class CharacterClassParser extends Parser<string> {
         if (matchChar) {
             const offsetEnd = offsetStart + matchChar.length;
             if (offsetEnd <= stopOffset) {
-                return new ParseSuccessResult(offsetEnd, () => matchChar);
+                return new ParseSuccessResult({
+                    offsetEnd,
+                    dataGenerator: () => matchChar,
+                    allowCache: true,
+                });
             }
         }
-        return undefined;
+        return new ParseFailureResult({ allowCache: true });
     }
 }

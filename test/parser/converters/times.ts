@@ -2,67 +2,31 @@ import test from 'ava';
 import { assertType, TypeEq } from 'typepark';
 
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should match', t => {
-    t.deepEqual(p.any.times(0).tryParse('abc', 0, Infinity)?.data, []);
-    t.deepEqual(p.any.times(0).tryParse('', 0, Infinity)?.data, []);
+    t.deepEqual(parse(p.any.times(0), 'abc')?.data, []);
+    t.deepEqual(parse(p.any.times(0), '')?.data, []);
 
-    t.deepEqual(p.any.times(1).tryParse('abc', 0, Infinity)?.data, ['a']);
-    t.deepEqual(
-        p
-            .str('x')
-            .times(1)
-            .tryParse('xxyyzz', 0, Infinity)?.data,
-        ['x'],
-    );
-    t.deepEqual(p.any.times(1).tryParse('abc', 1, Infinity)?.data, ['b']);
-    t.deepEqual(
-        p
-            .str('x')
-            .times(1)
-            .tryParse('xxyyzz', 1, Infinity)?.data,
-        ['x'],
-    );
+    t.deepEqual(parse(p.any.times(1), 'abc')?.data, ['a']);
+    t.deepEqual(parse(p.str('x').times(1), 'xxyyzz')?.data, ['x']);
+    t.deepEqual(parse(p.any.times(1), 'abc', 1)?.data, ['b']);
+    t.deepEqual(parse(p.str('x').times(1), 'xxyyzz', 1)?.data, ['x']);
 
-    t.deepEqual(p.any.times(2).tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
-    t.deepEqual(
-        p
-            .str('x')
-            .times(2)
-            .tryParse('xxyyzz', 0, Infinity)?.data,
-        ['x', 'x'],
-    );
+    t.deepEqual(parse(p.any.times(2), 'abc')?.data, ['a', 'b']);
+    t.deepEqual(parse(p.str('x').times(2), 'xxyyzz')?.data, ['x', 'x']);
 
-    t.deepEqual(p.any.times(3).tryParse('abc', 0, Infinity)?.data, [
-        'a',
-        'b',
-        'c',
-    ]);
+    t.deepEqual(parse(p.any.times(3), 'abc')?.data, ['a', 'b', 'c']);
 });
 
 test('should not match', t => {
-    t.is(p.any.times(1).tryParse('', 0, Infinity), undefined);
-    t.is(p.any.times(4).tryParse('abc', 0, Infinity), undefined);
-    t.is(
-        p
-            .str('x')
-            .times(1)
-            .tryParse('abc', 0, Infinity),
-        undefined,
-    );
-    t.is(
-        p
-            .str('x')
-            .times(2)
-            .tryParse('xxyyzz', 1, Infinity),
-        undefined,
-    );
-    t.is(p.any.times(1).tryParse('abc', 99, Infinity), undefined);
-    t.is(
-        p.any.times(Number.MAX_SAFE_INTEGER).tryParse('abc', 0, Infinity),
-        undefined,
-    );
-    t.is(p.any.times(3).tryParse('abc', 0, 2), undefined);
+    t.is(parse(p.any.times(1), ''), undefined);
+    t.is(parse(p.any.times(4), 'abc'), undefined);
+    t.is(parse(p.str('x').times(1), 'abc'), undefined);
+    t.is(parse(p.str('x').times(2), 'xxyyzz', 1), undefined);
+    t.is(parse(p.any.times(1), 'abc', 99), undefined);
+    t.is(parse(p.any.times(Number.MAX_SAFE_INTEGER), 'abc'), undefined);
+    t.is(parse(p.any.times(3), 'abc', 0, 2), undefined);
 });
 
 test('should fail call method', t => {

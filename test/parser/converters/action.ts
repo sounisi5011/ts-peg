@@ -7,7 +7,9 @@ import p, {
     ParseResult,
     ParserGenerator,
     ParserResultDataType,
+    ParseSuccessResult,
 } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should convert result value', t => {
     const exp1 = p.any.action(char => char.length);
@@ -16,9 +18,9 @@ test('should convert result value', t => {
         chars.map(char => ({ char, code: char.codePointAt(0) })),
     );
 
-    t.is(exp1.tryParse('abc', 0, Infinity)?.data, 1);
-    t.deepEqual(exp2.tryParse('abc', 0, Infinity)?.data, [1, 1, 1]);
-    t.deepEqual(exp3.tryParse('🐉💭😋🏡', 0, Infinity)?.data, [
+    t.is(parse(exp1, 'abc')?.data, 1);
+    t.deepEqual(parse(exp2, 'abc')?.data, [1, 1, 1]);
+    t.deepEqual(parse(exp3, '🐉💭😋🏡')?.data, [
         { char: '🐉', code: 0x1f409 },
         { char: '💭', code: 0x1f4ad },
         { char: '😋', code: 0x1f60b },
@@ -38,7 +40,11 @@ test('should convert result value', t => {
 });
 
 function readData(value: ParseResult<unknown>[]): unknown {
-    return value.forEach(value => value?.data);
+    return value.forEach(value => {
+        if (value instanceof ParseSuccessResult) {
+            return value.data;
+        }
+    });
 }
 
 test('validate action arguments', t => {

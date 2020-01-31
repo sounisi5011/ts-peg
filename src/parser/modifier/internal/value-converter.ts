@@ -1,5 +1,6 @@
 import {
     ConverterParser,
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParseSuccessResult,
@@ -14,7 +15,7 @@ const parserCache = new CacheStore<
 export interface ValueConverterMetadata<TPrevResult> {
     input: string;
     offsetStart: number;
-    result: Exclude<ParseResult<TPrevResult>, undefined>;
+    result: ParseSuccessResult<TPrevResult>;
 }
 
 export abstract class ValueConverter<
@@ -52,13 +53,16 @@ export abstract class ValueConverter<
             offsetStart,
             stopOffset,
         );
-        if (!result) return undefined;
-        return new ParseSuccessResult(result.offsetEnd, () =>
-            this.__valueConverter(this.__value, {
-                input,
-                offsetStart,
-                result,
-            }),
-        );
+        if (result instanceof ParseFailureResult) return result;
+        return new ParseSuccessResult({
+            offsetEnd: result.offsetEnd,
+            dataGenerator: () =>
+                this.__valueConverter(this.__value, {
+                    input,
+                    offsetStart,
+                    result,
+                }),
+            allowCache: true,
+        });
     }
 }

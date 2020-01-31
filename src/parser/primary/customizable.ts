@@ -1,4 +1,5 @@
 import {
+    ParseFailureResult,
     Parser,
     ParseResult,
     ParserGenerator,
@@ -34,8 +35,12 @@ export class CustomizableParser<TResult> extends Parser<TResult> {
         if (result && result.offsetEnd <= stopOffset) {
             return result instanceof ParseSuccessResult
                 ? result
-                : new ParseSuccessResult(result.offsetEnd, result.valueGetter);
+                : new ParseSuccessResult({
+                      offsetEnd: result.offsetEnd,
+                      dataGenerator: result.valueGetter,
+                      allowCache: true,
+                  });
         }
-        return undefined;
+        return new ParseFailureResult({ allowCache: true });
     }
 }

@@ -32,8 +32,16 @@ export class OptionalParser<TResult> extends ConverterParser<
             offsetStart,
             stopOffset,
         );
-        return result
-            ? new ParseSuccessResult(result.offsetEnd, () => result.data)
-            : new ParseSuccessResult(offsetStart, () => undefined);
+        return result instanceof ParseSuccessResult
+            ? new ParseSuccessResult({
+                  offsetEnd: result.offsetEnd,
+                  dataGenerator: () => result.data,
+                  allowCache: true,
+              })
+            : new ParseSuccessResult({
+                  offsetEnd: offsetStart,
+                  dataGenerator: () => undefined,
+                  allowCache: true,
+              });
     }
 }

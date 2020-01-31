@@ -3,6 +3,7 @@ import test from 'ava';
 import p, { ParseSuccessResult } from '../../../src';
 import {
     AnyOrMoreParser,
+    ParseFailureResult,
     ParserLike,
     ReduceParser,
     ValueConverter,
@@ -39,8 +40,8 @@ test('AnyOrMoreParser', t => {
 
 test('ReduceParser', t => {
     class CustomParserX extends ReduceParser<0, [ParserLike, ...ParserLike[]]> {
-        protected __parse(): undefined {
-            return undefined;
+        protected __parse(): ParseFailureResult {
+            return new ParseFailureResult({ allowCache: true });
         }
     }
     class CustomParserY extends CustomParserX {}

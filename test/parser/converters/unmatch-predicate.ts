@@ -8,84 +8,61 @@ import p, {
     ParserGenerator,
     ParserResultDataType,
 } from '../../../src';
+import { parse } from '../../helpers/parser';
 
 test('should unmatch', t => {
-    t.is(p.any.unmatch(p.chars('0-9')).tryParse('abc', 0, Infinity)?.data, 'a');
+    t.is(parse(p.any.unmatch(p.chars('0-9')), 'abc')?.data, 'a');
+    t.is(parse(p.any.unmatch(p.chars('0-9')), 'abc')?.offsetEnd, 1);
     t.is(
-        p.any.unmatch(p.chars('0-9')).tryParse('abc', 0, Infinity)?.offsetEnd,
-        1,
-    );
-    t.is(
-        p.any.unmatch(char => /[0-9]/.test(char)).tryParse('abc', 0, Infinity)
-            ?.data,
+        parse(
+            p.any.unmatch(char => /[0-9]/.test(char)),
+            'abc',
+        )?.data,
         'a',
     );
     t.is(
-        p.any.unmatch(char => /[0-9]/.test(char)).tryParse('abc', 0, Infinity)
-            ?.offsetEnd,
+        parse(
+            p.any.unmatch(char => /[0-9]/.test(char)),
+            'abc',
+        )?.offsetEnd,
         1,
     );
 
+    t.deepEqual(parse(p.any.times(2).unmatch(p.str('a')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
+    t.deepEqual(parse(p.any.times(2).unmatch(p.str('abcd')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
+    t.deepEqual(parse(p.any.times(2).unmatch(p.str('abc')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
     t.deepEqual(
-        p.any
-            .times(2)
-            .unmatch(p.str('a'))
-            .tryParse('abc', 0, Infinity)?.data,
+        parse(p.any.times(2).unmatch(p.or('xy', 'abcd')), 'abc')?.data,
         ['a', 'b'],
     );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .unmatch(p.str('abcd'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .unmatch(p.str('abc'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .unmatch(p.or('xy', 'abcd'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
-    t.deepEqual(
-        p.any
-            .times(2)
-            .unmatch(p.or('abc', 'a'))
-            .tryParse('abc', 0, Infinity)?.data,
-        ['a', 'b'],
-    );
+    t.deepEqual(parse(p.any.times(2).unmatch(p.or('abc', 'a')), 'abc')?.data, [
+        'a',
+        'b',
+    ]);
 });
 
 test('should not unmatch', t => {
+    t.is(parse(p.any.unmatch(p.chars('0-9')), '012')?.data, undefined);
     t.is(
-        p.any.unmatch(p.chars('0-9')).tryParse('012', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any.unmatch(char => /[a-z]/.test(char)).tryParse('abc', 0, Infinity)
-            ?.data,
+        parse(
+            p.any.unmatch(char => /[a-z]/.test(char)),
+            'abc',
+        )?.data,
         undefined,
     );
 
+    t.is(parse(p.any.times(2).unmatch(p.str('ab')), 'abc')?.data, undefined);
     t.is(
-        p.any
-            .times(2)
-            .unmatch(p.str('ab'))
-            .tryParse('abc', 0, Infinity)?.data,
-        undefined,
-    );
-    t.is(
-        p.any
-            .times(2)
-            .unmatch(p.or('abcd', 'abc', 'ab'))
-            .tryParse('abc', 0, Infinity)?.data,
+        parse(p.any.times(2).unmatch(p.or('abcd', 'abc', 'ab')), 'abc')?.data,
         undefined,
     );
 });
