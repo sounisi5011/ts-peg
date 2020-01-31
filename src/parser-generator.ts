@@ -157,3 +157,10 @@ export class ParserGenerator {
         }
     }
 }
+
+export interface ParserGenerator {
+    regexp: ParserGenerator['re'];
+    regex: ParserGenerator['re'];
+}
+ParserGenerator.prototype.regexp = ParserGenerator.prototype.regex =
+    ParserGenerator.prototype.re;

@@ -38,6 +38,28 @@ test('should match empty string', t => {
     t.deepEqual(parse(p.re(/(?:)/), 'xyz', 3), { data: '', offsetEnd: 3 });
 });
 
+test('should exists alias methods', t => {
+    t.is(p.regexp, p.re);
+    t.deepEqual(parse(p.regexp(/regexp?/), 'regex'), {
+        data: 'regex',
+        offsetEnd: 5,
+    });
+    t.deepEqual(parse(p.regexp(/regexp?/), 'regexp'), {
+        data: 'regexp',
+        offsetEnd: 6,
+    });
+
+    t.is(p.regex, p.re);
+    t.deepEqual(parse(p.regex(/regexp?/), 'regex'), {
+        data: 'regex',
+        offsetEnd: 5,
+    });
+    t.deepEqual(parse(p.regex(/regexp?/), 'regexp'), {
+        data: 'regexp',
+        offsetEnd: 6,
+    });
+});
+
 test('should fail by invalid arguments', t => {
     /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
