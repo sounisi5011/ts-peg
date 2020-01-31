@@ -24,6 +24,32 @@ export class ParseSuccessResult<TResult> implements ParseResultInterface {
     get data(): TResult {
         return this.__dataGenerator();
     }
+
+    clone(newOptions: {
+        offsetEnd?: number;
+        allowCache?: boolean;
+    }): ParseSuccessResult<TResult>;
+
+    clone<TNewResult>(newOptions: {
+        offsetEnd?: number;
+        dataGenerator: () => TNewResult;
+        allowCache?: boolean;
+    }): ParseSuccessResult<TNewResult>;
+
+    clone(
+        newOptions: {
+            offsetEnd?: number;
+            dataGenerator?: () => unknown;
+            allowCache?: boolean;
+        } = {},
+    ): ParseSuccessResult<unknown> {
+        return new ParseSuccessResult<unknown>({
+            offsetEnd: this.offsetEnd,
+            dataGenerator: this.__dataGenerator,
+            allowCache: this.allowCache,
+            ...newOptions,
+        });
+    }
 }
 
 export class ParseFailureResult implements ParseResultInterface {

@@ -54,15 +54,13 @@ export abstract class ValueConverter<
             stopOffset,
         );
         if (result instanceof ParseFailureResult) return result;
-        return new ParseSuccessResult({
-            offsetEnd: result.offsetEnd,
+        return result.clone({
             dataGenerator: () =>
                 this.__valueConverter(this.__value, {
                     input,
                     offsetStart,
                     result,
                 }),
-            allowCache: true,
         });
     }
 }

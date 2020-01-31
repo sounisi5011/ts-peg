@@ -19,19 +19,17 @@ export class PrioritizedChoiceParser<
         offsetStart: number,
         stopOffset: number,
     ): ParseResult<ParserLike2Result<TParserLikeTuple[number]>> {
+        let allowCache = true;
         for (const expression of this.__exps()) {
             const result = expression.tryParse(input, offsetStart, stopOffset);
+            if (!result.allowCache) allowCache = false;
             if (
                 result instanceof ParseSuccessResult &&
                 result.offsetEnd <= stopOffset
             ) {
-                return new ParseSuccessResult({
-                    offsetEnd: result.offsetEnd,
-                    dataGenerator: () => result.data as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                    allowCache: true,
-                });
+                return result.clone({ allowCache });
             }
         }
-        return new ParseFailureResult({ allowCache: true });
+        return new ParseFailureResult({ allowCache });
     }
 }

@@ -53,12 +53,14 @@ export abstract class AnyOrMoreParser<
         const results: ParseSuccessResult<TResult>[] = [];
 
         let offsetNext = offsetStart;
+        let allowCache = true;
         while (results.length < this.__resultsLengthLimit) {
             const result = this.__prevParser.tryParse(
                 input,
                 offsetNext,
                 stopOffset,
             );
+            if (!result.allowCache) allowCache = false;
             if (result instanceof ParseFailureResult) break;
             results.push(result);
             offsetNext = result.offsetEnd;
@@ -69,8 +71,8 @@ export abstract class AnyOrMoreParser<
                   offsetEnd: offsetNext,
                   dataGenerator: () =>
                       results.map(result => result.data) as TResultData,
-                  allowCache: true,
+                  allowCache,
               })
-            : new ParseFailureResult({ allowCache: true });
+            : new ParseFailureResult({ allowCache });
     }
 }

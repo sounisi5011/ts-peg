@@ -21,17 +21,19 @@ export class SequenceParser<
     ): ParseResult<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
         const results: ParseSuccessResult<unknown>[] = [];
         let nextOffset = offsetStart;
+        let allowCache = true;
         for (const expression of this.__exps()) {
             const result = expression.tryParse(input, nextOffset, stopOffset);
+            if (!result.allowCache) allowCache = result.allowCache;
             if (result instanceof ParseFailureResult)
-                return new ParseFailureResult({ allowCache: true });
+                return new ParseFailureResult({ allowCache });
             results.push(result);
             nextOffset = result.offsetEnd;
         }
         return new ParseSuccessResult({
             offsetEnd: nextOffset,
             dataGenerator: () => results.map(result => result.data) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-            allowCache: true,
+            allowCache,
         });
     }
 }

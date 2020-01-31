@@ -88,13 +88,15 @@ export class PredicateParser extends Parser<null> {
         );
         const isMatch = result instanceof ParseSuccessResult || result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
+        const allowCache =
+            typeof result === 'boolean' ? false : result.allowCache;
         return isSuccess
             ? new ParseSuccessResult({
                   offsetEnd: offsetStart,
                   dataGenerator: () => null,
-                  allowCache: true,
+                  allowCache,
               })
-            : new ParseFailureResult({ allowCache: true });
+            : new ParseFailureResult({ allowCache });
     }
 
     private __getPredicateResult(

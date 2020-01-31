@@ -152,7 +152,10 @@ export abstract class Parser<TResult> {
 
         return this.__memoStore.upsert(
             [input, offsetStart, stopOffset],
-            undefined,
+            cachedResult => {
+                if (cachedResult.allowCache) return cachedResult;
+                return this.__parse(input, offsetStart, stopOffset);
+            },
             () => this.__parse(input, offsetStart, stopOffset),
         );
     }

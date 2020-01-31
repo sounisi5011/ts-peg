@@ -89,9 +89,13 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
                 ? result.offsetEnd === prevResult.offsetEnd
                 : result === true;
         const isSuccess = this.__negative ? !isMatch : isMatch;
+        const allowCache =
+            typeof result === 'boolean'
+                ? false
+                : prevResult.allowCache && result.allowCache;
         return isSuccess
-            ? prevResult
-            : new ParseFailureResult({ allowCache: true });
+            ? prevResult.clone({ allowCache })
+            : new ParseFailureResult({ allowCache });
     }
 
     private __getPredicateResult(
