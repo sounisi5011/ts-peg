@@ -23,13 +23,16 @@ test('should convert result value', t => {
         num,
     ] as const);
 
-    t.is(exp1.tryParse('abc', 0)?.data, 42);
-    t.deepEqual(exp2.tryParse('abc', 0)?.data, ['foo', 'foo', 'foo']);
-    t.is(exp3.tryParse('🐉💭😋🏡', 0)?.data, num);
-    t.deepEqual(exp4.tryParse('bar', 0)?.data, [null, null, null]);
-    t.deepEqual(exp5.tryParse('hoge', 0)?.data, [undefined, undefined]);
-    t.is(exp6.tryParse('abc', 1)?.data, true);
-    t.is(exp7.tryParse('abc', 2)?.data, false);
+    t.is(exp1.tryParse('abc', 0, Infinity)?.data, 42);
+    t.deepEqual(exp2.tryParse('abc', 0, Infinity)?.data, ['foo', 'foo', 'foo']);
+    t.is(exp3.tryParse('🐉💭😋🏡', 0, Infinity)?.data, num);
+    t.deepEqual(exp4.tryParse('bar', 0, Infinity)?.data, [null, null, null]);
+    t.deepEqual(exp5.tryParse('hoge', 0, Infinity)?.data, [
+        undefined,
+        undefined,
+    ]);
+    t.is(exp6.tryParse('abc', 1, Infinity)?.data, true);
+    t.is(exp7.tryParse('abc', 2, Infinity)?.data, false);
 
     assertType<TypeEq<42, ParserResultDataType<typeof exp1>>>();
     assertType<
@@ -71,12 +74,12 @@ test('should not invoke action callback', t => {
             'should not invoke action callback if only converted value is needed',
         );
     assertCount++;
-    t.is(parser.value(42).tryParse('abc', 0)?.data, 42);
+    t.is(parser.value(42).tryParse('abc', 0, Infinity)?.data, 42);
 
     assertCallAction = () =>
         t.pass('should invoke action callback if not yet invoked the action');
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -87,7 +90,7 @@ test('should not invoke action callback', t => {
             'should invoke action callback if the action has already been invoked',
         );
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -103,7 +106,7 @@ test('should not invoke action callback', t => {
                 );
                 return { val };
             })
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         { val: 42 },
     );
 });

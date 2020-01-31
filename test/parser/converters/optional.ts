@@ -4,23 +4,23 @@ import { assertType, TypeEq } from 'typepark';
 import p, { Parser, ParserGenerator, ParserResultDataType } from '../../../src';
 
 test('should match', t => {
-    t.is(p.any.optional.tryParse('abc', 0)?.data, 'a');
+    t.is(p.any.optional.tryParse('abc', 0, Infinity)?.data, 'a');
     {
-        const parseResult = p.any.optional.tryParse('', 0);
+        const parseResult = p.any.optional.tryParse('', 0, Infinity);
         t.not(parseResult, undefined);
         t.is(parseResult?.data, undefined);
     }
 
-    t.is(p.str('x').optional.tryParse('xxyyzz', 0)?.data, 'x');
+    t.is(p.str('x').optional.tryParse('xxyyzz', 0, Infinity)?.data, 'x');
     {
-        const parseResult = p.str('x').optional.tryParse('xxyyzz', 3);
+        const parseResult = p.str('x').optional.tryParse('xxyyzz', 3, Infinity);
         t.not(parseResult, undefined);
         t.is(parseResult?.data, undefined);
     }
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.optional.tryParse('abc', 99), undefined);
+    t.is(p.any.optional.tryParse('abc', 99, Infinity), undefined);
 });
 
 test('getter property "optional" should return the same Parser object', t => {

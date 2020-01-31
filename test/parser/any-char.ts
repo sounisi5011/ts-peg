@@ -11,36 +11,36 @@ assertType<TypeEq<typeof p.any, AnyCharacterParser>>();
 assertType<TypeEq<ParserResultDataType<typeof p.any>, string>>();
 
 test('should match one character', t => {
-    t.is(p.any.tryParse('abc', 0)?.data, 'a');
-    t.is(p.any.tryParse('abc', 1)?.data, 'b');
-    t.is(p.any.tryParse('abc', 2)?.data, 'c');
+    t.is(p.any.tryParse('abc', 0, Infinity)?.data, 'a');
+    t.is(p.any.tryParse('abc', 1, Infinity)?.data, 'b');
+    t.is(p.any.tryParse('abc', 2, Infinity)?.data, 'c');
 });
 
 test('should not match empty string', t => {
-    t.is(p.any.tryParse('', 0), undefined);
+    t.is(p.any.tryParse('', 0, Infinity), undefined);
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.tryParse('123', 3), undefined);
-    t.is(p.any.tryParse('123', 99), undefined);
+    t.is(p.any.tryParse('123', 3, Infinity), undefined);
+    t.is(p.any.tryParse('123', 99, Infinity), undefined);
 });
 
 test('should match one emoji (Unicode surrogate pair char)', t => {
-    t.is(p.any.tryParse('🐉💭😋🏡', 0)?.data, '\uD83D\uDC09');
+    t.is(p.any.tryParse('🐉💭😋🏡', 0, Infinity)?.data, '\uD83D\uDC09');
     t.is(
-        p.any.tryParse('🐉🗯🍽👪💦', 1)?.data,
+        p.any.tryParse('🐉🗯🍽👪💦', 1, Infinity)?.data,
         '\uDC09',
         'should match low surrogate char',
     );
-    t.is(p.any.tryParse('🐉💨💀💀💩', 2)?.data, '\uD83D\uDCA8');
+    t.is(p.any.tryParse('🐉💨💀💀💩', 2, Infinity)?.data, '\uD83D\uDCA8');
 });
 
 test('should not match one combining character sequence', t => {
-    t.is(p.any.tryParse('🇯🇵', 0)?.data, '\u{1F1EF}');
-    t.is(p.any.tryParse('🇯🇵', 1)?.data, '\uDDEF');
-    t.is(p.any.tryParse('🇯🇵', 2)?.data, '\u{1F1F5}');
-    t.is(p.any.tryParse('🇯🇵', 3)?.data, '\uDDF5');
-    t.is(p.any.tryParse('🇯🇵', 4), undefined);
+    t.is(p.any.tryParse('🇯🇵', 0, Infinity)?.data, '\u{1F1EF}');
+    t.is(p.any.tryParse('🇯🇵', 1, Infinity)?.data, '\uDDEF');
+    t.is(p.any.tryParse('🇯🇵', 2, Infinity)?.data, '\u{1F1F5}');
+    t.is(p.any.tryParse('🇯🇵', 3, Infinity)?.data, '\uDDF5');
+    t.is(p.any.tryParse('🇯🇵', 4, Infinity), undefined);
 });
 
 test('getter property "any" should return the same object', t => {

@@ -18,14 +18,18 @@ export class AnyCharacterParser extends Parser<string> {
         anyCharacterParserCacheMap.set(parserGenerator, this);
     }
 
-    protected __parse(input: string, offsetStart: number): ParseResult<string> {
+    protected __parse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<string> {
         const codePoint = input.codePointAt(offsetStart);
         if (typeof codePoint === 'number') {
             const data = String.fromCodePoint(codePoint);
-            return new ParseSuccessResult(
-                offsetStart + data.length,
-                () => data,
-            );
+            const offsetEnd = offsetStart + data.length;
+            if (offsetEnd <= stopOffset) {
+                return new ParseSuccessResult(offsetEnd, () => data);
+            }
         }
         return undefined;
     }

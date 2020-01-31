@@ -8,6 +8,7 @@ import {
 export type CustomizableParserParseFunc<TResult> = (
     input: string,
     offsetStart: number,
+    stopOffset: number,
 ) =>
     | ParseSuccessResult<TResult>
     | { offsetEnd: number; valueGetter(): TResult }
@@ -27,12 +28,19 @@ export class CustomizableParser<TResult> extends Parser<TResult> {
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TResult> {
-        const result = this.__parseFunc(input, offsetStart);
-        return result
-            ? result instanceof ParseSuccessResult
-                ? result
-                : new ParseSuccessResult(result.offsetEnd, result.valueGetter)
-            : result;
+        const result = this.__parseFunc(input, offsetStart, stopOffset);
+        if (result) {
+            if (result.offsetEnd <= stopOffset) {
+                return result instanceof ParseSuccessResult
+                    ? result
+                    : new ParseSuccessResult(
+                          result.offsetEnd,
+                          result.valueGetter,
+                      );
+            }
+        }
+        return undefined;
     }
 }

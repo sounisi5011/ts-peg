@@ -38,6 +38,7 @@ export abstract class Parser<TResult> {
     protected abstract __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TResult>;
 
     get parserGenerator(): ParserGenerator {
@@ -120,7 +121,7 @@ export abstract class Parser<TResult> {
     }
 
     parse(input: string, offsetStart: number = 0): TResult {
-        const result = this.tryParse(input, offsetStart);
+        const result = this.tryParse(input, offsetStart, Infinity);
         if (!result) {
             throw new Error('Parse fail!');
         }
@@ -130,11 +131,15 @@ export abstract class Parser<TResult> {
         return result.data;
     }
 
-    tryParse(input: string, offsetStart: number): ParseResult<TResult> {
+    tryParse(
+        input: string,
+        offsetStart: number,
+        stopOffset: number,
+    ): ParseResult<TResult> {
         if (input.length < offsetStart) return undefined;
 
         return this.__memoStore.upsert([input, offsetStart], undefined, () =>
-            this.__parse(input, offsetStart),
+            this.__parse(input, offsetStart, stopOffset),
         );
     }
 }

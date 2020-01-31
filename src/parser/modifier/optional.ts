@@ -25,8 +25,13 @@ export class OptionalParser<TResult> extends ConverterParser<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseSuccessResult<TResult | undefined> {
-        const result = this.__prevParser.tryParse(input, offsetStart);
+        const result = this.__prevParser.tryParse(
+            input,
+            offsetStart,
+            stopOffset,
+        );
         return result
             ? new ParseSuccessResult(result.offsetEnd, () => result.data)
             : new ParseSuccessResult(offsetStart, () => undefined);

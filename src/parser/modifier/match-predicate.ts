@@ -67,12 +67,18 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TResult> {
-        const prevResult = this.__prevParser.tryParse(input, offsetStart);
+        const prevResult = this.__prevParser.tryParse(
+            input,
+            offsetStart,
+            stopOffset,
+        );
         if (!prevResult) return undefined;
         const result = this.__getPredicateResult(
             input,
             offsetStart,
+            prevResult.offsetEnd,
             prevResult,
         );
         const isMatch =
@@ -86,10 +92,11 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
     private __getPredicateResult(
         input: string,
         offsetStart: number,
+        stopOffset: number,
         prevResult: ParseSuccessResult<TResult>,
     ): ParseResult<unknown> | boolean {
         if (this.__predicate instanceof Parser) {
-            return this.__predicate.tryParse(input, offsetStart);
+            return this.__predicate.tryParse(input, offsetStart, stopOffset);
         }
 
         const ret = this.__predicate(

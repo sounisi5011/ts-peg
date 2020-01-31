@@ -15,7 +15,11 @@ import { assertExtendType } from '../helpers/type';
 
 const shouldMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
-    t.is(parser.tryParse(expected, 0)?.data, expected, 'should match input');
+    t.is(
+        parser.tryParse(expected, 0, Infinity)?.data,
+        expected,
+        'should match input',
+    );
     t.is(parser, p.str(expected).i, 'should return same Parser objects');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 };
@@ -26,7 +30,7 @@ shouldMatch.title = (providedTitle, input, expected) =>
 const shouldNotMatch: Macro<[string, string]> = (t, input, expected) => {
     const parser = p.str(input).i;
     t.is(
-        parser.tryParse(expected, 0)?.data,
+        parser.tryParse(expected, 0, Infinity)?.data,
         undefined,
         'should not match input',
     );
@@ -41,31 +45,31 @@ shouldNotMatch.title = (providedTitle, input, expected) =>
 
 test('should match string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hoge', 0)?.data, 'hoge');
-    t.is(parser.tryParse('foo Hoge', 4)?.data, 'Hoge');
-    t.is(parser.tryParse('hOGe fuga', 0)?.data, 'hOGe');
+    t.is(parser.tryParse('hoge', 0, Infinity)?.data, 'hoge');
+    t.is(parser.tryParse('foo Hoge', 4, Infinity)?.data, 'Hoge');
+    t.is(parser.tryParse('hOGe fuga', 0, Infinity)?.data, 'hOGe');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hooge', 0), undefined);
-    t.is(parser.tryParse('foo Hoge', 0), undefined);
-    t.is(parser.tryParse('hOGe fuga', 1), undefined);
-    t.is(parser.tryParse('Hog', 0), undefined);
-    t.is(parser.tryParse('h0ge', 0), undefined);
+    t.is(parser.tryParse('hooge', 0, Infinity), undefined);
+    t.is(parser.tryParse('foo Hoge', 0, Infinity), undefined);
+    t.is(parser.tryParse('hOGe fuga', 1, Infinity), undefined);
+    t.is(parser.tryParse('Hog', 0, Infinity), undefined);
+    t.is(parser.tryParse('h0ge', 0, Infinity), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match empty string', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('', 0), undefined);
+    t.is(parser.tryParse('', 0, Infinity), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match if starting offset is out of range', t => {
     const parser = p.str('hoge').i;
-    t.is(parser.tryParse('hoge', 99), undefined);
+    t.is(parser.tryParse('hoge', 99, Infinity), undefined);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 });
 

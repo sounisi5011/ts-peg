@@ -47,12 +47,17 @@ export abstract class AnyOrMoreParser<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TResultData> {
         const results: ParseSuccessResult<TResult>[] = [];
 
         let offsetNext = offsetStart;
         while (results.length < this.__resultsLengthLimit) {
-            const result = this.__prevParser.tryParse(input, offsetNext);
+            const result = this.__prevParser.tryParse(
+                input,
+                offsetNext,
+                stopOffset,
+            );
             if (!result) break;
             results.push(result);
             offsetNext = result.offsetEnd;

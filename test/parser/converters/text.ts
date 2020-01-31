@@ -10,7 +10,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'a');
+        t.is(textParser.tryParse('abc', 0, Infinity)?.data, 'a');
     }
     {
         const parser = p.any.value('xxx');
@@ -18,7 +18,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 1)?.data, 'b');
+        t.is(textParser.tryParse('abc', 1, Infinity)?.data, 'b');
     }
     {
         const parser = p.any.zeroOrMore;
@@ -26,7 +26,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(textParser.tryParse('abc', 0, Infinity)?.data, 'abc');
     }
     {
         const parser = p.any.value(42).oneOrMore;
@@ -36,7 +36,7 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(textParser.tryParse('abc', 0, Infinity)?.data, 'abc');
     }
     {
         const parser = p.any.oneOrMore.action(value => ({ value }));
@@ -49,12 +49,12 @@ test('should convert result value', t => {
         const textParser = parser.text;
         assertType<TypeEq<string, ParserResultDataType<typeof textParser>>>();
 
-        t.is(textParser.tryParse('abc', 0)?.data, 'abc');
+        t.is(textParser.tryParse('abc', 0, Infinity)?.data, 'abc');
     }
 });
 
 test('should not match if starting offset is out of range', t => {
-    t.is(p.any.text.tryParse('abc', 99), undefined);
+    t.is(p.any.text.tryParse('abc', 99, Infinity), undefined);
 });
 
 test('should not invoke action callback', t => {
@@ -71,12 +71,12 @@ test('should not invoke action callback', t => {
             'should not invoke action callback if only matched text is needed',
         );
     assertCount++;
-    t.is(parser.text.tryParse('abc', 0)?.data, 'abc');
+    t.is(parser.text.tryParse('abc', 0, Infinity)?.data, 'abc');
 
     assertCallAction = () =>
         t.pass('should invoke action callback if not yet invoked the action');
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -87,7 +87,7 @@ test('should not invoke action callback', t => {
             'should invoke action callback if the action has already been invoked',
         );
     assertCount++;
-    t.deepEqual(parser.tryParse('abc', 0)?.data, [
+    t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, [
         { char: 'a' },
         { char: 'b' },
         { char: 'c' },
@@ -102,7 +102,7 @@ test('should not invoke action callback', t => {
                 );
                 return { text };
             })
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         { text: 'abc' },
     );
 });

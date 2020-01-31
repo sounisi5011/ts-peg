@@ -12,27 +12,27 @@ assertType<TypeEq<ParserResultDataType<LiteralStringParser<'bar'>>, 'bar'>>();
 
 test('should match string', t => {
     const parser = p.str('hoge');
-    t.is(parser.tryParse('hoge fuga', 0)?.data, 'hoge');
-    t.is(parser.tryParse('foo bar hoge fuga', 8)?.data, 'hoge');
+    t.is(parser.tryParse('hoge fuga', 0, Infinity)?.data, 'hoge');
+    t.is(parser.tryParse('foo bar hoge fuga', 8, Infinity)?.data, 'hoge');
     assertType<TypeEq<'hoge', ParserResultDataType<typeof parser>>>();
 });
 
 test('should not match string', t => {
     const parser = p.str('hoge');
-    t.is(parser.tryParse('hoge fuga', 1), undefined);
-    t.is(parser.tryParse('foo bar hoge fuga', 7), undefined);
-    t.is(parser.tryParse('hog', 0), undefined);
-    t.is(parser.tryParse('oge', 0), undefined);
+    t.is(parser.tryParse('hoge fuga', 1, Infinity), undefined);
+    t.is(parser.tryParse('foo bar hoge fuga', 7, Infinity), undefined);
+    t.is(parser.tryParse('hog', 0, Infinity), undefined);
+    t.is(parser.tryParse('oge', 0, Infinity), undefined);
 });
 
 test('should not match empty string', t => {
     const parser = p.str('hoge');
-    t.is(parser.tryParse('', 0), undefined);
+    t.is(parser.tryParse('', 0, Infinity), undefined);
 });
 
 test('should not match if starting offset is out of range', t => {
     const parser = p.str('hoge');
-    t.is(parser.tryParse('hoge', 99), undefined);
+    t.is(parser.tryParse('hoge', 99, Infinity), undefined);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {

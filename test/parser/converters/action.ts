@@ -16,9 +16,9 @@ test('should convert result value', t => {
         chars.map(char => ({ char, code: char.codePointAt(0) })),
     );
 
-    t.is(exp1.tryParse('abc', 0)?.data, 1);
-    t.deepEqual(exp2.tryParse('abc', 0)?.data, [1, 1, 1]);
-    t.deepEqual(exp3.tryParse('🐉💭😋🏡', 0)?.data, [
+    t.is(exp1.tryParse('abc', 0, Infinity)?.data, 1);
+    t.deepEqual(exp2.tryParse('abc', 0, Infinity)?.data, [1, 1, 1]);
+    t.deepEqual(exp3.tryParse('🐉💭😋🏡', 0, Infinity)?.data, [
         { char: '🐉', code: 0x1f409 },
         { char: '💭', code: 0x1f4ad },
         { char: '😋', code: 0x1f60b },
@@ -50,7 +50,7 @@ test('validate action arguments', t => {
                     TypeEq<typeof args, [string, ActionExecutionEnvironment]>
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
         p
             .str('a')
             .action((...args) => {
@@ -59,7 +59,7 @@ test('validate action arguments', t => {
                     TypeEq<typeof args, ['a', ActionExecutionEnvironment]>
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
 
         p.any.zeroOrMore
             .action((...args) => {
@@ -68,7 +68,7 @@ test('validate action arguments', t => {
                     TypeEq<typeof args, [string[], ActionExecutionEnvironment]>
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
         p.any.oneOrMore
             .action((...args) => {
                 t.deepEqual(args[0], ['a', 'b', 'c']);
@@ -79,7 +79,7 @@ test('validate action arguments', t => {
                     >
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
         p.any.optional
             .action((...args) => {
                 t.deepEqual(args[0], 'a');
@@ -90,7 +90,7 @@ test('validate action arguments', t => {
                     >
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
 
         p
             .str('x')
@@ -100,7 +100,7 @@ test('validate action arguments', t => {
                     TypeEq<typeof args, ['x'[], ActionExecutionEnvironment]>
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
         p
             .str('x')
             .optional.action((...args) => {
@@ -112,21 +112,21 @@ test('validate action arguments', t => {
                     >
                 >();
             })
-            .tryParse('abc', 0),
+            .tryParse('abc', 0, Infinity),
     ]);
 });
 
 test('should not call action callback', t => {
-    p.any.action(() => t.fail()).zeroOrMore.tryParse('', 0);
-    p.any.action(() => t.fail()).zeroOrMore.tryParse('abc', 99);
+    p.any.action(() => t.fail()).zeroOrMore.tryParse('', 0, Infinity);
+    p.any.action(() => t.fail()).zeroOrMore.tryParse('abc', 99, Infinity);
     p.str('x')
         .action(() => t.fail())
-        .zeroOrMore.tryParse('abc', 0);
-    p.any.oneOrMore.action(() => t.fail()).tryParse('', 0);
-    p.any.oneOrMore.action(() => t.fail()).tryParse('abc', 99);
+        .zeroOrMore.tryParse('abc', 0, Infinity);
+    p.any.oneOrMore.action(() => t.fail()).tryParse('', 0, Infinity);
+    p.any.oneOrMore.action(() => t.fail()).tryParse('abc', 99, Infinity);
     p.str('x')
         .oneOrMore.action(() => t.fail())
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
     t.pass();
 });
 

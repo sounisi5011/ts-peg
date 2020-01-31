@@ -7,12 +7,12 @@ import p, { Parser, ParserGenerator, ParserResultDataType } from '../../src';
 test('should match', t => {
     {
         const parser = p.seq(p.any);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a']);
         assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq('a');
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a']);
         assertType<TypeEq<['a'], ParserResultDataType<typeof parser>>>();
     }
     {
@@ -21,17 +21,17 @@ test('should match', t => {
     }
     {
         const parser = p.seq(p.any, p.any);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abc', 1)?.data, ['b', 'c']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abc', 1, Infinity)?.data, ['b', 'c']);
         assertType<
             TypeEq<[string, string], ParserResultDataType<typeof parser>>
         >();
     }
     {
         const parser = p.seq(p.any, 'b');
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abbc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abbc', 1)?.data, ['b', 'b']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abbc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abbc', 1, Infinity)?.data, ['b', 'b']);
         assertType<
             TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
         >();
@@ -44,14 +44,26 @@ test('should match', t => {
     }
     {
         const parser = p.seq('a', p.str('b'));
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
         assertType<TypeEq<['a', 'b'], ParserResultDataType<typeof parser>>>();
     }
     {
         const parser = p.seq('x', p.str('x').optional, p.str('y'));
-        t.deepEqual(parser.tryParse('xyz', 0)?.data, ['x', undefined, 'y']);
-        t.deepEqual(parser.tryParse('xxyz', 0)?.data, ['x', 'x', 'y']);
-        t.deepEqual(parser.tryParse('xxyz', 1)?.data, ['x', undefined, 'y']);
+        t.deepEqual(parser.tryParse('xyz', 0, Infinity)?.data, [
+            'x',
+            undefined,
+            'y',
+        ]);
+        t.deepEqual(parser.tryParse('xxyz', 0, Infinity)?.data, [
+            'x',
+            'x',
+            'y',
+        ]);
+        t.deepEqual(parser.tryParse('xxyz', 1, Infinity)?.data, [
+            'x',
+            undefined,
+            'y',
+        ]);
         assertType<
             TypeEq<
                 ['x', 'x' | undefined, 'y'],
@@ -64,7 +76,7 @@ test('should match', t => {
 test('should match ; callback func', t => {
     {
         const parser = p.seq(() => [p.any]);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a']);
         assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
@@ -73,7 +85,7 @@ test('should match ; callback func', t => {
     }
     {
         const parser = p.seq(() => ['a']);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a']);
         assertType<TypeEq<[string], ParserResultDataType<typeof parser>>>();
     }
     {
@@ -82,8 +94,8 @@ test('should match ; callback func', t => {
     }
     {
         const parser = p.seq(() => [p.any, p.any]);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abc', 1)?.data, ['b', 'c']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abc', 1, Infinity)?.data, ['b', 'c']);
         assertType<
             TypeEq<[string, string], ParserResultDataType<typeof parser>>
         >();
@@ -96,9 +108,9 @@ test('should match ; callback func', t => {
     }
     {
         const parser = p.seq(() => [p.any, 'b']);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abbc', 0)?.data, ['a', 'b']);
-        t.deepEqual(parser.tryParse('abbc', 1)?.data, ['b', 'b']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abbc', 0, Infinity)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abbc', 1, Infinity)?.data, ['b', 'b']);
         assertType<
             TypeEq<[string, string], ParserResultDataType<typeof parser>>
         >();
@@ -111,7 +123,7 @@ test('should match ; callback func', t => {
     }
     {
         const parser = p.seq(() => ['a', p.str('b')]);
-        t.deepEqual(parser.tryParse('abc', 0)?.data, ['a', 'b']);
+        t.deepEqual(parser.tryParse('abc', 0, Infinity)?.data, ['a', 'b']);
         assertType<
             TypeEq<[string, 'b'], ParserResultDataType<typeof parser>>
         >();
@@ -122,9 +134,21 @@ test('should match ; callback func', t => {
     }
     {
         const parser = p.seq(() => ['x', p.str('x').optional, p.str('y')]);
-        t.deepEqual(parser.tryParse('xyz', 0)?.data, ['x', undefined, 'y']);
-        t.deepEqual(parser.tryParse('xxyz', 0)?.data, ['x', 'x', 'y']);
-        t.deepEqual(parser.tryParse('xxyz', 1)?.data, ['x', undefined, 'y']);
+        t.deepEqual(parser.tryParse('xyz', 0, Infinity)?.data, [
+            'x',
+            undefined,
+            'y',
+        ]);
+        t.deepEqual(parser.tryParse('xxyz', 0, Infinity)?.data, [
+            'x',
+            'x',
+            'y',
+        ]);
+        t.deepEqual(parser.tryParse('xxyz', 1, Infinity)?.data, [
+            'x',
+            undefined,
+            'y',
+        ]);
         assertType<
             TypeEq<
                 [string, 'x' | undefined, 'y'],
@@ -148,66 +172,66 @@ test('should match ; callback func', t => {
 test('should not match', t => {
     {
         const parser = p.seq(p.any);
-        t.is(parser.tryParse('', 0), undefined);
+        t.is(parser.tryParse('', 0, Infinity), undefined);
     }
     {
         const parser = p.seq('a');
-        t.is(parser.tryParse('abc', 1), undefined);
-        t.is(parser.tryParse('abc', 2), undefined);
+        t.is(parser.tryParse('abc', 1, Infinity), undefined);
+        t.is(parser.tryParse('abc', 2, Infinity), undefined);
     }
     {
         const parser = p.seq(p.any, p.any);
-        t.is(parser.tryParse('abc', 2), undefined);
+        t.is(parser.tryParse('abc', 2, Infinity), undefined);
     }
     {
         const parser = p.seq(p.any, 'b');
-        t.is(parser.tryParse('aβc', 0), undefined);
+        t.is(parser.tryParse('aβc', 0, Infinity), undefined);
     }
     {
         const parser = p.seq('a', p.str('b'));
-        t.is(parser.tryParse('Abc', 0), undefined);
-        t.is(parser.tryParse('aac', 0), undefined);
-        t.is(parser.tryParse('abc', 1), undefined);
+        t.is(parser.tryParse('Abc', 0, Infinity), undefined);
+        t.is(parser.tryParse('aac', 0, Infinity), undefined);
+        t.is(parser.tryParse('abc', 1, Infinity), undefined);
     }
     {
         const parser = p.seq('x', p.str('x').optional, p.str('y'));
-        t.is(parser.tryParse('xyz', 1), undefined);
-        t.is(parser.tryParse('Xyz', 0), undefined);
-        t.is(parser.tryParse('x yz', 0), undefined);
-        t.is(parser.tryParse('xxxyz', 0), undefined);
+        t.is(parser.tryParse('xyz', 1, Infinity), undefined);
+        t.is(parser.tryParse('Xyz', 0, Infinity), undefined);
+        t.is(parser.tryParse('x yz', 0, Infinity), undefined);
+        t.is(parser.tryParse('xxxyz', 0, Infinity), undefined);
     }
 });
 
 test('should not match ; callback func', t => {
     {
         const parser = p.seq(() => [p.any]);
-        t.is(parser.tryParse('', 0), undefined);
+        t.is(parser.tryParse('', 0, Infinity), undefined);
     }
     {
         const parser = p.seq(() => ['a']);
-        t.is(parser.tryParse('abc', 1), undefined);
-        t.is(parser.tryParse('abc', 2), undefined);
+        t.is(parser.tryParse('abc', 1, Infinity), undefined);
+        t.is(parser.tryParse('abc', 2, Infinity), undefined);
     }
     {
         const parser = p.seq(() => [p.any, p.any]);
-        t.is(parser.tryParse('abc', 2), undefined);
+        t.is(parser.tryParse('abc', 2, Infinity), undefined);
     }
     {
         const parser = p.seq(() => [p.any, 'b'] as const);
-        t.is(parser.tryParse('aβc', 0), undefined);
+        t.is(parser.tryParse('aβc', 0, Infinity), undefined);
     }
     {
         const parser = p.seq(() => ['a', p.str('b')]);
-        t.is(parser.tryParse('Abc', 0), undefined);
-        t.is(parser.tryParse('aac', 0), undefined);
-        t.is(parser.tryParse('abc', 1), undefined);
+        t.is(parser.tryParse('Abc', 0, Infinity), undefined);
+        t.is(parser.tryParse('aac', 0, Infinity), undefined);
+        t.is(parser.tryParse('abc', 1, Infinity), undefined);
     }
     {
         const parser = p.seq(() => ['x', p.str('x').optional, p.str('y')]);
-        t.is(parser.tryParse('xyz', 1), undefined);
-        t.is(parser.tryParse('Xyz', 0), undefined);
-        t.is(parser.tryParse('x yz', 0), undefined);
-        t.is(parser.tryParse('xxxyz', 0), undefined);
+        t.is(parser.tryParse('xyz', 1, Infinity), undefined);
+        t.is(parser.tryParse('Xyz', 0, Infinity), undefined);
+        t.is(parser.tryParse('x yz', 0, Infinity), undefined);
+        t.is(parser.tryParse('xxxyz', 0, Infinity), undefined);
     }
 });
 
@@ -224,7 +248,7 @@ test('should fail by invalid arguments', t => {
     );
     t.throws(
         // @ts-ignore
-        () => p.seq(() => []).tryParse('foo', 0),
+        () => p.seq(() => []).tryParse('foo', 0, Infinity),
         {
             instanceOf: Error,
             message:
@@ -268,7 +292,7 @@ test('should fail by invalid arguments', t => {
         );
         t.throws(
             // @ts-ignore
-            () => p.seq(() => [arg]).tryParse('foo', 0),
+            () => p.seq(() => [arg]).tryParse('foo', 0, Infinity),
             {
                 instanceOf: TypeError,
                 message:
@@ -279,7 +303,7 @@ test('should fail by invalid arguments', t => {
         if (!Array.isArray(arg)) {
             t.throws(
                 // @ts-ignore
-                () => p.seq(() => arg).tryParse('foo', 0),
+                () => p.seq(() => arg).tryParse('foo', 0, Infinity),
                 {
                     instanceOf: TypeError,
                     message:
@@ -304,7 +328,7 @@ test('should not invoke the callback function until start parsing', t => {
     p.seq(() => {
         t.pass();
         return ['fuga'];
-    }).tryParse('', 0);
+    }).tryParse('', 0, Infinity);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {

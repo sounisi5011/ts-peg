@@ -16,14 +16,16 @@ export class SequenceParser<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<ParserLikeTuple2ResultTuple<TParserLikeTuple>> {
         const results: ParseSuccessResult<unknown>[] = [];
         let nextOffset = offsetStart;
         for (const expression of this.__exps()) {
-            const result = expression.tryParse(input, nextOffset);
+            const result = expression.tryParse(input, nextOffset, stopOffset);
             if (!result) return undefined;
             results.push(result);
             nextOffset = result.offsetEnd;
+            if (stopOffset < nextOffset) return undefined;
         }
         return new ParseSuccessResult(
             nextOffset,

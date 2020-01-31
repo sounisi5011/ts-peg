@@ -16,114 +16,114 @@ test('should match characters: "abc123"', t => {
     const parser = p.chars('abc123');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('a', 0)?.data, 'a');
-    t.is(parser.tryParse('bca', 0)?.data, 'b');
-    t.is(parser.tryParse('123', 0)?.data, '1');
-    t.is(parser.tryParse('345', 0)?.data, '3');
+    t.is(parser.tryParse('a', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('bca', 0, Infinity)?.data, 'b');
+    t.is(parser.tryParse('123', 0, Infinity)?.data, '1');
+    t.is(parser.tryParse('345', 0, Infinity)?.data, '3');
 
-    t.is(parser.tryParse('hax', 0), undefined);
-    t.is(parser.tryParse('813', 0), undefined);
+    t.is(parser.tryParse('hax', 0, Infinity), undefined);
+    t.is(parser.tryParse('813', 0, Infinity), undefined);
 });
 
 test('should match inverted characters: "^abc123"', t => {
     const parser = p.chars('^abc123');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('h', 0)?.data, 'h');
-    t.is(parser.tryParse('893', 0)?.data, '8');
-    t.is(parser.tryParse('HAL 9000', 0)?.data, 'H');
-    t.is(parser.tryParse('0123', 0)?.data, '0');
+    t.is(parser.tryParse('h', 0, Infinity)?.data, 'h');
+    t.is(parser.tryParse('893', 0, Infinity)?.data, '8');
+    t.is(parser.tryParse('HAL 9000', 0, Infinity)?.data, 'H');
+    t.is(parser.tryParse('0123', 0, Infinity)?.data, '0');
 
-    t.is(parser.tryParse('1', 0), undefined);
-    t.is(parser.tryParse('2', 0), undefined);
-    t.is(parser.tryParse('3', 0), undefined);
-    t.is(parser.tryParse('a', 0), undefined);
-    t.is(parser.tryParse('b', 0), undefined);
-    t.is(parser.tryParse('c', 0), undefined);
+    t.is(parser.tryParse('1', 0, Infinity), undefined);
+    t.is(parser.tryParse('2', 0, Infinity), undefined);
+    t.is(parser.tryParse('3', 0, Infinity), undefined);
+    t.is(parser.tryParse('a', 0, Infinity), undefined);
+    t.is(parser.tryParse('b', 0, Infinity), undefined);
+    t.is(parser.tryParse('c', 0, Infinity), undefined);
 });
 
 test('should match character range: "a-f"', t => {
     const parser = p.chars('a-f');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('a', 0)?.data, 'a');
-    t.is(parser.tryParse('baka', 0)?.data, 'b');
-    t.is(parser.tryParse('fuse', 0)?.data, 'f');
+    t.is(parser.tryParse('a', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('baka', 0, Infinity)?.data, 'b');
+    t.is(parser.tryParse('fuse', 0, Infinity)?.data, 'f');
 
-    t.is(parser.tryParse('2', 0), undefined);
-    t.is(parser.tryParse('x', 0), undefined);
-    t.is(parser.tryParse('-', 0), undefined);
+    t.is(parser.tryParse('2', 0, Infinity), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
+    t.is(parser.tryParse('-', 0, Infinity), undefined);
 });
 
 test('should match character range: "f-a"', t => {
     const parser = p.chars('f-a');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('f', 0)?.data, 'f');
-    t.is(parser.tryParse('affine', 0)?.data, 'a');
-    t.is(parser.tryParse('custard', 0)?.data, 'c');
+    t.is(parser.tryParse('f', 0, Infinity)?.data, 'f');
+    t.is(parser.tryParse('affine', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('custard', 0, Infinity)?.data, 'c');
 
-    t.is(parser.tryParse('2', 0), undefined);
-    t.is(parser.tryParse('x', 0), undefined);
-    t.is(parser.tryParse('-', 0), undefined);
+    t.is(parser.tryParse('2', 0, Infinity), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
+    t.is(parser.tryParse('-', 0, Infinity), undefined);
 });
 
 test('should match characters and character range: "0-9abc"', t => {
     const parser = p.chars('0-9abc');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('0', 0)?.data, '0');
-    t.is(parser.tryParse('42', 0)?.data, '4');
-    t.is(parser.tryParse('987', 0)?.data, '9');
-    t.is(parser.tryParse('abc', 0)?.data, 'a');
-    t.is(parser.tryParse('bamboo', 0)?.data, 'b');
-    t.is(parser.tryParse('cute', 0)?.data, 'c');
+    t.is(parser.tryParse('0', 0, Infinity)?.data, '0');
+    t.is(parser.tryParse('42', 0, Infinity)?.data, '4');
+    t.is(parser.tryParse('987', 0, Infinity)?.data, '9');
+    t.is(parser.tryParse('abc', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('bamboo', 0, Infinity)?.data, 'b');
+    t.is(parser.tryParse('cute', 0, Infinity)?.data, 'c');
 
-    t.is(parser.tryParse('x', 0), undefined);
-    t.is(parser.tryParse('A', 0), undefined);
-    t.is(parser.tryParse('-', 0), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
+    t.is(parser.tryParse('A', 0, Infinity), undefined);
+    t.is(parser.tryParse('-', 0, Infinity), undefined);
 });
 
 test('should match inverted character range: "^a-f"', t => {
     const parser = p.chars('^a-f');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('2', 0)?.data, '2');
-    t.is(parser.tryParse('APL', 0)?.data, 'A');
-    t.is(parser.tryParse('Halo', 0)?.data, 'H');
-    t.is(parser.tryParse('--', 0)?.data, '-');
+    t.is(parser.tryParse('2', 0, Infinity)?.data, '2');
+    t.is(parser.tryParse('APL', 0, Infinity)?.data, 'A');
+    t.is(parser.tryParse('Halo', 0, Infinity)?.data, 'H');
+    t.is(parser.tryParse('--', 0, Infinity)?.data, '-');
 
-    t.is(parser.tryParse('a', 0), undefined);
-    t.is(parser.tryParse('fantastic', 0), undefined);
+    t.is(parser.tryParse('a', 0, Infinity), undefined);
+    t.is(parser.tryParse('fantastic', 0, Infinity), undefined);
 });
 
 test('should match characters and "-": "abc-"', t => {
     const parser = p.chars('abc-');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('a', 0)?.data, 'a');
-    t.is(parser.tryParse('bca', 0)?.data, 'b');
-    t.is(parser.tryParse('-c', 0)?.data, '-');
-    t.is(parser.tryParse('-x', 0)?.data, '-');
+    t.is(parser.tryParse('a', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('bca', 0, Infinity)?.data, 'b');
+    t.is(parser.tryParse('-c', 0, Infinity)?.data, '-');
+    t.is(parser.tryParse('-x', 0, Infinity)?.data, '-');
 
-    t.is(parser.tryParse('hax', 0), undefined);
-    t.is(parser.tryParse('813', 0), undefined);
-    t.is(parser.tryParse('😊', 0), undefined);
+    t.is(parser.tryParse('hax', 0, Infinity), undefined);
+    t.is(parser.tryParse('813', 0, Infinity), undefined);
+    t.is(parser.tryParse('😊', 0, Infinity), undefined);
 });
 
 test('should match character range and "-": "-0-9"', t => {
     const parser = p.chars('-0-9');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('0', 0)?.data, '0');
-    t.is(parser.tryParse('456', 0)?.data, '4');
-    t.is(parser.tryParse('9ab', 0)?.data, '9');
-    t.is(parser.tryParse('-42', 0)?.data, '-');
-    t.is(parser.tryParse('-x', 0)?.data, '-');
+    t.is(parser.tryParse('0', 0, Infinity)?.data, '0');
+    t.is(parser.tryParse('456', 0, Infinity)?.data, '4');
+    t.is(parser.tryParse('9ab', 0, Infinity)?.data, '9');
+    t.is(parser.tryParse('-42', 0, Infinity)?.data, '-');
+    t.is(parser.tryParse('-x', 0, Infinity)?.data, '-');
 
-    t.is(parser.tryParse('hax', 0), undefined);
-    t.is(parser.tryParse('APL', 0), undefined);
-    t.is(parser.tryParse('😊', 0), undefined);
+    t.is(parser.tryParse('hax', 0, Infinity), undefined);
+    t.is(parser.tryParse('APL', 0, Infinity), undefined);
+    t.is(parser.tryParse('😊', 0, Infinity), undefined);
 });
 
 test('should match all ASCII characters, including control characters', t => {
@@ -139,9 +139,21 @@ test('should match all ASCII characters, including control characters', t => {
             { controlChar },
             { breakLength: Infinity },
         );
-        t.is(parser.tryParse(controlChar, 0)?.data, controlChar, message);
-        t.is(parser.tryParse(controlChar + 'x', 0)?.data, controlChar, message);
-        t.is(parser.tryParse('x' + controlChar, 1)?.data, controlChar, message);
+        t.is(
+            parser.tryParse(controlChar, 0, Infinity)?.data,
+            controlChar,
+            message,
+        );
+        t.is(
+            parser.tryParse(controlChar + 'x', 0, Infinity)?.data,
+            controlChar,
+            message,
+        );
+        t.is(
+            parser.tryParse('x' + controlChar, 1, Infinity)?.data,
+            controlChar,
+            message,
+        );
     }
 });
 
@@ -149,35 +161,35 @@ test('should match emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('\uD83C\uDF47-\uD83C\uDF53'); // U+1F347 - U+1F353
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('\u{1F347}', 0)?.data, '🍇');
-    t.is(parser.tryParse('\u{1F348}\u{1F34C}', 0)?.data, '🍈');
-    t.is(parser.tryParse('\u{1F348}\u{1F34C}', 2)?.data, '🍌');
-    t.is(parser.tryParse('\u{1F353}', 0)?.data, '🍓');
+    t.is(parser.tryParse('\u{1F347}', 0, Infinity)?.data, '🍇');
+    t.is(parser.tryParse('\u{1F348}\u{1F34C}', 0, Infinity)?.data, '🍈');
+    t.is(parser.tryParse('\u{1F348}\u{1F34C}', 2, Infinity)?.data, '🍌');
+    t.is(parser.tryParse('\u{1F353}', 0, Infinity)?.data, '🍓');
 
-    t.is(parser.tryParse('x', 0), undefined);
-    t.is(parser.tryParse('\u{1F965}', 0), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
+    t.is(parser.tryParse('\u{1F965}', 0, Infinity), undefined);
     t.is(
-        parser.tryParse('\uDF47', 0),
+        parser.tryParse('\uDF47', 0, Infinity),
         undefined,
         'should not match surrogate char',
     );
     t.is(
-        parser.tryParse('\uD900', 0),
+        parser.tryParse('\uD900', 0, Infinity),
         undefined,
         'should not match surrogate char',
     );
     t.is(
-        parser.tryParse('\uD83C', 0),
+        parser.tryParse('\uD83C', 0, Infinity),
         undefined,
         'should not match surrogate char',
     );
     t.is(
-        parser.tryParse('\u{1F348}\u{1F34C}', 1),
+        parser.tryParse('\u{1F348}\u{1F34C}', 1, Infinity),
         undefined,
         'should not match surrogate char',
     );
     t.is(
-        parser.tryParse('\u{1F348}\u{1F34C}', 3),
+        parser.tryParse('\u{1F348}\u{1F34C}', 3, Infinity),
         undefined,
         'should not match surrogate char',
     );
@@ -187,51 +199,51 @@ test('should match inverted emoji (Unicode surrogate pair char) range', t => {
     const parser = p.chars('^\uD83C\uDF47-\uD83C\uDF53'); // ! U+1F347 - U+1F353
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('x', 0)?.data, 'x');
-    t.is(parser.tryParse('\u{1F4A9}', 0)?.data, '💩');
+    t.is(parser.tryParse('x', 0, Infinity)?.data, 'x');
+    t.is(parser.tryParse('\u{1F4A9}', 0, Infinity)?.data, '💩');
     t.is(
-        parser.tryParse('\uD83C', 0)?.data,
+        parser.tryParse('\uD83C', 0, Infinity)?.data,
         '\uD83C',
         'should match surrogate char',
     );
     t.is(
-        parser.tryParse('\uDF47', 0)?.data,
+        parser.tryParse('\uDF47', 0, Infinity)?.data,
         '\uDF47',
         'should match surrogate char',
     );
     t.is(
-        parser.tryParse('\uDF53', 0)?.data,
+        parser.tryParse('\uDF53', 0, Infinity)?.data,
         '\uDF53',
         'should match surrogate char',
     );
     t.is(
-        parser.tryParse('\u{1F348}\u{1F34C}', 1)?.data,
+        parser.tryParse('\u{1F348}\u{1F34C}', 1, Infinity)?.data,
         '\uDF48',
         'should match surrogate char',
     );
     t.is(
-        parser.tryParse('\u{1F348}\u{1F34C}', 3)?.data,
+        parser.tryParse('\u{1F348}\u{1F34C}', 3, Infinity)?.data,
         '\uDF4C',
         'should match surrogate char',
     );
 
     t.is(
-        parser.tryParse('\u{1F347}', 0),
+        parser.tryParse('\u{1F347}', 0, Infinity),
         undefined,
         'should not match emojis in inverted range',
     );
     t.is(
-        parser.tryParse('\u{1F348}', 0),
+        parser.tryParse('\u{1F348}', 0, Infinity),
         undefined,
         'should not match emojis in inverted range',
     );
     t.is(
-        parser.tryParse('\u{1F34C}', 0),
+        parser.tryParse('\u{1F34C}', 0, Infinity),
         undefined,
         'should not match emojis in inverted range',
     );
     t.is(
-        parser.tryParse('\u{1F353}', 0),
+        parser.tryParse('\u{1F353}', 0, Infinity),
         undefined,
         'should not match emojis in inverted range',
     );
@@ -241,126 +253,126 @@ test('should match Unicode surrogate char range', t => {
     const parser = p.chars('\uDC00-\uDFFF\uD800-\uDBFF');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('\uD800', 0)?.data, '\uD800');
-    t.is(parser.tryParse('\uD83Cx', 0)?.data, '\uD83C');
-    t.is(parser.tryParse('\uDBFF', 0)?.data, '\uDBFF');
-    t.is(parser.tryParse('\uDC00', 0)?.data, '\uDC00');
-    t.is(parser.tryParse('\uDFFF', 0)?.data, '\uDFFF');
+    t.is(parser.tryParse('\uD800', 0, Infinity)?.data, '\uD800');
+    t.is(parser.tryParse('\uD83Cx', 0, Infinity)?.data, '\uD83C');
+    t.is(parser.tryParse('\uDBFF', 0, Infinity)?.data, '\uDBFF');
+    t.is(parser.tryParse('\uDC00', 0, Infinity)?.data, '\uDC00');
+    t.is(parser.tryParse('\uDFFF', 0, Infinity)?.data, '\uDFFF');
     t.is(
-        parser.tryParse('\uD83C\uDF47', 0)?.data,
+        parser.tryParse('\uD83C\uDF47', 0, Infinity)?.data,
         '\uD83C',
         `should match emoji's high surrogate char`,
     );
     t.is(
-        parser.tryParse('\uD83C\uDF47', 1)?.data,
+        parser.tryParse('\uD83C\uDF47', 1, Infinity)?.data,
         '\uDF47',
         `should match emoji's low surrogate char`,
     );
 
-    t.is(parser.tryParse('x', 0), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
 });
 
 test('should match inverted Unicode surrogate char range', t => {
     const parser = p.chars('^\uD800-\uDFFF');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('x', 0)?.data, 'x');
+    t.is(parser.tryParse('x', 0, Infinity)?.data, 'x');
     t.is(
-        parser.tryParse('\uD83C\uDF47', 0)?.data,
+        parser.tryParse('\uD83C\uDF47', 0, Infinity)?.data,
         '\uD83C\uDF47',
         `should match emoji char`,
     );
 
-    t.is(parser.tryParse('\uD800', 0), undefined);
-    t.is(parser.tryParse('\uD83Cx', 0), undefined);
-    t.is(parser.tryParse('\uDBFF', 0), undefined);
-    t.is(parser.tryParse('\uDC00', 0), undefined);
-    t.is(parser.tryParse('\uDFFF', 0), undefined);
-    t.is(parser.tryParse('\uD83C\uD83C\uDF47', 0), undefined);
+    t.is(parser.tryParse('\uD800', 0, Infinity), undefined);
+    t.is(parser.tryParse('\uD83Cx', 0, Infinity), undefined);
+    t.is(parser.tryParse('\uDBFF', 0, Infinity), undefined);
+    t.is(parser.tryParse('\uDC00', 0, Infinity), undefined);
+    t.is(parser.tryParse('\uDFFF', 0, Infinity), undefined);
+    t.is(parser.tryParse('\uD83C\uD83C\uDF47', 0, Infinity), undefined);
 });
 
 test('should match emoji and Unicode surrogate char range', t => {
     const parser = p.chars('\uD800-\uDFFF\uD83C\uDF47-\uD83C\uDF53'); // U+D800 - U+DFFF and U+1F347 - U+1F353
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('\uD800', 0)?.data, '\uD800');
-    t.is(parser.tryParse('\uDBFF', 0)?.data, '\uDBFF');
-    t.is(parser.tryParse('\uDC00', 0)?.data, '\uDC00');
-    t.is(parser.tryParse('\uDFFF', 0)?.data, '\uDFFF');
+    t.is(parser.tryParse('\uD800', 0, Infinity)?.data, '\uD800');
+    t.is(parser.tryParse('\uDBFF', 0, Infinity)?.data, '\uDBFF');
+    t.is(parser.tryParse('\uDC00', 0, Infinity)?.data, '\uDC00');
+    t.is(parser.tryParse('\uDFFF', 0, Infinity)?.data, '\uDFFF');
     t.is(
-        parser.tryParse('\u{1F347}', 0)?.data,
+        parser.tryParse('\u{1F347}', 0, Infinity)?.data,
         '\u{1F347}',
         `should match emojis in range`,
     );
     t.is(
-        parser.tryParse('\u{1F353}', 0)?.data,
+        parser.tryParse('\u{1F353}', 0, Infinity)?.data,
         '\u{1F353}',
         `should match emojis in range`,
     );
     t.is(
-        parser.tryParse('\u{1F4A9}', 0)?.data, // U+1F4A9 = U+D83D U+DCA9
+        parser.tryParse('\u{1F4A9}', 0, Infinity)?.data, // U+1F4A9 = U+D83D U+DCA9
         '\uD83D',
         `should match out-of-range emojis high surrogate char`,
     );
 
-    t.is(parser.tryParse('x', 0), undefined);
+    t.is(parser.tryParse('x', 0, Infinity), undefined);
 });
 
 test('should not match empty string', t => {
-    t.is(p.chars('abc123').tryParse('', 0), undefined);
+    t.is(p.chars('abc123').tryParse('', 0, Infinity), undefined);
 });
 
 test('should not match "^"', t => {
     const parser = p.chars('^^');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('^', 0), undefined);
-    t.is(parser.tryParse('abc', 0)?.data, 'a');
+    t.is(parser.tryParse('^', 0, Infinity), undefined);
+    t.is(parser.tryParse('abc', 0, Infinity)?.data, 'a');
 });
 
 test('should not match "-"', t => {
     const parser = p.chars('^-a');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('-', 0), undefined);
-    t.is(parser.tryParse('a', 0), undefined);
-    t.is(parser.tryParse('^', 0)?.data, '^');
+    t.is(parser.tryParse('-', 0, Infinity), undefined);
+    t.is(parser.tryParse('a', 0, Infinity), undefined);
+    t.is(parser.tryParse('^', 0, Infinity)?.data, '^');
 });
 
 test('should always match', t => {
     const parser = p.chars('^');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('a', 0)?.data, 'a');
-    t.is(parser.tryParse('123', 0)?.data, '1');
-    t.is(parser.tryParse('^', 0)?.data, '^');
-    t.is(parser.tryParse('-', 0)?.data, '-');
-    t.is(parser.tryParse('\0', 0)?.data, '\0');
+    t.is(parser.tryParse('a', 0, Infinity)?.data, 'a');
+    t.is(parser.tryParse('123', 0, Infinity)?.data, '1');
+    t.is(parser.tryParse('^', 0, Infinity)?.data, '^');
+    t.is(parser.tryParse('-', 0, Infinity)?.data, '-');
+    t.is(parser.tryParse('\0', 0, Infinity)?.data, '\0');
 
-    t.is(parser.tryParse('', 0), undefined);
+    t.is(parser.tryParse('', 0, Infinity), undefined);
 });
 
 test('should not always match', t => {
     const parser = p.chars('');
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('', 0), undefined);
-    t.is(parser.tryParse('a', 0), undefined);
-    t.is(parser.tryParse('123', 0), undefined);
-    t.is(parser.tryParse('^', 0), undefined);
-    t.is(parser.tryParse('-', 0), undefined);
-    t.is(parser.tryParse('\0', 0), undefined);
+    t.is(parser.tryParse('', 0, Infinity), undefined);
+    t.is(parser.tryParse('a', 0, Infinity), undefined);
+    t.is(parser.tryParse('123', 0, Infinity), undefined);
+    t.is(parser.tryParse('^', 0, Infinity), undefined);
+    t.is(parser.tryParse('-', 0, Infinity), undefined);
+    t.is(parser.tryParse('\0', 0, Infinity), undefined);
 });
 
 test(String.raw`"\" is not an escape character`, t => {
     const parser = p.chars(String.raw`\-a`);
     assertType<TypeEq<string, ParserResultDataType<typeof parser>>>();
 
-    t.is(parser.tryParse('\\', 0)?.data, '\\');
-    t.is(parser.tryParse('a', 0)?.data, 'a');
+    t.is(parser.tryParse('\\', 0, Infinity)?.data, '\\');
+    t.is(parser.tryParse('a', 0, Infinity)?.data, 'a');
 
     t.is(
-        parser.tryParse('-', 0),
+        parser.tryParse('-', 0, Infinity),
         undefined,
         String.raw`"-" outside range of "\" to "a" should not match`,
     );

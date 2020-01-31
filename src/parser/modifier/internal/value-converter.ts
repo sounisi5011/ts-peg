@@ -45,8 +45,13 @@ export abstract class ValueConverter<
     protected __parse(
         input: string,
         offsetStart: number,
+        stopOffset: number,
     ): ParseResult<TConvertedResult> {
-        const result = this.__prevParser.tryParse(input, offsetStart);
+        const result = this.__prevParser.tryParse(
+            input,
+            offsetStart,
+            stopOffset,
+        );
         if (!result) return undefined;
         return new ParseSuccessResult(result.offsetEnd, () =>
             this.__valueConverter(this.__value, {

@@ -10,11 +10,19 @@ import p, {
 } from '../../../src';
 
 test('should match', t => {
-    t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0)?.data, 'a');
-    t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0)?.offsetEnd, 1);
-    t.is(p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0)?.data, 'a');
+    t.is(p.any.match(p.chars('a-z')).tryParse('abc', 0, Infinity)?.data, 'a');
     t.is(
-        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0)?.offsetEnd,
+        p.any.match(p.chars('a-z')).tryParse('abc', 0, Infinity)?.offsetEnd,
+        1,
+    );
+    t.is(
+        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0, Infinity)
+            ?.data,
+        'a',
+    );
+    t.is(
+        p.any.match(char => /[a-z]/.test(char)).tryParse('abc', 0, Infinity)
+            ?.offsetEnd,
         1,
     );
 
@@ -22,29 +30,33 @@ test('should match', t => {
         p.any
             .times(2)
             .match(p.str('ab'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         ['a', 'b'],
     );
     t.deepEqual(
         p.any
             .times(2)
             .match(p.or('xy', 'ab'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         ['a', 'b'],
     );
     t.deepEqual(
         p.any
             .times(2)
             .match(p.or('abc', 'ab'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         ['a', 'b'],
     );
 });
 
 test('should not match', t => {
-    t.is(p.any.match(p.chars('a-z')).tryParse('ABC', 0)?.data, undefined);
     t.is(
-        p.any.match(char => /[a-z]/.test(char)).tryParse('ABC', 0)?.data,
+        p.any.match(p.chars('a-z')).tryParse('ABC', 0, Infinity)?.data,
+        undefined,
+    );
+    t.is(
+        p.any.match(char => /[a-z]/.test(char)).tryParse('ABC', 0, Infinity)
+            ?.data,
         undefined,
     );
 
@@ -52,28 +64,28 @@ test('should not match', t => {
         p.any
             .times(2)
             .match(p.str('x'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         undefined,
     );
     t.is(
         p.any
             .times(2)
             .match(p.str('abcd'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         undefined,
     );
     t.is(
         p.any
             .times(2)
             .match(p.str('a'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         undefined,
     );
     t.is(
         p.any
             .times(2)
             .match(p.str('abc'))
-            .tryParse('abc', 0)?.data,
+            .tryParse('abc', 0, Infinity)?.data,
         undefined,
     );
 });
@@ -121,13 +133,13 @@ test('should fail by invalid arguments', t => {
         }
         if (typeof arg === 'boolean') {
             t.notThrows(
-                () => p.any.match(() => arg).tryParse('foo', 0),
+                () => p.any.match(() => arg).tryParse('foo', 0, Infinity),
                 message,
             );
         } else {
             t.throws(
                 // @ts-ignore
-                () => p.any.match(() => arg).tryParse('foo', 0),
+                () => p.any.match(() => arg).tryParse('foo', 0, Infinity),
                 {
                     instanceOf: TypeError,
                     message:
@@ -152,7 +164,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
     p.str('a')
         .match((...args) => {
             t.is(args[0], 'a');
@@ -161,7 +173,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
 
     p.any.zeroOrMore
         .match((...args) => {
@@ -171,7 +183,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
     p.any.oneOrMore
         .match((...args) => {
             t.deepEqual(args[0], ['a', 'b', 'c']);
@@ -183,7 +195,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
     p.any.optional
         .match((...args) => {
             t.deepEqual(args[0], 'a');
@@ -195,7 +207,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
 
     p.str('x')
         .zeroOrMore.match((...args) => {
@@ -205,7 +217,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
     p.str('x')
         .optional.match((...args) => {
             t.deepEqual(args[0], undefined);
@@ -217,7 +229,7 @@ test('validate match predicate arguments', t => {
             >();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
 });
 
 test('should not invoke the callback function until start parsing', t => {
@@ -233,7 +245,7 @@ test('should not invoke the callback function until start parsing', t => {
             t.pass();
             return true;
         })
-        .tryParse('abc', 0);
+        .tryParse('abc', 0, Infinity);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {
