@@ -8,7 +8,10 @@ import p, { Parser } from '../src';
 const indentStack: string[] = [];
 let currentIndent = '';
 
-export type Line = Record<string, Line[] | undefined> | string;
+export interface Statement {
+    name: string;
+    children: Statement[];
+}
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -18,21 +21,21 @@ const _init = p.str('').action(() => {
 });
 
 export const start = p
-    .seq(() => [_init, INDENT.optional, line])
+    .seq(() => [_init, INDENT.optional, stmt.zeroOrMore])
     .action(([, , l]) => l);
 
-export const line: Parser<Line> = p
+export const stmt: Parser<Statement> = p
     .seq(() => [
         SAMEDENT,
         p.seq(p.not_a(EOL), p.any).oneOrMore.text,
         EOL.optional,
-        p.seq(INDENT, line.zeroOrMore, DEDENT).action(([, c]) => c).optional,
+        p.seq(INDENT, stmt.zeroOrMore, DEDENT).action(([, c]) => c).optional,
+        EOL.optional,
     ])
-    .action(([, line, , children]) => {
-        const o: Extract<Line, object> = {};
-        o[line] = children;
-        return children ? o : line;
-    });
+    .action(([, name, , children]) => ({
+        name,
+        children: children ?? [],
+    }));
 
 export const EOL = p.or('\r\n', '\n', '\r');
 
