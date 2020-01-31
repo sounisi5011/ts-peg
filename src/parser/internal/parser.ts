@@ -120,6 +120,19 @@ export abstract class Parser<TResult> {
         });
     }
 
+    unmatch(
+        predicate: Parser<unknown> | ActionFunc<TResult, boolean>,
+    ): Parser<TResult> {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new MatchPredicateParser(this, predicate, {
+            negative: true,
+            errorMessage: {
+                predicateType:
+                    'only the Parser object or function can be specified as argument',
+            },
+        });
+    }
+
     parse(input: string, offsetStart: number = 0): TResult {
         const result = this.tryParse(input, offsetStart, Infinity);
         if (!result) {
