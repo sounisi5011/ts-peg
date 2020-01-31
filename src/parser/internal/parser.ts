@@ -110,24 +110,13 @@ export abstract class Parser<TResult> {
 
     match(predicate: MatchPredicateType<TResult>): Parser<TResult> {
         if (arguments.length < 1) throw new Error('one argument required');
-        return new MatchPredicateParser(this, predicate, {
-            negative: false,
-            errorMessage: this.__matchPredicateErrorMessage,
-        });
+        return this.__genMatchPredicateParser({ predicate, negative: false });
     }
 
     unmatch(predicate: MatchPredicateType<TResult>): Parser<TResult> {
         if (arguments.length < 1) throw new Error('one argument required');
-        return new MatchPredicateParser(this, predicate, {
-            negative: true,
-            errorMessage: this.__matchPredicateErrorMessage,
-        });
+        return this.__genMatchPredicateParser({ predicate, negative: true });
     }
-
-    private __matchPredicateErrorMessage = {
-        predicateType:
-            'only the Parser object or function can be specified as argument',
-    };
 
     parse(input: string, offsetStart: number = 0): TResult {
         const result = this.tryParse(input, offsetStart, Infinity);
@@ -152,5 +141,21 @@ export abstract class Parser<TResult> {
             undefined,
             () => this.__parse(input, offsetStart, stopOffset),
         );
+    }
+
+    private __genMatchPredicateParser({
+        predicate,
+        negative,
+    }: {
+        predicate: MatchPredicateType<TResult>;
+        negative: boolean;
+    }): Parser<TResult> {
+        return new MatchPredicateParser(this, predicate, {
+            negative,
+            errorMessage: {
+                predicateType:
+                    'only the Parser object or function can be specified as argument',
+            },
+        });
     }
 }
