@@ -3,6 +3,7 @@ import {
     ActionParser,
     MatchedTextParser,
     MatchPredicateParser,
+    MatchPredicateType,
     OneOrMoreParser,
     OptionalParser,
     ParseResult,
@@ -107,31 +108,26 @@ export abstract class Parser<TResult> {
         return new ValueConverterParser(this, value);
     }
 
-    match(
-        predicate: Parser<unknown> | ActionFunc<TResult, boolean>,
-    ): Parser<TResult> {
+    match(predicate: MatchPredicateType<TResult>): Parser<TResult> {
         if (arguments.length < 1) throw new Error('one argument required');
         return new MatchPredicateParser(this, predicate, {
             negative: false,
-            errorMessage: {
-                predicateType:
-                    'only the Parser object or function can be specified as argument',
-            },
+            errorMessage: this.__matchPredicateErrorMessage,
         });
     }
 
-    unmatch(
-        predicate: Parser<unknown> | ActionFunc<TResult, boolean>,
-    ): Parser<TResult> {
+    unmatch(predicate: MatchPredicateType<TResult>): Parser<TResult> {
         if (arguments.length < 1) throw new Error('one argument required');
         return new MatchPredicateParser(this, predicate, {
             negative: true,
-            errorMessage: {
-                predicateType:
-                    'only the Parser object or function can be specified as argument',
-            },
+            errorMessage: this.__matchPredicateErrorMessage,
         });
     }
+
+    private __matchPredicateErrorMessage = {
+        predicateType:
+            'only the Parser object or function can be specified as argument',
+    };
 
     parse(input: string, offsetStart: number = 0): TResult {
         const result = this.tryParse(input, offsetStart, Infinity);

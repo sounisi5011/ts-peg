@@ -8,6 +8,10 @@ import {
 } from '../../internal';
 import { CacheStore } from '../../utils/cache-store';
 
+export type MatchPredicateType<TResult> =
+    | Parser<unknown>
+    | ActionFunc<TResult, boolean>;
+
 const parserCache = new CacheStore<
     [Function, Parser<unknown>, boolean],
     WeakMap<object, unknown>
@@ -15,9 +19,7 @@ const parserCache = new CacheStore<
 
 export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
     private readonly __negative: boolean;
-    private readonly __predicate:
-        | Parser<unknown>
-        | ActionFunc<TResult, boolean>;
+    private readonly __predicate: MatchPredicateType<TResult>;
 
     private readonly __errorMessage = {
         predicateType:
@@ -28,7 +30,7 @@ export class MatchPredicateParser<TResult> extends ConverterParser<TResult> {
 
     constructor(
         prevParser: Parser<TResult>,
-        predicate: Parser<unknown> | ActionFunc<TResult, boolean>,
+        predicate: MatchPredicateType<TResult>,
         {
             negative,
             errorMessage = {},
