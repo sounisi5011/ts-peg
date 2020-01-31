@@ -31,15 +31,10 @@ export class CustomizableParser<TResult> extends Parser<TResult> {
         stopOffset: number,
     ): ParseResult<TResult> {
         const result = this.__parseFunc(input, offsetStart, stopOffset);
-        if (result) {
-            if (result.offsetEnd <= stopOffset) {
-                return result instanceof ParseSuccessResult
-                    ? result
-                    : new ParseSuccessResult(
-                          result.offsetEnd,
-                          result.valueGetter,
-                      );
-            }
+        if (result && result.offsetEnd <= stopOffset) {
+            return result instanceof ParseSuccessResult
+                ? result
+                : new ParseSuccessResult(result.offsetEnd, result.valueGetter);
         }
         return undefined;
     }
