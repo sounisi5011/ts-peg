@@ -119,14 +119,12 @@ export class PredicateParser extends Parser<null> {
         >,
     ): void {
         for (const [type, msg] of Object.entries(errorMessage)) {
-            if (hasProperty(this.__errorMessage, type)) {
-                Object.assign(this.__errorMessage, {
-                    [type]:
-                        typeof msg === 'function'
-                            ? msg(String(this.__errorMessage[type]))
-                            : msg,
-                });
-            }
+            if (typeof msg !== 'string' && typeof msg !== 'function') continue;
+            if (!hasProperty(this.__errorMessage, type)) continue;
+            this.__errorMessage[type] =
+                typeof msg === 'function'
+                    ? msg(String(this.__errorMessage[type]))
+                    : msg;
         }
     }
 
