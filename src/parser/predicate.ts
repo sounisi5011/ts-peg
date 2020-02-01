@@ -66,16 +66,7 @@ export class PredicateParser extends Parser<null> {
     }) {
         super(parserGenerator);
 
-        for (const [type, msg] of Object.entries(errorMessage)) {
-            if (hasProperty(this.__errorMessage, type)) {
-                Object.assign(this.__errorMessage, {
-                    [type]:
-                        typeof msg === 'function'
-                            ? msg(String(this.__errorMessage[type]))
-                            : msg,
-                });
-            }
-        }
+        this.__assignErrorMessage(errorMessage);
         if (isParserLike(predicate)) {
             this.__predicate = parserLike2Parser(parserGenerator, predicate);
         } else if (typeof predicate === 'function') {
@@ -120,6 +111,23 @@ export class PredicateParser extends Parser<null> {
                   allowCache,
               })
             : new ParseFailureResult({ allowCache });
+    }
+
+    private __assignErrorMessage(
+        errorMessage: Partial<
+            Record<string, string | ((message: string) => string)>
+        >,
+    ): void {
+        for (const [type, msg] of Object.entries(errorMessage)) {
+            if (hasProperty(this.__errorMessage, type)) {
+                Object.assign(this.__errorMessage, {
+                    [type]:
+                        typeof msg === 'function'
+                            ? msg(String(this.__errorMessage[type]))
+                            : msg,
+                });
+            }
+        }
     }
 
     private __getPredicateResult(
