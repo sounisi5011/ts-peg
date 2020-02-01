@@ -44,38 +44,14 @@ export class ParserGenerator {
     is_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        if (arguments.length < 1) throw new Error('one argument required');
-        return new PredicateParser({
-            parserGenerator: this,
-            predicate,
-            negative: false,
-            errorMessage: {
-                predicateType: message =>
-                    message.replace(
-                        /can be specified for the predicate option$/,
-                        'can be specified as argument',
-                    ),
-            },
-        });
+        return this.__genPredicateParser(arguments.length, predicate, false);
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
     not_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        if (arguments.length < 1) throw new Error('one argument required');
-        return new PredicateParser({
-            parserGenerator: this,
-            predicate,
-            negative: true,
-            errorMessage: {
-                predicateType: message =>
-                    message.replace(
-                        /can be specified for the predicate option$/,
-                        'can be specified as argument',
-                    ),
-            },
-        });
+        return this.__genPredicateParser(arguments.length, predicate, true);
     }
 
     seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
@@ -112,6 +88,26 @@ export class ParserGenerator {
             this,
             this.__validateSequenceLikeArgs(arguments.length, arg, args),
         );
+    }
+
+    private __genPredicateParser(
+        argsLen: number,
+        predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
+        negative: boolean,
+    ): PredicateParser {
+        if (argsLen < 1) throw new Error('one argument required');
+        return new PredicateParser({
+            parserGenerator: this,
+            predicate,
+            negative,
+            errorMessage: {
+                predicateType: message =>
+                    message.replace(
+                        /can be specified for the predicate option$/,
+                        'can be specified as argument',
+                    ),
+            },
+        });
     }
 
     private __validateSequenceLikeArgs(
