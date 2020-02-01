@@ -302,7 +302,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'only the Parser object, string, RegExp or function can be specified as the first argument',
+                        'only the following values can be specified as the first argument: Parser object, string, RegExp, or function',
                 },
                 message,
             );
@@ -324,7 +324,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'only the Parser object, string or RegExp can be specified for the second argument and the subsequent arguments',
+                        'for the second and subsequent arguments, only the following values can be specified: Parser object or string or RegExp',
                 },
                 message,
             );
@@ -334,7 +334,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'the value returned by callback function must be an array with Parser objects, strings or RegExp',
+                        'the value returned by the callback function must be an array containing only the following values: Parser object, string, or RegExp',
                 },
                 message,
             );
@@ -352,7 +352,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'the value returned by callback function must be an array with Parser objects, strings or RegExp',
+                        'the value returned by the callback function must be an array',
                 },
                 message,
             );
