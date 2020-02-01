@@ -17,6 +17,14 @@ test('should match', t => {
     });
 
     t.notThrows(() => {
+        const parser = p.re(/(?:)/);
+        t.is(parse(parser, '')?.offsetEnd, 0);
+        t.is(parse(parser, '')?.data, '');
+        t.is(parse(parser, 'abc', 1)?.offsetEnd, 1);
+        t.is(parse(parser, 'abc', 1)?.data, '');
+    });
+
+    t.notThrows(() => {
         const parser = p.is_a(() => true);
         t.is(parse(parser, '')?.offsetEnd, 0);
         t.is(parse(parser, '')?.data, null);
