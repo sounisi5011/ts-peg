@@ -273,49 +273,86 @@ test('should fail by invalid arguments', t => {
         },
     );
 
-    for (const arg of [null, undefined, 42, ['x']]) {
+    for (const arg of [
+        null,
+        undefined,
+        true,
+        false,
+        42,
+        'x',
+        ['y'],
+        [p.any],
+        () => ['z'],
+        /regex/,
+        Symbol(''),
+        p.any,
+    ]) {
         const message = util.inspect({ arg }, { breakLength: Infinity });
-        t.throws(
+        if (
+            ['string', 'function'].includes(typeof arg) ||
+            arg instanceof RegExp ||
+            arg instanceof Parser
+        ) {
             // @ts-ignore
-            () => p.or(arg),
-            {
-                instanceOf: TypeError,
-                message:
-                    'only the Parser object, string or function can be specified as the first argument',
-            },
-            message,
-        );
-    }
-    for (const arg of [null, undefined, 42, ['x'], () => ['y']]) {
-        const message = util.inspect({ arg }, { breakLength: Infinity });
-        t.throws(
-            // @ts-ignore
-            () => p.or('x', arg),
-            {
-                instanceOf: TypeError,
-                message:
-                    'only the Parser object or string can be specified for the second argument and the subsequent arguments',
-            },
-            message,
-        );
-        t.throws(
-            // @ts-ignore
-            () => p.or(() => [arg]).tryParse('foo', 0, Infinity),
-            {
-                instanceOf: TypeError,
-                message:
-                    'the value returned by callback function must be an array with Parser objects or strings',
-            },
-            message,
-        );
-        if (!Array.isArray(arg)) {
+            t.notThrows(() => p.or(arg), message);
+        } else {
+            t.throws(
+                // @ts-ignore
+                () => p.or(arg),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'only the Parser object, string, RegExp or function can be specified as the first argument',
+                },
+                message,
+            );
+        }
+        if (
+            arg instanceof Parser ||
+            typeof arg === 'string' ||
+            arg instanceof RegExp
+        ) {
+            t.notThrows(() => p.or('x', arg), message);
+            t.notThrows(
+                () => p.or(() => [arg]).tryParse('foo', 0, Infinity),
+                message,
+            );
+        } else {
+            t.throws(
+                // @ts-ignore
+                () => p.or('x', arg),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'only the Parser object, string or RegExp can be specified for the second argument and the subsequent arguments',
+                },
+                message,
+            );
+            t.throws(
+                // @ts-ignore
+                () => p.or(() => [arg]).tryParse('foo', 0, Infinity),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'the value returned by callback function must be an array with Parser objects, strings or RegExp',
+                },
+                message,
+            );
+        }
+        if (Array.isArray(arg)) {
+            t.notThrows(
+                // @ts-ignore
+                () => p.or(() => arg).tryParse('foo', 0, Infinity),
+                message,
+            );
+        } else {
             t.throws(
                 // @ts-ignore
                 () => p.or(() => arg).tryParse('foo', 0, Infinity),
                 {
                     instanceOf: TypeError,
                     message:
-                        'the value returned by callback function must be an array with Parser objects or strings',
+                        'the value returned by callback function must be an array with Parser objects, strings or RegExp',
                 },
                 message,
             );

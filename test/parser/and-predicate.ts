@@ -208,6 +208,7 @@ test('should fail by invalid arguments', t => {
         const message = util.inspect({ arg }, { breakLength: Infinity });
         if (
             ['string', 'function'].includes(typeof arg) ||
+            arg instanceof RegExp ||
             arg instanceof Parser
         ) {
             // @ts-ignore
@@ -219,7 +220,7 @@ test('should fail by invalid arguments', t => {
                 {
                     instanceOf: TypeError,
                     message:
-                        'only the Parser object, string or function can be specified as argument',
+                        'only the Parser object, string, RegExp or function can be specified as argument',
                 },
                 message,
             );
