@@ -115,29 +115,24 @@ export class ParserGenerator {
         headArg: ParserLike | (() => OneOrMoreReadonlyTuple<ParserLike>),
         tailArgs: ParserLike[],
     ): OneOrMoreTuple<ParserLike> | (() => OneOrMoreReadonlyTuple<ParserLike>) {
-        if (argsLen < 1) {
-            throw new Error('one or more arguments are required');
-        }
+        if (argsLen < 1) throw new Error('one or more arguments are required');
 
         if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
-            if (tailArgs.length >= 1) {
+            if (tailArgs.length >= 1)
                 throw new Error(
                     'the second and subsequent arguments cannot be specified. the first argument is the callback function',
                 );
-            }
             return headArg;
         }
 
-        if (!isParserLike(headArg)) {
+        if (!isParserLike(headArg))
             throw new TypeError(
                 'only the following values can be specified as the first argument: Parser object, string, RegExp, or function',
             );
-        }
-        if (!isParserLikeList(tailArgs)) {
+        if (!isParserLikeList(tailArgs))
             throw new TypeError(
                 'for the second and subsequent arguments, only the following values can be specified: Parser object or string or RegExp',
             );
-        }
         return [headArg, ...tailArgs];
     }
 }
