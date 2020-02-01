@@ -8,6 +8,7 @@ import {
     parserLike2Parser,
     ParseSuccessResult,
 } from '../internal';
+import { hasProperty } from '../utils';
 import { CacheStore } from '../utils/cache-store';
 
 export class PredicateExecutionEnvironment {
@@ -40,25 +41,47 @@ export class PredicateParser extends Parser<null> {
 
     private readonly __negative: boolean;
 
+    private readonly __errorMessage = {
+        predicateType:
+            'only the Parser object, string, RegExp or function can be specified for the predicate option',
+        predicateFuncRetType:
+            'the value returned by callback function must be a Parser object or boolean',
+    };
+
     constructor({
         parserGenerator,
         predicate,
         negative,
+        errorMessage = {},
     }: {
         parserGenerator: ParserGenerator;
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc;
         negative: boolean;
+        errorMessage?: Partial<
+            Record<
+                'predicateType' | 'predicateFuncRetType',
+                string | ((message: string) => string)
+            >
+        >;
     }) {
         super(parserGenerator);
 
+        for (const [type, msg] of Object.entries(errorMessage)) {
+            if (hasProperty(this.__errorMessage, type)) {
+                Object.assign(this.__errorMessage, {
+                    [type]:
+                        typeof msg === 'function'
+                            ? msg(String(this.__errorMessage[type]))
+                            : msg,
+                });
+            }
+        }
         if (isParserLike(predicate)) {
             this.__predicate = parserLike2Parser(parserGenerator, predicate);
         } else if (typeof predicate === 'function') {
             this.__predicate = predicate;
         } else {
-            throw new TypeError(
-                'only the Parser object, string or function can be specified for the predicate option',
-            );
+            throw new TypeError(this.__errorMessage.predicateType);
         }
         this.__negative = negative;
 
@@ -116,9 +139,7 @@ export class PredicateParser extends Parser<null> {
         } else if (typeof ret === 'boolean') {
             return ret;
         } else {
-            throw new TypeError(
-                'the value returned by callback function must be a Parser object or boolean',
-            );
+            throw new TypeError(this.__errorMessage.predicateFuncRetType);
         }
     }
 }
