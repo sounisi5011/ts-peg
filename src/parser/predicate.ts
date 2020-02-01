@@ -118,14 +118,17 @@ export class PredicateParser extends Parser<null> {
             Record<string, string | ((message: string) => string)>
         >,
     ): void {
-        for (const [type, msg] of Object.entries(errorMessage)) {
-            if (typeof msg !== 'string' && typeof msg !== 'function') continue;
-            if (!hasProperty(this.__errorMessage, type)) continue;
+        Object.entries(errorMessage).forEach(([type, msg]) => {
+            if (
+                (typeof msg !== 'string' && typeof msg !== 'function') ||
+                !hasProperty(this.__errorMessage, type)
+            )
+                return;
             this.__errorMessage[type] =
                 typeof msg === 'function'
                     ? msg(String(this.__errorMessage[type]))
                     : msg;
-        }
+        });
     }
 
     private __getPredicateResult(
