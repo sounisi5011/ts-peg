@@ -6,7 +6,7 @@ import {
 } from '../../types';
 import { CacheStore } from '../../utils/cache-store';
 
-export type ParserLike = Parser<unknown> | string;
+export type ParserLike = Parser<unknown> | string | RegExp;
 
 // string | Parser<42> -> string | 42
 export type ParserLike2Result<T extends ParserLike> = T extends Parser<unknown>
@@ -21,7 +21,11 @@ export type ParserLikeTuple2ResultTuple<T extends readonly ParserLike[]> = {
 };
 
 export function isParserLike(value: unknown): value is ParserLike {
-    return typeof value === 'string' || value instanceof Parser;
+    return (
+        typeof value === 'string' ||
+        value instanceof RegExp ||
+        value instanceof Parser
+    );
 }
 
 export function isParserLikeList(
@@ -46,6 +50,7 @@ export function parserLike2Parser(
 
     const [, parserLike] = args;
     if (parserLike instanceof Parser) return parserLike;
+    if (parserLike instanceof RegExp) return parserGenerator.re(parserLike);
     return parserGenerator.str(parserLike);
 }
 
@@ -64,11 +69,41 @@ export abstract class ReduceParser<
         | OneOrMoreTuple<Parser<unknown>>
         | (() => TParserLikeTuple);
 
+    private readonly __errorMessage = {
+        expsNotArray: 'second argument must be an array or a callback function',
+        expsLenZero:
+            'one or more values are required in the array of second argument',
+        expsItemsInvalid:
+            'second argument array must contain only the following values: Parser object, string, or RegExp',
+        expsFuncRetNotArray:
+            'the value returned by the callback function must be an array',
+        expsFuncRetLenZero:
+            'one or more values are required in the array returned by callback function',
+        expsFuncRetItemsInvalid:
+            'the value returned by the callback function must be an array containing only the following values: Parser object, string, or RegExp',
+    };
+
     constructor(
         parserGenerator: ParserGenerator,
         expressions: TParserLikeTuple | (() => TParserLikeTuple),
+        {
+            errorMessage = {},
+        }: {
+            errorMessage?: Partial<
+                Record<
+                    | 'expsNotArray'
+                    | 'expsLenZero'
+                    | 'expsItemsInvalid'
+                    | 'expsFuncRetNotArray'
+                    | 'expsFuncRetLenZero'
+                    | 'expsFuncRetItemsInvalid',
+                    string
+                >
+            >;
+        } = {},
     ) {
         super(parserGenerator);
+        Object.assign(this.__errorMessage, errorMessage);
         this.__validateInputExps(expressions);
         this.__inputExps =
             typeof expressions === 'function'
@@ -108,20 +143,14 @@ export abstract class ReduceParser<
     ): void {
         if (typeof expressions === 'function') return;
         if (!(Array.isArray as isReadonlyOrWritableArray)(expressions)) {
-            throw new TypeError(
-                'only a function or an array containing Parser object and string can be specified as the second argument',
-            );
+            throw new TypeError(this.__errorMessage.expsNotArray);
         }
 
         if (expressions.length < 1) {
-            throw new RangeError(
-                'one or more values are required in the array of second argument',
-            );
+            throw new RangeError(this.__errorMessage.expsLenZero);
         }
         if (!isParserLikeList(expressions)) {
-            throw new TypeError(
-                'the second argument array can contain only Parser objects or strings',
-            );
+            throw new TypeError(this.__errorMessage.expsItemsInvalid);
         }
     }
 
@@ -130,19 +159,13 @@ export abstract class ReduceParser<
     ): TParserLikeTuple {
         const exps = callback();
         if (!(Array.isArray as isReadonlyOrWritableArray)(exps)) {
-            throw new TypeError(
-                'the value returned by callback function must be an array with Parser objects or strings',
-            );
+            throw new TypeError(this.__errorMessage.expsFuncRetNotArray);
         }
         if (exps.length < 1) {
-            throw new RangeError(
-                'one or more values are required in the array returned by callback function',
-            );
+            throw new RangeError(this.__errorMessage.expsFuncRetLenZero);
         }
         if (!isParserLikeList(exps)) {
-            throw new TypeError(
-                'the value returned by callback function must be an array with Parser objects or strings',
-            );
+            throw new TypeError(this.__errorMessage.expsFuncRetItemsInvalid);
         }
         return exps;
     }

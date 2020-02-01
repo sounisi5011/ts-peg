@@ -2,6 +2,7 @@ import { unicodeVersion } from './case-folding-map';
 import {
     AnyCharacterParser,
     CharacterClassParser,
+    isParserLike,
     isParserLikeList,
     LiteralStringParser,
     Parser,
@@ -9,9 +10,10 @@ import {
     PredicateFunc,
     PredicateParser,
     PrioritizedChoiceParser,
+    RegExpParser,
     SequenceParser,
 } from './internal';
-import { OneOrMoreReadonlyTuple } from './types';
+import { OneOrMoreReadonlyTuple, OneOrMoreTuple } from './types';
 
 export class ParserGenerator {
     public readonly unicodeVersion = unicodeVersion;
@@ -28,50 +30,48 @@ export class ParserGenerator {
         return CharacterClassParser.fromPattern(this, chars);
     }
 
+    re(pattern: RegExp): RegExpParser {
+        if (arguments.length < 1) throw new Error('one argument required');
+        return new RegExpParser(this, pattern, {
+            errorMessage: {
+                patternType:
+                    'only the RegExp object can be specified as argument',
+            },
+        });
+    }
+
     // eslint-disable-next-line @typescript-eslint/camelcase
     is_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        if (arguments.length < 1) throw new Error('one argument required');
-        return this.__convertPredicateParserError(
-            () =>
-                new PredicateParser({
-                    parserGenerator: this,
-                    predicate,
-                    negative: false,
-                }),
-        );
+        return this.__genPredicateParser(arguments.length, predicate, false);
     }
 
     // eslint-disable-next-line @typescript-eslint/camelcase
     not_a(
         predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
     ): PredicateParser {
-        if (arguments.length < 1) throw new Error('one argument required');
-        return this.__convertPredicateParserError(
-            () =>
-                new PredicateParser({
-                    parserGenerator: this,
-                    predicate,
-                    negative: true,
-                }),
+        return this.__genPredicateParser(arguments.length, predicate, true);
+    }
+
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        arg: () => T,
+    ): SequenceParser<T>;
+
+    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
+        ...args: T
+    ): SequenceParser<T>;
+
+    seq(
+        arg: ParserLike | (() => OneOrMoreReadonlyTuple<ParserLike>),
+        ...args: ParserLike[]
+    ): SequenceParser<OneOrMoreReadonlyTuple<ParserLike>> {
+        return new SequenceParser(
+            this,
+            this.__validateSequenceLikeArgs(arguments.length, arg, args),
         );
     }
 
-    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        arg: () => T,
-    ): SequenceParser<T>;
-
-    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T
-    ): SequenceParser<T>;
-
-    seq<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): SequenceParser<T> {
-        return new SequenceParser(this, this.__validateSequenceLikeArgs(args));
-    }
-
     or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
         arg: () => T,
     ): PrioritizedChoiceParser<T>;
@@ -80,22 +80,43 @@ export class ParserGenerator {
         ...args: T
     ): PrioritizedChoiceParser<T>;
 
-    or<T extends OneOrMoreReadonlyTuple<ParserLike>>(
-        ...args: T | [() => T]
-    ): PrioritizedChoiceParser<T> {
+    or(
+        arg: ParserLike | (() => OneOrMoreReadonlyTuple<ParserLike>),
+        ...args: ParserLike[]
+    ): PrioritizedChoiceParser<OneOrMoreReadonlyTuple<ParserLike>> {
         return new PrioritizedChoiceParser(
             this,
-            this.__validateSequenceLikeArgs(args),
+            this.__validateSequenceLikeArgs(arguments.length, arg, args),
         );
     }
 
-    private __validateSequenceLikeArgs<
-        T extends OneOrMoreReadonlyTuple<ParserLike>
-    >(args: T | [() => T]): T | (() => T) {
-        if (args.length < 1)
-            throw new Error('one or more arguments are required');
+    private __genPredicateParser(
+        argsLen: number,
+        predicate: ParserLike | (() => Parser<unknown>) | PredicateFunc,
+        negative: boolean,
+    ): PredicateParser {
+        if (argsLen < 1) throw new Error('one argument required');
+        return new PredicateParser({
+            parserGenerator: this,
+            predicate,
+            negative,
+            errorMessage: {
+                predicateType: message =>
+                    message.replace(
+                        /can be specified for the predicate option$/,
+                        'can be specified as argument',
+                    ),
+            },
+        });
+    }
 
-        const [headArg, ...tailArgs] = args;
+    private __validateSequenceLikeArgs(
+        argsLen: number,
+        headArg: ParserLike | (() => OneOrMoreReadonlyTuple<ParserLike>),
+        tailArgs: ParserLike[],
+    ): OneOrMoreTuple<ParserLike> | (() => OneOrMoreReadonlyTuple<ParserLike>) {
+        if (argsLen < 1) throw new Error('one or more arguments are required');
+
         if (typeof headArg === 'function' && !(headArg instanceof Parser)) {
             if (tailArgs.length >= 1)
                 throw new Error(
@@ -104,45 +125,21 @@ export class ParserGenerator {
             return headArg;
         }
 
-        this.__validateParserLikeList(args, headArg);
-        return args;
-    }
-
-    private __validateParserLikeList(
-        args: readonly unknown[],
-        headArg: unknown,
-    ): asserts args is readonly ParserLike[] {
-        if (!isParserLikeList([headArg]))
+        if (!isParserLike(headArg))
             throw new TypeError(
-                'only the Parser object, string or function can be specified as the first argument',
+                'only the following values can be specified as the first argument: Parser object, string, RegExp, or function',
             );
-        if (!isParserLikeList(args))
+        if (!isParserLikeList(tailArgs))
             throw new TypeError(
-                'only the Parser object or string can be specified for the second argument and the subsequent arguments',
+                'for the second and subsequent arguments, only the following values can be specified: Parser object or string or RegExp',
             );
-    }
-
-    private __convertPredicateParserError<T>(func: () => T): T {
-        try {
-            return func();
-        } catch (error) {
-            if (
-                error instanceof TypeError &&
-                error.message ===
-                    'only the Parser object, string or function can be specified for the predicate option'
-            ) {
-                error.message = error.message.replace(
-                    /can be specified for the predicate option$/,
-                    'can be specified as argument',
-                );
-                if (error.stack) {
-                    error.stack = error.stack.replace(
-                        /^(.+) can be specified for the predicate option(?=\n|$)/,
-                        '$1 can be specified as argument',
-                    );
-                }
-            }
-            throw error;
-        }
+        return [headArg, ...tailArgs];
     }
 }
+
+export interface ParserGenerator {
+    regexp: ParserGenerator['re'];
+    regex: ParserGenerator['re'];
+}
+ParserGenerator.prototype.regexp = ParserGenerator.prototype.regex =
+    ParserGenerator.prototype.re;

@@ -262,49 +262,86 @@ test('should fail by invalid arguments', t => {
         },
     );
 
-    for (const arg of [null, undefined, 42, ['x']]) {
+    for (const arg of [
+        null,
+        undefined,
+        true,
+        false,
+        42,
+        'x',
+        ['y'],
+        [p.any],
+        () => ['z'],
+        /regex/,
+        Symbol(''),
+        p.any,
+    ]) {
         const message = util.inspect({ arg }, { breakLength: Infinity });
-        t.throws(
+        if (
+            ['string', 'function'].includes(typeof arg) ||
+            arg instanceof RegExp ||
+            arg instanceof Parser
+        ) {
             // @ts-ignore
-            () => p.seq(arg),
-            {
-                instanceOf: TypeError,
-                message:
-                    'only the Parser object, string or function can be specified as the first argument',
-            },
-            message,
-        );
-    }
-    for (const arg of [null, undefined, 42, ['x'], () => ['y']]) {
-        const message = util.inspect({ arg }, { breakLength: Infinity });
-        t.throws(
-            // @ts-ignore
-            () => p.seq('x', arg),
-            {
-                instanceOf: TypeError,
-                message:
-                    'only the Parser object or string can be specified for the second argument and the subsequent arguments',
-            },
-            message,
-        );
-        t.throws(
-            // @ts-ignore
-            () => p.seq(() => [arg]).tryParse('foo', 0, Infinity),
-            {
-                instanceOf: TypeError,
-                message:
-                    'the value returned by callback function must be an array with Parser objects or strings',
-            },
-            message,
-        );
-        if (!Array.isArray(arg)) {
+            t.notThrows(() => p.seq(arg), message);
+        } else {
+            t.throws(
+                // @ts-ignore
+                () => p.seq(arg),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'only the following values can be specified as the first argument: Parser object, string, RegExp, or function',
+                },
+                message,
+            );
+        }
+        if (
+            arg instanceof Parser ||
+            typeof arg === 'string' ||
+            arg instanceof RegExp
+        ) {
+            t.notThrows(() => p.seq('x', arg), message);
+            t.notThrows(
+                () => p.seq(() => [arg]).tryParse('foo', 0, Infinity),
+                message,
+            );
+        } else {
+            t.throws(
+                // @ts-ignore
+                () => p.seq('x', arg),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'for the second and subsequent arguments, only the following values can be specified: Parser object or string or RegExp',
+                },
+                message,
+            );
+            t.throws(
+                // @ts-ignore
+                () => p.seq(() => [arg]).tryParse('foo', 0, Infinity),
+                {
+                    instanceOf: TypeError,
+                    message:
+                        'the value returned by the callback function must be an array containing only the following values: Parser object, string, or RegExp',
+                },
+                message,
+            );
+        }
+        if (Array.isArray(arg)) {
+            t.notThrows(
+                // @ts-ignore
+                () => p.seq(() => arg).tryParse('foo', 0, Infinity),
+                message,
+            );
+        } else {
             t.throws(
                 // @ts-ignore
                 () => p.seq(() => arg).tryParse('foo', 0, Infinity),
                 {
                     instanceOf: TypeError,
                     message:
-                        'the value returned by callback function must be an array with Parser objects or strings',
+                        'the value returned by the callback function must be an array',
                 },
                 message,
             );
