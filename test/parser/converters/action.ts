@@ -4,10 +4,8 @@ import { assertType, TypeEq } from 'typepark';
 import p, {
     ActionExecutionEnvironment,
     Parser,
-    ParseResult,
     ParserGenerator,
     ParserResultDataType,
-    ParseSuccessResult,
 } from '../../../src';
 import { parse } from '../../helpers/parser';
 
@@ -39,87 +37,60 @@ test('should convert result value', t => {
     >();
 });
 
-function readData(value: ParseResult<unknown>[]): unknown {
-    return value.forEach(value => {
-        if (value instanceof ParseSuccessResult) {
-            return value.data;
-        }
-    });
-}
-
 test('validate action arguments', t => {
-    readData([
-        p.any
-            .action((...args) => {
-                t.is(args[0], 'a');
-                assertType<
-                    TypeEq<typeof args, [string, ActionExecutionEnvironment]>
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-        p
-            .str('a')
-            .action((...args) => {
-                t.is(args[0], 'a');
-                assertType<
-                    TypeEq<typeof args, ['a', ActionExecutionEnvironment]>
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-
-        p.any.zeroOrMore
-            .action((...args) => {
-                t.deepEqual(args[0], ['a', 'b', 'c']);
-                assertType<
-                    TypeEq<typeof args, [string[], ActionExecutionEnvironment]>
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-        p.any.oneOrMore
-            .action((...args) => {
-                t.deepEqual(args[0], ['a', 'b', 'c']);
-                assertType<
-                    TypeEq<
-                        typeof args,
-                        [[string, ...string[]], ActionExecutionEnvironment]
-                    >
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-        p.any.optional
-            .action((...args) => {
-                t.deepEqual(args[0], 'a');
-                assertType<
-                    TypeEq<
-                        typeof args,
-                        [string | undefined, ActionExecutionEnvironment]
-                    >
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-
-        p
-            .str('x')
-            .zeroOrMore.action((...args) => {
-                t.deepEqual(args[0], []);
-                assertType<
-                    TypeEq<typeof args, ['x'[], ActionExecutionEnvironment]>
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-        p
-            .str('x')
-            .optional.action((...args) => {
-                t.deepEqual(args[0], undefined);
-                assertType<
-                    TypeEq<
-                        typeof args,
-                        ['x' | undefined, ActionExecutionEnvironment]
-                    >
-                >();
-            })
-            .tryParse('abc', 0, Infinity),
-    ]);
+    [
+        p.any.action((...args) => {
+            t.is(args[0], 'a');
+            assertType<
+                TypeEq<typeof args, [string, ActionExecutionEnvironment]>
+            >();
+        }),
+        p.str('a').action((...args) => {
+            t.is(args[0], 'a');
+            assertType<
+                TypeEq<typeof args, ['a', ActionExecutionEnvironment]>
+            >();
+        }),
+        p.any.zeroOrMore.action((...args) => {
+            t.deepEqual(args[0], ['a', 'b', 'c']);
+            assertType<
+                TypeEq<typeof args, [string[], ActionExecutionEnvironment]>
+            >();
+        }),
+        p.any.oneOrMore.action((...args) => {
+            t.deepEqual(args[0], ['a', 'b', 'c']);
+            assertType<
+                TypeEq<
+                    typeof args,
+                    [[string, ...string[]], ActionExecutionEnvironment]
+                >
+            >();
+        }),
+        p.any.optional.action((...args) => {
+            t.deepEqual(args[0], 'a');
+            assertType<
+                TypeEq<
+                    typeof args,
+                    [string | undefined, ActionExecutionEnvironment]
+                >
+            >();
+        }),
+        p.str('x').zeroOrMore.action((...args) => {
+            t.deepEqual(args[0], []);
+            assertType<
+                TypeEq<typeof args, ['x'[], ActionExecutionEnvironment]>
+            >();
+        }),
+        p.str('x').optional.action((...args) => {
+            t.deepEqual(args[0], undefined);
+            assertType<
+                TypeEq<
+                    typeof args,
+                    ['x' | undefined, ActionExecutionEnvironment]
+                >
+            >();
+        }),
+    ].forEach(parser => parser.tryParse('abc', 0, Infinity));
 });
 
 test('should not call action callback', t => {
@@ -134,6 +105,13 @@ test('should not call action callback', t => {
         .oneOrMore.action(() => t.fail())
         .tryParse('abc', 0, Infinity);
     t.pass();
+});
+
+test('should always invoke the action callback', t => {
+    t.plan(2);
+    const action = p.any.action(() => t.pass());
+    const parser = p.seq(p.is_a(action), action);
+    parser.tryParse('a', 0, Infinity);
 });
 
 test('if the arguments have the same value, they should return the same Parser object', t => {
