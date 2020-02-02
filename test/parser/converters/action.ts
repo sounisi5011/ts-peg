@@ -136,6 +136,13 @@ test('should not call action callback', t => {
     t.pass();
 });
 
+test('should always invoke the action callback', t => {
+    t.plan(2);
+    const action = p.any.action(() => t.pass());
+    const parser = p.seq(p.is_a(action), action);
+    parser.tryParse('a', 0, Infinity);
+});
+
 test('if the arguments have the same value, they should return the same Parser object', t => {
     const fnB = (): boolean => true;
     const fnN = (): number => 42;
