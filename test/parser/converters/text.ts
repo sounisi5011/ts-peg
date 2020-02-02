@@ -58,57 +58,6 @@ test('should not match if starting offset is out of range', t => {
     t.is(parse(p.any.text, 'abc', 99), undefined);
 });
 
-test('should not invoke action callback', t => {
-    let assertCallAction: () => void;
-    let assertCount = 0;
-    const parser = p.any.action(char => {
-        assertCallAction();
-        assertCount++;
-        return { char };
-    }).zeroOrMore;
-
-    assertCallAction = () =>
-        t.fail(
-            'should not invoke action callback if only matched text is needed',
-        );
-    assertCount++;
-    t.is(parse(parser.text, 'abc')?.data, 'abc');
-
-    assertCallAction = () =>
-        t.pass('should invoke action callback if not yet invoked the action');
-    assertCount++;
-    t.deepEqual(parse(parser, 'abc')?.data, [
-        { char: 'a' },
-        { char: 'b' },
-        { char: 'c' },
-    ]);
-
-    assertCallAction = () =>
-        t.pass(
-            'should invoke action callback if the action has already been invoked',
-        );
-    assertCount++;
-    t.deepEqual(parse(parser, 'abc')?.data, [
-        { char: 'a' },
-        { char: 'b' },
-        { char: 'c' },
-    ]);
-
-    t.plan(assertCount + 2);
-    t.deepEqual(
-        parse(
-            p.any.zeroOrMore.text.action(text => {
-                t.pass(
-                    'should invoke action callback if the result of action is needed',
-                );
-                return { text };
-            }),
-            'abc',
-        )?.data,
-        { text: 'abc' },
-    );
-});
-
 test('getter property "text" should return the same Parser object', t => {
     const parser1α = p.str('α');
     const parser1β = p.str('β');
