@@ -51,19 +51,14 @@ export const INDENT = p.is_a(
                 indent.startsWith(currentIndent) &&
                 indent.length > currentIndent.length,
         )
-        // Note: No action is taken unless the matching result data is read.
-        //       Therefore, the action at this position is never invoked.
-        //       To work around this problem, use the exp.match() method instead of the exp.action() method.
-        .match(indent => {
+        .action(indent => {
             indentStack.push(currentIndent);
             currentIndent = indent;
-            return true;
         }),
 );
 
-export const DEDENT = p.str('').match(() => {
+export const DEDENT = p.str('').action(() => {
     currentIndent = indentStack.pop() ?? '';
-    return true;
 });
 
 export default start;
